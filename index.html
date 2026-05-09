@@ -2,131 +2,130 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX Delivery — Вход</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX SYSTEM | Реттиховка</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
-        .auth-card { background: #fff; width: 280px; padding: 20px; border-radius: 30px; border: 1px solid rgba(0,0,0,0.05); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.02); }
-        .rx-input { background: #f2f2f2; border: none; font-size: 11px; font-weight: 700; width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 6px; }
-        .rx-btn { background: #000; color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; padding: 12px; border-radius: 12px; width: 100%; transition: 0.2s; margin-top: 4px; }
-        .rx-btn:active { transform: scale(0.97); }
-        .social-box { border: 1px solid rgba(0,0,0,0.05); padding: 8px; border-radius: 10px; flex: 1; display: flex; justify-content: center; }
-        .hidden { display: none !important; }
+        :root { --border: 3px solid #000; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #fff; color: #000; margin: 0; }
+
+        /* Экраны */
+        .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
+        .active { display: flex; }
+
+        /* Дизайн корзины */
+        .cart-item {
+            width: 100%; max-width: 500px;
+            border: var(--border); padding: 15px; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .item-img { width: 80px; height: 80px; background: #eee; border: 2px solid #000; }
+        .controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .btn-qty { background: #000; color: #fff; border: none; width: 30px; height: 30px; cursor: pointer; }
+
+        /* Окно согласия (Оставить у двери) */
+        #leave-door-box {
+            background: #f0f0f0; border: var(--border);
+            padding: 20px; margin-top: 20px; display: none;
+            max-width: 500px; text-align: left;
+        }
+
+        /* Статус-бар рейтинга */
+        .status-bar {
+            width: 100%; padding: 10px; background: #000; color: #fff;
+            position: sticky; top: 0; display: flex; justify-content: space-around;
+        }
+
+        .btn-pay { background: #000; color: #fff; padding: 20px; width: 100%; font-weight: 900; border: none; margin-top: 20px; cursor: pointer; }
+        .disabled { opacity: 0.3; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div class="auth-card">
-        <div class="mb-5">
-            <h1 class="text-3xl font-black italic uppercase tracking-tighter">RX</h1>
-            <p class="text-[7px] font-black opacity-20 uppercase tracking-[0.3em]">Система Безопасности</p>
-        </div>
-
-        <div id="step-1">
-            <input id="email" type="email" placeholder="Почта" class="rx-input">
-            <div class="relative">
-                <input id="password" type="password" placeholder="Пароль" class="rx-input">
-                <button onclick="resetPass()" class="absolute right-3 top-3 text-[7px] font-black opacity-20 uppercase">Забыл?</button>
-            </div>
-            <button onclick="doLogin()" class="rx-btn">Войти</button>
-            <button onclick="doRegister()" class="text-[7px] font-black opacity-10 uppercase block w-full mt-2">Регистрация</button>
-
-            <div class="flex items-center gap-2 my-4">
-                <div class="h-[1px] bg-black/5 flex-grow"></div>
-                <span class="text-[6px] font-black opacity-10">ИЛИ</span>
-                <div class="h-[1px] bg-black/5 flex-grow"></div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="socialLogin('google')" class="social-box"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4"></button>
-                <button onclick="socialLogin('apple')" class="social-box"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="w-3.5"></button>
-            </div>
-        </div>
-
-        <div id="step-2" class="hidden">
-            <p class="text-[7px] font-black opacity-30 uppercase mb-3 tracking-widest">Введите номер</p>
-            <div id="recaptcha-container"></div>
-            <input id="phone" type="tel" placeholder="+7 900 000 00 00" class="rx-input text-center">
-            
-            <div id="sms-area" class="hidden">
-                <input id="code" type="number" placeholder="Код" class="rx-input text-center tracking-[0.4em]">
-                <button onclick="confirmSms()" class="rx-btn bg-orange-500">Подтвердить</button>
-            </div>
-            <button id="send-btn" onclick="sendSms()" class="rx-btn">Получить SMS</button>
-        </div>
+    <div id="status" class="status-bar">
+        <span>УРОВЕНЬ: <b id="lvl-val">1</b></span>
+        <span>РЕЙТИНГ: <b id="rate-val">5</b></span>
     </div>
 
+    <section id="cart-screen" class="screen active">
+        <h2 style="text-transform: uppercase;">Ваш заказ</h2>
+        
+        <div class="cart-item">
+            <div class="item-img"><img src="" alt="" id="prod-img"></div>
+            <div style="flex-grow: 1;">
+                <b id="prod-name">Кириешки (пачка)</b><br>
+                <span>Цена: 35₽</span>
+                <div class="controls">
+                    <button class="btn-qty" onclick="changeQty(-1)">-</button>
+                    <b id="qty">1</b>
+                    <button class="btn-qty" onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="weight-warning" style="color: red; display: none; font-weight: bold; margin-bottom: 10px;">
+            ⚠️ ОШИБКА: Вес более 20кг! Мы не сможем это довезти.
+        </div>
+
+        <div style="margin: 20px 0;">
+            <input type="checkbox" id="at-door" onchange="toggleDoorWarning()"> 
+            <label for="at-door">Оставить у двери</label>
+        </div>
+
+        <div id="leave-door-box">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <b>СОГЛАШЕНИЕ:</b> Если товар украдут или вы его не найдете — мы не несем ответственности. Все претензии к вам.
+            <br><br>
+            <input type="checkbox" id="agree-check" onchange="checkLock()"> Я согласен
+        </div>
+
+        <button id="pay-btn" class="btn-pay" onclick="order()">ОФОРМИТЬ ЗАКАЗ</button>
+    </section>
+
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-            authDomain: "deliverygov11.firebaseapp.com",
-            projectId: "deliverygov11",
-            storageBucket: "deliverygov11.firebasestorage.app",
-            messagingSenderId: "562994407235",
-            appId: "1:562994407235:web:dde4e7438511fa1bc871f6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        let qty = 1;
+        let rating = 10; // Допустим, у тебя рейтинг 10
+        let level = rating >= 10 ? 2 : 1;
 
-        let verRes;
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+        document.getElementById('lvl-val').innerText = level;
+        document.getElementById('rate-val').innerText = rating;
 
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                const doc = await db.collection("users").doc(user.uid).get();
-                const data = doc.data();
-
-                if (data && data.phoneVerified) {
-                    // ЕСЛИ ВСЁ ОК — ПЕРЕХОДИМ НА ГЛАВНУЮ
-                    window.location.href = "main.html"; 
-                } else {
-                    document.getElementById('step-1').classList.add('hidden');
-                    document.getElementById('step-2').classList.remove('hidden');
-                }
+        function changeQty(amt) {
+            qty += amt;
+            if (qty < 1) qty = 1;
+            document.getElementById('qty').innerText = qty;
+            
+            // Проверка на 20кг (допустим пачка 100г)
+            if (qty > 200) {
+                document.getElementById('weight-warning').style.display = 'block';
+                document.getElementById('pay-btn').classList.add('disabled');
+            } else {
+                document.getElementById('weight-warning').style.display = 'none';
+                document.getElementById('pay-btn').classList.remove('disabled');
             }
-        });
-
-        function socialLogin(p) {
-            let provider = p === 'google' ? new firebase.auth.GoogleAuthProvider() : new firebase.auth.OAuthProvider('apple.com');
-            auth.signInWithPopup(provider).catch(err => alert("Ошибка: " + err.message));
         }
 
-        function doLogin() {
-            auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value)
-                .catch(err => alert("Ошибка: " + err.message));
+        function toggleDoorWarning() {
+            const box = document.getElementById('leave-door-box');
+            box.style.display = document.getElementById('at-door').checked ? 'block' : 'none';
+            checkLock();
         }
 
-        function doRegister() {
-            auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value)
-                .catch(err => alert("Ошибка: " + err.message));
+        function checkLock() {
+            const needsAgree = document.getElementById('at-door').checked;
+            const hasAgreed = document.getElementById('agree-check').checked;
+            const btn = document.getElementById('pay-btn');
+
+            if (needsAgree && !hasAgreed) {
+                btn.classList.add('disabled');
+            } else {
+                btn.classList.remove('disabled');
+            }
         }
 
-        function sendSms() {
-            auth.signInWithPhoneNumber(document.getElementById('phone').value, window.recaptchaVerifier).then(res => {
-                verRes = res;
-                document.getElementById('send-btn').classList.add('hidden');
-                document.getElementById('sms-area').classList.remove('hidden');
-            }).catch(err => alert(err.message));
-        }
-
-        function confirmSms() {
-            verRes.confirm(document.getElementById('code').value).then(async () => {
-                await db.collection("users").doc(auth.currentUser.uid).set({
-                    phoneVerified: true, phone: document.getElementById('phone').value,
-                    rank: 1, rating: 5, isBlocked: false
-                }, { merge: true });
-                window.location.href = "main.html"; // И тут тоже переход
-            }).catch(() => alert("Код неверный"));
-        }
-
-        function resetPass() {
-            auth.sendPasswordResetEmail(document.getElementById('email').value).then(() => alert("Проверь почту!"));
+        function order() {
+            alert("Заказ принят! Если сумма большая — оплатите по QR-коду СБП.");
         }
     </script>
 </body>
