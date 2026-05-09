@@ -2,161 +2,72 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX Delivery — Белое Стекло</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX Delivery — Вход</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        :root {
-            --bg-color: #f4f4f7;
-            --text-color: #000000;
-            --glass-bg: rgba(255, 255, 255, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --shadow: 0 10px 30px rgba(0,0,0,0.03);
-        }
-
-        /* Тема: Темная */
-        .dark-theme {
-            --bg-color: #0a0a0c;
-            --text-color: #ffffff;
-            --glass-bg: rgba(20, 20, 25, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.04);
-            --shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        /* Тема: Синяя */
-        .blue-theme {
-            --bg-color: #051937;
-            --text-color: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-            transition: all 0.4s ease;
-            overflow-x: hidden;
-        }
-
-        /* ЭФФЕКТ БЕЛОГО ЖИДКОГО СТЕКЛА */
-        .liquid-glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow);
-        }
-
-        /* Анимации */
-        .slide-up { animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) forwards; opacity: 0; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #000; overflow: hidden; }
+        .liquid-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(0,0,0,0.05); }
+        .slide-up { animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .hidden { display: none !important; }
-        
-        input, select {
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            color: var(--text-color);
-        }
-        .dark-theme input, .dark-theme select, .blue-theme input, .blue-theme select {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        input:focus, select:focus { border-color: #f97316; outline: none; }
-
-        .orange-btn {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.15);
-        }
+        input { background: #f8f8f8; border: 1px solid transparent; transition: all 0.3s; }
+        input:focus { background: #fff; border-color: #000; outline: none; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <div class="fixed -top-40 -left-40 w-80 h-80 bg-orange-200 rounded-full blur-[100px] opacity-50 z-[-1]"></div>
-    <div class="fixed -bottom-40 -right-40 w-80 h-80 bg-blue-200 rounded-full blur-[100px] opacity-40 z-[-1]"></div>
+    <div class="fixed top-0 left-0 w-full h-full z-[-1]">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-100 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-100 rounded-full blur-[120px]"></div>
+    </div>
 
-    <div id="auth-screen" class="min-h-[90vh] flex flex-col justify-center items-center slide-up">
-        <div class="liquid-glass p-12 rounded-[50px] text-center w-full max-w-md">
-            <h1 class="text-6xl font-black italic tracking-tighter mb-1">RX</h1>
-            <p class="text-[10px] font-black opacity-30 uppercase tracking-[0.5em] mb-12">Rettikhovka</p>
-            
-            <button onclick="loginWithGoogle()" class="w-full orange-btn text-white p-5 rounded-3xl font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all">
-                Войти через Google
-            </button>
+    <div id="auth-screen" class="w-full max-w-sm slide-up">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-black italic tracking-tighter uppercase">RX</h1>
+            <p class="text-[10px] font-black opacity-20 uppercase tracking-[0.4em]">Express Delivery</p>
+        </div>
+
+        <div class="liquid-glass p-8 rounded-[45px] shadow-2xl space-y-4">
+            <div class="space-y-3">
+                <input id="email" type="email" placeholder="Электронная почта" class="w-full p-5 rounded-2xl text-sm font-bold">
+                <div class="relative">
+                    <input id="password" type="password" placeholder="Пароль" class="w-full p-5 rounded-2xl text-sm font-bold">
+                    <button onclick="resetPassword()" class="absolute right-5 top-5 text-[9px] font-black uppercase opacity-30 hover:opacity-100 transition-all">Забыл?</button>
+                </div>
+                <button onclick="loginEmail()" class="w-full bg-black text-white p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Войти в систему</button>
+            </div>
+
+            <div class="flex items-center gap-4 py-2">
+                <div class="h-[1px] bg-black/5 flex-grow"></div>
+                <span class="text-[8px] font-black opacity-10 uppercase">или войти через</span>
+                <div class="h-[1px] bg-black/5 flex-grow"></div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="loginGoogle()" class="flex-1 flex items-center justify-center gap-2 border border-black/5 p-4 rounded-2xl hover:bg-white transition-all active:scale-90">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4">
+                    <span class="text-[9px] font-black uppercase">Google</span>
+                </button>
+                <button onclick="alert('Apple ID временно недоступен')" class="flex-1 flex items-center justify-center gap-2 border border-black/5 p-4 rounded-2xl hover:bg-white transition-all active:scale-90">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="w-3.5 mb-0.5">
+                    <span class="text-[9px] font-black uppercase">Apple ID</span>
+                </button>
+            </div>
+
+            <button onclick="registerEmail()" class="w-full text-center text-[9px] font-black opacity-20 uppercase mt-4 hover:opacity-100 transition-all tracking-widest">Создать новый аккаунт</button>
         </div>
     </div>
 
-    <div id="main-window" class="hidden max-w-5xl mx-auto space-y-8 mb-32">
-        
-        <header class="liquid-glass p-6 rounded-[30px] flex justify-between items-center slide-up">
-            <div class="flex items-center gap-4">
-                <img id="user-avatar" src="" class="w-12 h-12 rounded-full border-2 border-white" onclick="toggleSettings()">
-                <div>
-                    <h2 class="text-xl font-black italic uppercase tracking-tight">RX Delivery</h2>
-                    <p id="user-name" class="text-[10px] font-bold opacity-40 uppercase"></p>
-                </div>
-            </div>
-            <button onclick="toggleSettings()" class="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-zinc-800 rounded-2xl text-xl">⚙️</button>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <div class="md:col-span-2 space-y-4 slide-up" style="animation-delay: 0.1s">
-                <div class="liquid-glass p-8 rounded-[40px] flex justify-between items-center transition-all hover:border-orange-500">
-                    <h3 class="text-2xl font-black italic uppercase tracking-tight">Пицца</h3>
-                    <div class="flex items-center gap-6">
-                        <span class="text-xl font-bold opacity-40">650 ₽</span>
-                        <button onclick="addToCart('Пицца', 650)" class="w-14 h-14 orange-btn text-white rounded-3xl font-black text-2xl">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="cart-panel" class="liquid-glass p-8 rounded-[40px] hidden slide-up space-y-6" style="animation-delay: 0.2s">
-                <h3 class="text-xs font-black uppercase tracking-widest opacity-30">Ваш заказ</h3>
-                <div id="cart-items" class="space-y-2 text-sm font-bold opacity-80"></div>
-                <div class="h-[1px] bg-current opacity-5"></div>
-                <div class="flex justify-between items-end">
-                    <span class="text-sm font-bold opacity-40">Итого:</span>
-                    <span id="total-price" class="text-4xl font-black italic text-orange-500 tracking-tighter">0 ₽</span>
-                </div>
-                <input id="address" type="text" placeholder="Адрес в Реттиховке" class="w-full p-5 rounded-2xl text-sm font-bold">
-                <button onclick="sendOrder()" class="w-full orange-btn text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all">Заказать</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden flex items-center justify-center z-50 p-4" onclick="toggleSettings()">
-        <div class="liquid-glass p-10 rounded-[45px] w-full max-w-md space-y-8 slide-up" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center">
-                <h3 class="text-2xl font-black italic uppercase">Профиль</h3>
-                <button onclick="toggleSettings()" class="text-xs opacity-30 font-bold">ЗАКРЫТЬ</button>
-            </div>
-
-            <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase opacity-40 tracking-widest">Обо мне</label>
-                <textarea id="user-bio" placeholder="Расскажи о себе курьерам..." class="w-full p-5 rounded-2xl text-sm font-bold h-24 resize-none"></textarea>
-                <button onclick="saveProfile()" class="text-[10px] bg-black text-white px-6 py-3 rounded-xl font-bold uppercase dark:bg-white dark:text-black">Сохранить инфо</button>
-            </div>
-
-            <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase opacity-40 tracking-widest">Фон сайта</label>
-                <select id="theme-select" onchange="changeTheme(this.value)" class="w-full p-5 rounded-2xl text-sm font-bold outline-none appearance-none">
-                    <option value="light">☀️ Светлое стекло (Белое)</option>
-                    <option value="dark">🌑 Тёмное стекло (Чёрное)</option>
-                    <option value="blue">🔵 Синее стекло</option>
-                </select>
-            </div>
-
-            <div class="h-[1px] bg-current opacity-5 mt-10"></div>
-            <button onclick="auth.signOut(); location.reload()" class="w-full text-center text-xs font-black uppercase text-red-500 opacity-60 hover:opacity-100">Выйти из аккаунта</button>
+    <div id="main-window" class="hidden w-full max-w-4xl slide-up">
+        <div class="liquid-glass p-10 rounded-[50px] text-center">
+            <h2 class="text-3xl font-black italic uppercase mb-4">Добро пожаловать</h2>
+            <p id="user-display" class="text-xs opacity-50 mb-8"></p>
+            <button onclick="auth.signOut(); location.reload()" class="bg-black text-white px-10 py-4 rounded-2xl font-black uppercase text-[10px]">Выйти</button>
         </div>
     </div>
 
@@ -172,75 +83,41 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
 
+        // СЛУШАЕМ СОСТОЯНИЕ
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-window').classList.remove('hidden');
-                document.getElementById('user-avatar').src = user.photoURL;
-                document.getElementById('user-name').innerText = user.displayName;
-                loadUserData(user.uid);
+                document.getElementById('user-display').innerText = user.email || user.displayName;
             }
         });
 
-        function loginWithGoogle() {
-            auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+        // ЛОГИКА ВХОДА
+        function loginGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            // Используем popup, но если не сработает — redirect
+            auth.signInWithPopup(provider).catch(() => auth.signInWithRedirect(provider));
         }
 
-        // КОРЗИНА И ЗАКАЗ
-        let cart = []; let total = 0;
-        function addToCart(name, price) {
-            cart.push({name, price}); total += price; updateCartUI();
-        }
-        function updateCartUI() {
-            document.getElementById('cart-panel').classList.remove('hidden');
-            document.getElementById('total-price').innerText = total + ' ₽';
-            document.getElementById('cart-items').innerHTML = cart.map(i => `<div>${i.name} — ${i.price}₽</div>`).join('');
+        function loginEmail() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('password').value;
+            if(!e || !p) return alert("Заполни все поля!");
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Ошибка: " + err.message));
         }
 
-        async function sendOrder() {
-            const addr = document.getElementById('address').value;
-            if(addr.length < 5) return alert("Введи адрес!");
-            await db.collection("orders").add({
-                items: cart.map(i => i.name).join(', '),
-                price: total, address: addr,
-                customer: auth.currentUser.displayName,
-                uid: auth.currentUser.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Заказ отправлен Богдану!"); location.reload();
+        function registerEmail() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('password').value;
+            if(p.length < 6) return alert("Пароль должен быть от 6 символов!");
+            auth.createUserWithEmailAndPassword(e, p).then(() => alert("Успех! Теперь нажми Войти.")).catch(err => alert(err.message));
         }
 
-        // НАСТРОЙКИ, ПРОФИЛЬ И ТЕМЫ
-        function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
-
-        async function loadUserData(uid) {
-            const doc = await db.collection("users").doc(uid).get();
-            if (doc.exists) {
-                const data = doc.data();
-                if (data.bio) document.getElementById('user-bio').value = data.bio;
-                if (data.theme) {
-                    changeTheme(data.theme);
-                    document.getElementById('theme-select').value = data.theme;
-                }
-            }
-        }
-
-        async function saveProfile() {
-            const bio = document.getElementById('user-bio').value;
-            await db.collection("users").doc(auth.currentUser.uid).set({ bio: bio }, { merge: true });
-            alert("Профиль обновлен!");
-        }
-
-        function changeTheme(theme) {
-            document.body.className = ''; // Сброс классов
-            if (theme === 'dark') document.body.classList.add('dark-theme');
-            if (theme === 'blue') document.body.classList.add('blue-theme');
-            // Сохраняем выбор в базе
-            if (auth.currentUser) {
-                db.collection("users").doc(auth.currentUser.uid).set({ theme: theme }, { merge: true });
-            }
+        function resetPassword() {
+            const e = document.getElementById('email').value;
+            if(!e) return alert("Введи почту в поле выше, чтобы я знала, куда отправить код!");
+            auth.sendPasswordResetEmail(e).then(() => alert("Письмо для смены пароля отправлено!")).catch(err => alert(err.message));
         }
     </script>
 </body>
