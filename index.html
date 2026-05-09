@@ -2,133 +2,244 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Реттиховка Экспресс — Доставка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RX Delivery — Белое Стекло</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; }
-        .slide-up { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .orange-glow { box-shadow: 0 0 30px rgba(249, 115, 22, 0.2); }
+        
+        :root {
+            --bg-color: #f4f4f7;
+            --text-color: #000000;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
+
+        /* Тема: Темная */
+        .dark-theme {
+            --bg-color: #0a0a0c;
+            --text-color: #ffffff;
+            --glass-bg: rgba(20, 20, 25, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.04);
+            --shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Тема: Синяя */
+        .blue-theme {
+            --bg-color: #051937;
+            --text-color: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            transition: all 0.4s ease;
+            overflow-x: hidden;
+        }
+
+        /* ЭФФЕКТ БЕЛОГО ЖИДКОГО СТЕКЛА */
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        /* Анимации */
+        .slide-up { animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) forwards; opacity: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
         .hidden { display: none !important; }
+        
+        input, select {
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            color: var(--text-color);
+        }
+        .dark-theme input, .dark-theme select, .blue-theme input, .blue-theme select {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        input:focus, select:focus { border-color: #f97316; outline: none; }
+
+        .orange-btn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.15);
+        }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 md:p-8">
 
-    <header class="flex justify-between items-center mb-10 slide-up">
-        <div>
-            <h1 class="text-3xl font-black italic tracking-tighter uppercase">RX Delivery</h1>
-            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Реттиховка • Экспресс</p>
-        </div>
-        <div id="user-info" class="hidden flex items-center gap-3">
-            <img id="user-avatar" src="" class="w-10 h-10 rounded-xl border border-white/10">
-            <button onclick="auth.signOut(); location.reload()" class="opacity-30 text-[10px] font-bold uppercase">Выйти</button>
-        </div>
-        <button id="login-btn" onclick="login()" class="bg-white text-black px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest">Войти</button>
-    </header>
+    <div class="fixed -top-40 -left-40 w-80 h-80 bg-orange-200 rounded-full blur-[100px] opacity-50 z-[-1]"></div>
+    <div class="fixed -bottom-40 -right-40 w-80 h-80 bg-blue-200 rounded-full blur-[100px] opacity-40 z-[-1]"></div>
 
-    <div class="grid grid-cols-1 gap-4 mb-32 slide-up" style="animation-delay: 0.1s">
-        <h3 class="text-xs font-black uppercase opacity-30 tracking-widest mb-2">Меню на сегодня</h3>
-        
-        <div class="glass p-6 rounded-[35px] flex justify-between items-center">
-            <div>
-                <h4 class="text-xl font-black italic uppercase">Пицца «Реттиховская»</h4>
-                <p class="text-orange-500 font-black tracking-tighter">650 ₽</p>
-            </div>
-            <button onclick="addToCart('Пицца Реттиховская', 650)" class="w-12 h-12 bg-white text-black rounded-2xl flex items-center justify-center text-xl font-bold">+</button>
-        </div>
-
-        <div class="glass p-6 rounded-[35px] flex justify-between items-center">
-            <div>
-                <h4 class="text-xl font-black italic uppercase">Доставка из OZON</h4>
-                <p class="text-orange-500 font-black tracking-tighter">150 ₽</p>
-            </div>
-            <button onclick="addToCart('Доставка OZON', 150)" class="w-12 h-12 bg-white text-black rounded-2xl flex items-center justify-center text-xl font-bold">+</button>
+    <div id="auth-screen" class="min-h-[90vh] flex flex-col justify-center items-center slide-up">
+        <div class="liquid-glass p-12 rounded-[50px] text-center w-full max-w-md">
+            <h1 class="text-6xl font-black italic tracking-tighter mb-1">RX</h1>
+            <p class="text-[10px] font-black opacity-30 uppercase tracking-[0.5em] mb-12">Rettikhovka</p>
+            
+            <button onclick="loginWithGoogle()" class="w-full orange-btn text-white p-5 rounded-3xl font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all">
+                Войти через Google
+            </button>
         </div>
     </div>
 
-    <div id="cart-panel" class="fixed bottom-8 left-6 right-6 glass p-8 rounded-[40px] orange-glow slide-up hidden" style="animation-delay: 0.2s">
-        <div class="flex justify-between items-end mb-6">
-            <div>
-                <p class="text-[10px] font-black opacity-30 uppercase tracking-widest mb-1">Ваш заказ</p>
-                <h2 id="cart-items-text" class="text-xl font-black italic uppercase leading-none">Корзина пуста</h2>
+    <div id="main-window" class="hidden max-w-5xl mx-auto space-y-8 mb-32">
+        
+        <header class="liquid-glass p-6 rounded-[30px] flex justify-between items-center slide-up">
+            <div class="flex items-center gap-4">
+                <img id="user-avatar" src="" class="w-12 h-12 rounded-full border-2 border-white" onclick="toggleSettings()">
+                <div>
+                    <h2 class="text-xl font-black italic uppercase tracking-tight">RX Delivery</h2>
+                    <p id="user-name" class="text-[10px] font-bold opacity-40 uppercase"></p>
+                </div>
             </div>
-            <p id="total-price" class="text-3xl font-black italic text-orange-500">0 ₽</p>
+            <button onclick="toggleSettings()" class="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-zinc-800 rounded-2xl text-xl">⚙️</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <div class="md:col-span-2 space-y-4 slide-up" style="animation-delay: 0.1s">
+                <div class="liquid-glass p-8 rounded-[40px] flex justify-between items-center transition-all hover:border-orange-500">
+                    <h3 class="text-2xl font-black italic uppercase tracking-tight">Пицца</h3>
+                    <div class="flex items-center gap-6">
+                        <span class="text-xl font-bold opacity-40">650 ₽</span>
+                        <button onclick="addToCart('Пицца', 650)" class="w-14 h-14 orange-btn text-white rounded-3xl font-black text-2xl">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cart-panel" class="liquid-glass p-8 rounded-[40px] hidden slide-up space-y-6" style="animation-delay: 0.2s">
+                <h3 class="text-xs font-black uppercase tracking-widest opacity-30">Ваш заказ</h3>
+                <div id="cart-items" class="space-y-2 text-sm font-bold opacity-80"></div>
+                <div class="h-[1px] bg-current opacity-5"></div>
+                <div class="flex justify-between items-end">
+                    <span class="text-sm font-bold opacity-40">Итого:</span>
+                    <span id="total-price" class="text-4xl font-black italic text-orange-500 tracking-tighter">0 ₽</span>
+                </div>
+                <input id="address" type="text" placeholder="Адрес в Реттиховке" class="w-full p-5 rounded-2xl text-sm font-bold">
+                <button onclick="sendOrder()" class="w-full orange-btn text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all">Заказать</button>
+            </div>
         </div>
-        
-        <input id="order-address" type="text" placeholder="Введите адрес в Реттиховке..." class="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 mb-4 text-sm font-bold outline-none focus:border-orange-500 transition-all">
-        
-        <button onclick="sendOrder()" class="w-full bg-orange-500 py-5 rounded-[25px] font-black uppercase text-[11px] tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 transition-all">Оформить доставку</button>
+    </div>
+
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-md hidden flex items-center justify-center z-50 p-4" onclick="toggleSettings()">
+        <div class="liquid-glass p-10 rounded-[45px] w-full max-w-md space-y-8 slide-up" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-black italic uppercase">Профиль</h3>
+                <button onclick="toggleSettings()" class="text-xs opacity-30 font-bold">ЗАКРЫТЬ</button>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-black uppercase opacity-40 tracking-widest">Обо мне</label>
+                <textarea id="user-bio" placeholder="Расскажи о себе курьерам..." class="w-full p-5 rounded-2xl text-sm font-bold h-24 resize-none"></textarea>
+                <button onclick="saveProfile()" class="text-[10px] bg-black text-white px-6 py-3 rounded-xl font-bold uppercase dark:bg-white dark:text-black">Сохранить инфо</button>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-black uppercase opacity-40 tracking-widest">Фон сайта</label>
+                <select id="theme-select" onchange="changeTheme(this.value)" class="w-full p-5 rounded-2xl text-sm font-bold outline-none appearance-none">
+                    <option value="light">☀️ Светлое стекло (Белое)</option>
+                    <option value="dark">🌑 Тёмное стекло (Чёрное)</option>
+                    <option value="blue">🔵 Синее стекло</option>
+                </select>
+            </div>
+
+            <div class="h-[1px] bg-current opacity-5 mt-10"></div>
+            <button onclick="auth.signOut(); location.reload()" class="w-full text-center text-xs font-black uppercase text-red-500 opacity-60 hover:opacity-100">Выйти из аккаунта</button>
+        </div>
     </div>
 
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
-            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
             projectId: "deliverygov11",
             storageBucket: "deliverygov11.firebasestorage.app",
             messagingSenderId: "562994407235",
-            appId: "1:562994407235:web:dde4e7438511fa1bc871f6",
-            measurementId: "G-0KDKG67YQL"
+            appId: "1:562994407235:web:dde4e7438511fa1bc871f6"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let cart = [];
-        let total = 0;
-
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('login-btn').classList.add('hidden');
-                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-window').classList.remove('hidden');
                 document.getElementById('user-avatar').src = user.photoURL;
+                document.getElementById('user-name').innerText = user.displayName;
+                loadUserData(user.uid);
             }
         });
 
-        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-
-        function addToCart(name, price) {
-            cart.push(name);
-            total += price;
-            updateCartUI();
+        function loginWithGoogle() {
+            auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
         }
 
+        // КОРЗИНА И ЗАКАЗ
+        let cart = []; let total = 0;
+        function addToCart(name, price) {
+            cart.push({name, price}); total += price; updateCartUI();
+        }
         function updateCartUI() {
             document.getElementById('cart-panel').classList.remove('hidden');
-            document.getElementById('cart-items-text').innerText = cart.join(', ');
             document.getElementById('total-price').innerText = total + ' ₽';
+            document.getElementById('cart-items').innerHTML = cart.map(i => `<div>${i.name} — ${i.price}₽</div>`).join('');
         }
 
         async function sendOrder() {
-            const user = auth.currentUser;
-            const address = document.getElementById('order-address').value;
+            const addr = document.getElementById('address').value;
+            if(addr.length < 5) return alert("Введи адрес!");
+            await db.collection("orders").add({
+                items: cart.map(i => i.name).join(', '),
+                price: total, address: addr,
+                customer: auth.currentUser.displayName,
+                uid: auth.currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Заказ отправлен Богдану!"); location.reload();
+        }
 
-            if (!user) return alert("Сначала войдите в аккаунт!");
-            if (address.length < 5) return alert("Введите точный адрес!");
+        // НАСТРОЙКИ, ПРОФИЛЬ И ТЕМЫ
+        function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
 
-            try {
-                await db.collection("orders").add({
-                    items: cart.join(', '),
-                    price: total,
-                    address: address,
-                    customer: user.displayName,
-                    email: user.email,
-                    status: "new",
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Заказ принят! Богдан и курьеры уже видят его.");
-                cart = []; total = 0;
-                location.reload();
-            } catch (e) {
-                alert("Ошибка: " + e.message);
+        async function loadUserData(uid) {
+            const doc = await db.collection("users").doc(uid).get();
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.bio) document.getElementById('user-bio').value = data.bio;
+                if (data.theme) {
+                    changeTheme(data.theme);
+                    document.getElementById('theme-select').value = data.theme;
+                }
+            }
+        }
+
+        async function saveProfile() {
+            const bio = document.getElementById('user-bio').value;
+            await db.collection("users").doc(auth.currentUser.uid).set({ bio: bio }, { merge: true });
+            alert("Профиль обновлен!");
+        }
+
+        function changeTheme(theme) {
+            document.body.className = ''; // Сброс классов
+            if (theme === 'dark') document.body.classList.add('dark-theme');
+            if (theme === 'blue') document.body.classList.add('blue-theme');
+            // Сохраняем выбор в базе
+            if (auth.currentUser) {
+                db.collection("users").doc(auth.currentUser.uid).set({ theme: theme }, { merge: true });
             }
         }
     </script>
