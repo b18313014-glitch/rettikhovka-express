@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX Staff — Доставка</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #000; transition: 0.3s; }
+        .hidden { display: none !important; }
+        .card { @apply bg-zinc-50 p-6 rounded-[35px] border border-zinc-100; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-section" class="flex flex-col items-center justify-center min-h-screen p-8">
+        <h1 class="text-5xl font-black italic tracking-tighter mb-2">RX STAFF</h1>
+        <p class="text-[10px] font-bold opacity-30 uppercase tracking-[0.3em] mb-12">Для персонала</p>
+        <button onclick="login()" class="w-full max-w-xs bg-black text-white py-5 rounded-[25px] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">
+            Войти через Google
+        </button>
+    </div>
+
+    <div id="wait-section" class="hidden flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <div class="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center text-3xl mb-6">🔒</div>
+        <h2 class="text-2xl font-black italic uppercase mb-4">Доступ ограничен</h2>
+        <p class="text-sm text-zinc-500 mb-8">Чтобы начать работать в Реттиховке, ваш аккаунт должен подтвердить администратор.</p>
+        
+        <div class="space-y-3 w-full max-w-xs">
+            <a href="tel:+79000000000" class="block w-full py-4 border-2 border-black rounded-2xl font-black text-[10px] uppercase">Позвонить владельцу</a>
+            <button onclick="auth.signOut()" class="block w-full py-4 text-zinc-400 font-bold text-[10px] uppercase">Выйти</button>
+        </div>
+    </div>
+
+    <div id="main-section" class="hidden p-6">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h2 id="courier-name" class="text-2xl font-black italic uppercase">Курьер</h2>
+                <p id="shift-label" class="text-[10px] font-black text-red-500 uppercase tracking-widest">Вне смены</p>
+            </div>
+            <button onclick="auth.signOut()" class="opacity-20 text-[10px] font-bold uppercase">Выход</button>
+        </header>
+
+        <div class="space-y-4">
+            <button id="shift-btn" onclick="toggleShift()" class="w-full py-6 bg-black text-white rounded-[30px] font-black uppercase text-xs tracking-widest shadow-xl shadow-zinc-200">
+                Начать смену
+            </button>
+
+            <div class="card">
+                <h3 class="text-xs font-black opacity-30 uppercase mb-4 tracking-widest">Новые заказы</h3>
+                <div id="orders-list" class="space-y-3">
+                    <div class="py-10 text-center italic opacity-20 text-sm font-bold">Заказов пока нет</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ТВОЙ КОНФИГ ИЗ FIREBASE
+        const firebaseConfig = {
+            apiKey: "ТВОЙ_API_KEY",
+            authDomain: "deliverygov11.firebaseapp.com",
+            projectId: "deliverygov11",
+            storageBucket: "deliverygov11.appspot.com",
+            messagingSenderId: "ЧИСЛА",
+            appId: "ЧИСЛА"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('auth-section').classList.add('hidden');
+                checkAccess(user);
+            } else {
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('wait-section').classList.add('hidden');
+                document.getElementById('main-section').classList.add('hidden');
+            }
+        });
+
+        function checkAccess(user) {
+            // Ищем курьера в базе данных
+            db.collection("staff").doc(user.uid).get().then((doc) => {
+                if (doc.exists && doc.data().isApproved === true) {
+                    document.getElementById('main-section').classList.remove('hidden');
+                    document.getElementById('courier-name').innerText = user.displayName;
+                } else {
+                    // Если курьера нет в базе или он не одобрен
+                    document.getElementById('wait-section').classList.remove('hidden');
+                    
+                    // Автоматически добавляем его в базу "на проверку", чтобы ты его видел
+                    db.collection("staff").doc(user.uid).set({
+                        name: user.displayName,
+                        email: user.email,
+                        isApproved: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                }
+            });
+        }
+
+        function login() {
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        }
+
+        function toggleShift() {
+            const btn = document.getElementById('shift-btn');
+            const label = document.getElementById('shift-label');
+            const isOn = btn.innerText === "ЗАВЕРШИТЬ СМЕНУ";
+
+            if (!isOn) {
+                btn.innerText = "ЗАВЕРШИТЬ СМЕНУ";
+                btn.classList.replace('bg-black', 'bg-red-500');
+                label.innerText = "На смене";
+                label.classList.replace('text-red-500', 'text-green-500');
+            } else {
+                btn.innerText = "НАЧАТЬ СМЕНУ";
+                btn.classList.replace('bg-red-500', 'bg-black');
+                label.innerText = "Вне смены";
+                label.classList.replace('text-green-500', 'text-red-500');
+            }
+        }
+    </script>
+</body>
+</html>
