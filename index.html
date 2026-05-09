@@ -10,19 +10,60 @@
         :root { --bg: #ffffff; --text: #000000; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
         
-        .slide-up { transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
-        .slide-up.active { transform: translateY(0); }
-        
+        /* Анимации */
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
         .error-shake { animation: shake 0.4s ease-in-out; border-color: #ff4b4b !important; }
 
         @keyframes digit-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); color: #22c55e; } }
         .success-bounce { animation: digit-bounce 0.6s ease-in-out; }
+
+        .slide-up { transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
+        .slide-up.active { transform: translateY(0); }
+        
+        .hidden { display: none !important; }
+        .login-btn { @apply w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border transition-all active:scale-95; }
     </style>
 </head>
 <body>
 
-    <div id="app-interface">
+    <div id="screen-login" class="flex flex-col items-center justify-center min-h-screen p-8 bg-white">
+        <div class="text-center mb-10">
+            <h1 class="text-6xl font-black italic tracking-tighter">RX</h1>
+            <p class="text-[10px] font-bold uppercase tracking-[0.4em] mt-2 opacity-30">пос. Реттиховка</p>
+        </div>
+
+        <div class="w-full max-w-xs space-y-3">
+            <div class="mb-4">
+                <input id="email-input" type="email" placeholder="Ваша почта" 
+                       class="w-full p-5 bg-zinc-50 rounded-2xl border-2 border-transparent focus:border-black outline-none font-bold transition-all mb-2">
+                <button onclick="handleAuthNext()" class="w-full bg-black text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Продолжить</button>
+            </div>
+
+            <div class="flex items-center gap-2 opacity-10 my-4">
+                <hr class="flex-grow border-black"> <span class="text-[10px] font-black">ИЛИ</span> <hr class="flex-grow border-black">
+            </div>
+
+            <button onclick="socialLogin('Google')" class="login-btn bg-white border-zinc-200">
+                <img src="https://www.google.com/favicon.ico" class="w-4 h-4"> Google
+            </button>
+            <button onclick="socialLogin('Apple ID')" class="login-btn bg-black text-white border-black">
+                <span class="text-lg"></span> Apple ID
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-sms" class="hidden flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <button onclick="showLogin()" class="absolute top-10 left-8 text-xs font-black opacity-30 uppercase tracking-widest">← Назад</button>
+        <h2 class="text-2xl font-black mb-2 uppercase italic">Введите код</h2>
+        <p id="sms-info" class="text-xs opacity-40 mb-10">Код отправлен на ваше устройство</p>
+        
+        <input id="sms-input" type="number" placeholder="0000" 
+               class="w-full max-w-[200px] bg-zinc-100 p-5 rounded-[25px] text-center text-4xl font-black tracking-[0.3em] outline-none border-2 border-transparent transition-all">
+        
+        <button onclick="verifySMS()" class="mt-10 bg-black text-white w-full max-w-xs py-5 rounded-full font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Подтвердить</button>
+    </div>
+
+    <div id="screen-main" class="hidden min-h-screen">
         <header class="p-6 flex justify-between items-center sticky top-0 bg-white/80 backdrop-blur-md z-40">
             <div class="font-black italic text-2xl tracking-tighter">RX</div>
             <div class="flex gap-4">
@@ -34,51 +75,39 @@
         </header>
 
         <main class="p-6">
-            <div class="mb-8">
-                <h2 class="text-xs font-black opacity-30 uppercase tracking-[0.3em]">Ваш регион</h2>
-                <p class="font-bold">пос. Реттиховка</p>
-            </div>
-
+            <p class="text-[10px] font-black opacity-30 mb-4 uppercase tracking-widest">Доставка в Реттиховке</p>
             <div class="space-y-4">
-                <div onclick="addToCart('Заказ из магазина', 500)" class="h-44 bg-black text-white rounded-[35px] p-8 flex flex-col justify-end active:scale-95 transition-all cursor-pointer">
+                <div onclick="addToCart('Пицца из печи', 650)" class="h-44 bg-black text-white rounded-[35px] p-8 flex flex-col justify-end active:scale-95 transition-all cursor-pointer">
                     <p class="text-3xl font-black italic">🍕 ЕДА</p>
-                    <p class="text-[10px] opacity-50 uppercase font-bold">Доставка по поселку</p>
+                    <p class="text-[10px] opacity-50 uppercase font-bold">Горячая доставка</p>
                 </div>
-                <div onclick="alert('Скоро добавим забор из ОЗОН в Черниговке!')" class="h-44 bg-zinc-100 rounded-[35px] p-8 flex flex-col justify-end border border-zinc-200 active:scale-95 transition-all cursor-pointer">
-                    <p class="text-3xl font-black italic text-black">📦 ОЗОН</p>
-                    <p class="text-[10px] text-zinc-500 uppercase font-bold">Привезем ваш заказ</p>
+                <div onclick="addToCart('Заказ ОЗОН', 150)" class="h-44 bg-zinc-100 rounded-[35px] p-8 flex flex-col justify-end border border-zinc-200 active:scale-95 transition-all cursor-pointer text-black">
+                    <p class="text-3xl font-black italic">📦 ОЗОН</p>
+                    <p class="text-[10px] opacity-40 uppercase font-bold">Заберем за вас</p>
                 </div>
             </div>
         </main>
     </div>
 
     <div id="modal-profile" class="slide-up fixed inset-0 bg-white z-[70] p-8">
-        <div class="flex justify-between items-center mb-12">
+        <div class="flex justify-between items-center mb-10">
             <h2 class="text-3xl font-black italic tracking-tighter">ПРОФИЛЬ</h2>
             <button onclick="closeModals()" class="text-4xl">×</button>
         </div>
-        
-        <div class="space-y-8">
-            <div class="flex items-center gap-4 bg-zinc-50 p-6 rounded-[30px]">
-                <div class="w-16 h-16 rounded-full bg-zinc-200 overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bogdan" alt="Ava">
-                </div>
-                <div>
-                    <p class="font-black text-xl italic">Богдан</p>
-                    <p class="text-[10px] font-bold text-orange-500 uppercase">пос. Реттиховка</p>
-                    <p class="text-[10px] opacity-40 uppercase">Приморский край</p>
-                </div>
+        <div class="bg-zinc-50 p-6 rounded-[30px] flex items-center gap-4 mb-8">
+            <div class="w-14 h-14 bg-zinc-200 rounded-full overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bogdan" alt="Ava">
             </div>
-
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="setTheme('light')" class="p-4 bg-white border border-zinc-200 rounded-2xl text-[10px] font-black">СВЕТЛАЯ</button>
-                <button onclick="setTheme('dark')" class="p-4 bg-zinc-800 text-white rounded-2xl text-[10px] font-black">ТЕМНАЯ</button>
-                <button onclick="setTheme('black')" class="p-4 bg-black text-white rounded-2xl text-[10px] font-black">ЧЕРНАЯ (OLED)</button>
-                <button onclick="setTheme('orange')" class="p-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black">ОРАНЖЕВАЯ</button>
+            <div>
+                <p class="font-black">Богдан</p>
+                <p class="text-[10px] font-bold text-orange-500 uppercase">Реттиховка, Приморский край</p>
             </div>
-            
-            <button onclick="confirm('Удалить аккаунт?')" class="w-full text-red-500 font-bold text-xs p-4">Удалить аккаунт</button>
         </div>
+        <div class="grid grid-cols-2 gap-2 mb-10">
+            <button onclick="setTheme('light')" class="p-4 bg-zinc-100 rounded-2xl text-[10px] font-black uppercase">Светлая</button>
+            <button onclick="setTheme('dark')" class="p-4 bg-zinc-800 text-white rounded-2xl text-[10px] font-black uppercase">Темная</button>
+        </div>
+        <button onclick="deleteAccount()" class="w-full text-red-500 font-bold text-xs p-4 uppercase tracking-widest">Удалить аккаунт</button>
     </div>
 
     <div id="modal-cart" class="slide-up fixed inset-0 bg-white z-[60] p-8 flex flex-col">
@@ -86,43 +115,55 @@
             <h2 class="text-3xl font-black italic tracking-tighter">КОРЗИНА</h2>
             <button onclick="closeModals()" class="text-4xl">×</button>
         </div>
-        
         <div id="cart-list" class="flex-grow space-y-4 overflow-y-auto mb-6"></div>
-
-        <div class="space-y-6">
-            <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                <p class="text-[10px] font-black text-orange-600 uppercase mb-1">Зона доставки</p>
-                <p class="text-xs font-bold text-orange-900">Только в пределах Реттиховки!</p>
+        <div class="p-6 bg-zinc-50 rounded-[35px] space-y-4">
+            <input id="addr-input" type="text" placeholder="Улица и дом в Реттиховке" class="w-full bg-white p-5 rounded-2xl outline-none font-bold text-sm border border-zinc-200 focus:border-black">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black opacity-30 uppercase">Итого</span>
+                <span id="total-price" class="text-3xl font-black italic">0 ₽</span>
             </div>
-
-            <div>
-                <p class="text-[10px] font-black opacity-30 mb-2 uppercase">Улица и номер дома</p>
-                <input id="addr-input" type="text" placeholder="Пример: ул. Центральная, 5" class="w-full bg-zinc-50 p-5 rounded-[25px] outline-none font-bold text-sm border border-zinc-100 focus:border-black transition-all">
-            </div>
-
-            <div class="flex justify-between items-end mb-2">
-                <p class="text-[10px] opacity-40 font-bold uppercase">Сумма</p>
-                <p id="total-price" class="text-4xl font-black italic">0 ₽</p>
-            </div>
-            
-            <button onclick="finishOrder()" class="w-full bg-black text-white py-6 rounded-full font-black uppercase text-xs tracking-widest active:scale-95">Оформить заказ</button>
+            <button onclick="alert('Заказ оформлен!')" class="w-full bg-black text-white py-5 rounded-full font-black uppercase text-[10px] tracking-widest">Оформить</button>
         </div>
     </div>
 
     <script>
         let cart = [];
 
-        function addToCart(name, price) {
-            cart.push({name, price});
-            renderCart();
-            openCart();
+        function handleAuthNext() {
+            const email = document.getElementById('email-input').value;
+            if (email.includes('@')) {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-sms').classList.remove('hidden');
+                document.getElementById('sms-info').innerText = "Код отправлен на " + email;
+            } else {
+                document.getElementById('email-input').classList.add('error-shake');
+                setTimeout(() => document.getElementById('email-input').classList.remove('error-shake'), 400);
+            }
         }
 
-        function renderCart() {
-            const list = document.getElementById('cart-list');
-            list.innerHTML = cart.map(i => `<div class="flex justify-between items-center p-5 bg-zinc-50 rounded-[25px] font-bold text-sm"><span>${i.name}</span><span>${i.price} ₽</span></div>`).join('');
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            document.getElementById('total-price').innerText = total + ' ₽';
+        function verifySMS() {
+            const input = document.getElementById('sms-input');
+            if (input.value === "1234") {
+                input.classList.add('success-bounce');
+                setTimeout(() => {
+                    document.getElementById('screen-sms').classList.add('hidden');
+                    document.getElementById('screen-main').classList.remove('hidden');
+                }, 800);
+            } else {
+                input.classList.add('error-shake');
+                setTimeout(() => input.classList.remove('error-shake'), 400);
+            }
+        }
+
+        function socialLogin(name) {
+            alert("Вход через " + name);
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-main').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('screen-sms').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
         }
 
         function openCart() { document.getElementById('modal-cart').classList.add('active'); }
@@ -132,21 +173,26 @@
             document.getElementById('modal-profile').classList.remove('active');
         }
 
-        function finishOrder() {
-            const addr = document.getElementById('addr-input').value;
-            if (addr.length < 5) {
-                document.getElementById('addr-input').classList.add('error-shake');
-                setTimeout(() => document.getElementById('addr-input').classList.remove('error-shake'), 400);
-                return alert('Пожалуйста, введите точный адрес в Реттиховке!');
+        function addToCart(name, price) {
+            cart.push({name, price});
+            const list = document.getElementById('cart-list');
+            list.innerHTML = cart.map(i => `<div class="p-5 bg-zinc-50 rounded-2xl flex justify-between font-bold"><span>${i.name}</span><span>${i.price} ₽</span></div>`).join('');
+            document.getElementById('total-price').innerText = cart.reduce((s, i) => s + i.price, 0) + ' ₽';
+            openCart();
+        }
+
+        function deleteAccount() {
+            if (confirm("Вы хотите удалить аккаунт?")) {
+                if (confirm("Вы ТОЧНО хотите удалить аккаунт? Это действие нельзя отменить.")) {
+                    localStorage.clear();
+                    location.reload();
+                }
             }
-            alert('Заказ принят! Богдан уже проверяет маршрут по Реттиховке.');
         }
 
         function setTheme(t) {
-            if(t === 'dark') { document.body.style.backgroundColor = '#1c1c1e'; document.body.style.color = '#fff'; }
-            else if(t === 'black') { document.body.style.backgroundColor = '#000'; document.body.style.color = '#fff'; }
-            else if(t === 'orange') { document.body.style.backgroundColor = '#ff9500'; document.body.style.color = '#fff'; }
-            else { document.body.style.backgroundColor = '#fff'; document.body.style.color = '#000'; }
+            document.body.style.backgroundColor = (t === 'dark') ? '#121212' : '#ffffff';
+            document.body.style.color = (t === 'dark') ? '#ffffff' : '#000000';
             closeModals();
         }
     </script>
