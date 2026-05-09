@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реттиховка Экспресс | Доставка</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+            authDomain: "deliverygov11.firebaseapp.com",
+            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
+            projectId: "deliverygov11",
+            storageBucket: "deliverygov11.firebasestorage.app",
+            messagingSenderId: "562994407235",
+            appId: "1:562994407235:web:dde4e7438511fa1bc871f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const provider = new GoogleAuthProvider();
+
+        // Логика приложения будет тут
+        window.login = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Ошибка входа:", error);
+                alert("Ошибка входа! Проверь настройки Google Auth в Firebase");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-screen').classList.remove('hidden');
+                document.getElementById('user-name').innerText = user.displayName;
+                
+                const userRef = ref(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val() || { rank: 1, balance: 0, address: "" };
+                    document.getElementById('user-rank').innerText = data.rank;
+                    document.getElementById('user-balance').innerText = data.balance + "₽";
+                    document.getElementById('address-input').value = data.address || "";
+                    if (!data.address) document.getElementById('addr-err').classList.remove('hidden');
+                    else document.getElementById('addr-err').classList.add('hidden');
+                });
+            }
+        });
+
+        window.makeOrder = () => {
+            const addr = document.getElementById('address-input').value;
+            const type = document.getElementById('order-type').value;
+            const pay = document.getElementById('pay-method').value;
+
+            if (addr.length < 5) return alert("Введите адрес в Реттиховке!");
+            if (type === 'door' && pay === 'cash') {
+                return alert("ОШИБКА: Оплата наличными невозможна при доставке до двери! Только карта.");
+            }
+            alert("Заказ отправлен Богдану!");
+        };
+    </script>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: sans-serif; }
+        .btn-yellow { background-color: #facc15; color: black; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="auth-screen" class="flex flex-col items-center justify-center h-screen p-6 text-center">
+        <h1 class="text-4xl font-bold mb-2 text-yellow-400">Реттиховка Экспресс</h1>
+        <p class="mb-8 text-gray-400">Доставка еды и посылок по твоему селу</p>
+        <div class="mb-4 flex items-center gap-2">
+            <input type="checkbox" id="tos" class="w-5 h-5">
+            <label for="tos" class="text-blue-400 underline cursor-pointer">Я согласен с правилами сервиса</label>
+        </div>
+        <button onclick="login()" class="btn-yellow px-8 py-4 rounded-xl text-xl">Войти через Google</button>
+    </div>
+
+    <div id="main-screen" class="hidden p-4">
+        <header class="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
+            <div>
+                <p class="text-sm text-gray-400">Привет,</p>
+                <h2 id="user-name" class="font-bold text-xl text-yellow-400">...</h2>
+            </div>
+            <div class="text-right">
+                <p>Ранг: <span id="user-rank">1</span></p>
+                <p class="font-bold text-green-400" id="user-balance">0₽</p>
+            </div>
+        </header>
+
+        <div class="bg-gray-800 p-4 rounded-xl mb-6">
+            <label class="block mb-2 text-sm">Ваш адрес в Реттиховке:</label>
+            <input id="address-input" type="text" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg" placeholder="Напр: ул. Центральная, 5">
+            <p id="addr-err" class="text-red-500 text-xs mt-1 hidden">⚠️ Без адреса заказ невозможен!</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-800 p-6 rounded-2xl text-center border-2 border-yellow-400 cursor-pointer">
+                <span class="text-3xl">🍕</span><br>Еда
+            </div>
+            <div class="bg-gray-800 p-6 rounded-2xl text-center opacity-50">
+                <span class="text-3xl">📦</span><br>Озон (с 20 ранга)
+            </div>
+        </div>
+
+        <div class="bg-gray-800 p-4 rounded-xl">
+            <h3 class="font-bold mb-4">Оформить заказ:</h3>
+            <select id="order-type" class="w-full p-3 bg-gray-900 mb-3 rounded-lg">
+                <option value="hands">В руки курьеру</option>
+                <option value="door">Оставить у двери (Нужно фото!)</option>
+            </select>
+            <select id="pay-method" class="w-full p-3 bg-gray-900 mb-4 rounded-lg">
+                <option value="card">Картой онлайн (СБП)</option>
+                <option value="cash">Наличными при получении</option>
+            </select>
+            <button onclick="makeOrder()" class="btn-yellow w-full py-4 rounded-xl text-lg uppercase">Заказать</button>
+            <p class="text-[10px] text-gray-500 mt-2 text-center">Выбирая доставку до двери, вы соглашаетесь с риском кражи.</p>
+        </div>
+    </div>
+</body>
+</html>
