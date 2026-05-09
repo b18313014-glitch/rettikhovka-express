@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Admin — Пульт управления</title>
+    <title>RX Admin — Панель Управления</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -12,74 +12,130 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .order-card { @apply bg-white p-6 rounded-[30px] border border-zinc-100 shadow-sm mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500; }
-        .hidden { display: none !important; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #000; 
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* АНИМАЦИИ */
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .slide-up { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(40px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        .order-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            border-color: #f97316;
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-btn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glass-btn:active { transform: scale(0.95); }
+
+        /* Кастомный скролл */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body class="p-6">
 
-    <div id="auth-section" class="flex flex-col items-center justify-center min-h-[80vh]">
-        <div class="w-20 h-20 bg-orange-500 rounded-3xl mb-8 flex items-center justify-center text-4xl shadow-xl">🏠</div>
-        <h1 class="text-3xl font-black italic mb-2">RX ADMIN</h1>
-        <p class="text-xs opacity-40 font-bold uppercase tracking-widest mb-8">Реттиховка Экспресс</p>
-        <button onclick="login()" class="bg-black text-white px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Войти как Владелец</button>
+    <div id="auth-section" class="flex flex-col items-center justify-center min-h-[90vh] fade-in">
+        <div class="relative mb-8">
+            <div class="absolute -inset-4 bg-orange-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+            <div class="relative w-24 h-24 bg-orange-500 rounded-[30px] flex items-center justify-center text-5xl shadow-2xl">🏠</div>
+        </div>
+        <h1 class="text-4xl font-black italic tracking-tighter mb-2">RX ADMIN</h1>
+        <p class="text-[10px] font-bold opacity-30 uppercase tracking-[0.4em] mb-12 text-center">Система управления Реттиховкой</p>
+        
+        <button onclick="login()" class="glass-btn px-12 py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest">
+            Войти как Богдан
+        </button>
     </div>
 
-    <div id="admin-panel" class="hidden">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h2 class="text-3xl font-black italic tracking-tighter uppercase">Панель</h2>
-                <p id="admin-status" class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Администратор: Богдан</p>
+    <div id="admin-panel" class="hidden max-w-2xl mx-auto">
+        <header class="flex justify-between items-center mb-12 slide-up" style="animation-delay: 0.1s">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl overflow-hidden border-2 border-orange-500 shadow-lg shadow-orange-500/20">
+                    <img id="user-avatar" src="" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">Штаб</h2>
+                    <p class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Администратор Онлайн</p>
+                </div>
             </div>
-            <button onclick="logout()" class="text-[10px] font-black opacity-30 uppercase">Выйти</button>
+            <button onclick="logout()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-xl opacity-40 hover:opacity-100 transition-all">✕</button>
         </header>
 
-        <div class="grid grid-cols-2 gap-4 mb-10">
-            <div class="bg-white p-6 rounded-[35px] border border-zinc-100">
-                <p class="text-[10px] font-black opacity-30 uppercase mb-1">Всего заказов</p>
-                <p id="stat-count" class="text-4xl font-black italic">0</p>
+        <div class="grid grid-cols-2 gap-4 mb-12 slide-up" style="animation-delay: 0.2s">
+            <div class="bg-zinc-900/50 p-6 rounded-[35px] border border-white/5">
+                <p class="text-[9px] font-black opacity-30 uppercase mb-2 tracking-widest">Заказы</p>
+                <p id="stat-count" class="text-5xl font-black italic tracking-tighter">0</p>
             </div>
-            <div class="bg-white p-6 rounded-[35px] border border-zinc-100">
-                <p class="text-[10px] font-black opacity-30 uppercase mb-1">Выручка</p>
-                <p id="stat-money" class="text-4xl font-black italic text-green-600">0 ₽</p>
+            <div class="bg-zinc-900/50 p-6 rounded-[35px] border border-white/5">
+                <p class="text-[9px] font-black opacity-30 uppercase mb-2 tracking-widest">Касса (₽)</p>
+                <p id="stat-money" class="text-5xl font-black italic tracking-tighter text-orange-500">0</p>
             </div>
         </div>
 
-        <div>
-            <h3 class="text-sm font-black italic uppercase mb-6 flex items-center gap-2">
-                Активные заказы <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </h3>
-            <div id="orders-container">
-                <div class="py-20 text-center opacity-20 italic font-bold">Ожидание новых заказов из Реттиховки...</div>
+        <div class="slide-up" style="animation-delay: 0.3s">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xs font-black uppercase tracking-widest opacity-50 italic">Активные задания</h3>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                    <span class="text-[9px] font-bold opacity-30 uppercase">Live</span>
+                </div>
+            </div>
+            
+            <div id="orders-container" class="space-y-4">
+                <div class="py-20 text-center opacity-10 italic font-black text-xl uppercase tracking-widest">Пусто</div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- ВСТАВЬ СВОЙ КОНФИГ НИЖЕ ---
+        // ТВОИ ЛИЧНЫЕ КЛЮЧИ ИЗ СООБЩЕНИЯ
         const firebaseConfig = {
-            apiKey: "ТВОЙ_API_KEY",
+            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
+            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
             projectId: "deliverygov11",
-            storageBucket: "deliverygov11.appspot.com",
-            messagingSenderId: "ЧИСЛА",
-            appId: "ЧИСЛА"
+            storageBucket: "deliverygov11.firebasestorage.app",
+            messagingSenderId: "562994407235",
+            appId: "1:562994407235:web:dde4e7438511fa1bc871f6",
+            measurementId: "G-0KDKG67YQL"
         };
-        // -------------------------------
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const ADMIN_EMAIL = "b18313014@gmail.com";
 
+        // ПРОВЕРКА ВХОДА
         auth.onAuthStateChanged((user) => {
-            if (user && user.email === ADMIN_EMAIL) {
+            if (user && user.email === "b18313014@gmail.com") {
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('user-avatar').src = user.photoURL;
                 startListeningOrders();
             } else if (user) {
-                alert("Доступ закрыт! Это панель только для Богдана.");
+                alert("Доступ закрыт! Только для Богдана.");
                 auth.signOut();
             }
         });
@@ -91,7 +147,7 @@
 
         function logout() { auth.signOut(); location.reload(); }
 
-        // СЛУШАЕМ БАЗУ ДАННЫХ В РЕАЛЬНОМ ВРЕМЕНИ
+        // СЛУШАЕМ БАЗУ Firestore (С анимацией новых карточек)
         function startListeningOrders() {
             db.collection("orders").orderBy("createdAt", "desc")
             .onSnapshot((snapshot) => {
@@ -99,45 +155,41 @@
                 const statCount = document.getElementById('stat-count');
                 const statMoney = document.getElementById('stat-money');
                 
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="py-20 text-center opacity-20 italic font-bold">Заказов пока нет</div>`;
-                    return;
-                }
-
                 let html = "";
                 let totalCash = 0;
                 
                 snapshot.forEach((doc) => {
                     const order = doc.data();
-                    totalCash += order.price || 0;
+                    totalCash += Number(order.price) || 0;
                     
                     html += `
-                        <div class="order-card">
-                            <div class="flex justify-between items-start mb-4">
-                                <span class="bg-zinc-100 px-3 py-1 rounded-full text-[10px] font-black uppercase">№ ${doc.id.slice(0,5)}</span>
-                                <span class="text-green-600 font-black italic">${order.price} ₽</span>
+                        <div class="order-card p-8 rounded-[40px] slide-up">
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="bg-white/5 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest border border-white/5">Order ${doc.id.slice(0,4)}</span>
+                                <span class="text-orange-500 font-black italic text-2xl">${order.price} ₽</span>
                             </div>
-                            <p class="font-black text-xl mb-1">${order.item}</p>
-                            <p class="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-tighter">📍 ${order.address}</p>
-                            <div class="flex gap-2">
-                                <button onclick="deleteOrder('${doc.id}')" class="flex-grow py-3 bg-zinc-100 rounded-xl text-[10px] font-black uppercase active:bg-red-50 text-red-500">Удалить</button>
-                                <button onclick="alert('Курьер уведомлен!')" class="flex-grow py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase">Выполнить</button>
+                            <h4 class="text-2xl font-black italic uppercase mb-2 tracking-tighter">${order.item || order.items}</h4>
+                            <p class="text-zinc-500 text-xs font-bold uppercase mb-8">📍 ${order.address}</p>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="deleteOrder('${doc.id}')" class="flex-grow py-4 bg-white/5 hover:bg-red-500/10 hover:text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Удалить</button>
+                                <button onclick="alert('Курьер вызван!')" class="flex-grow py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all">Выполнить</button>
                             </div>
                         </div>
                     `;
                 });
 
-                container.innerHTML = html;
+                container.innerHTML = html || `<div class="py-20 text-center opacity-10 italic font-black text-xl uppercase tracking-widest">Пусто</div>`;
                 statCount.innerText = snapshot.size;
-                statMoney.innerText = totalCash + " ₽";
+                statMoney.innerText = totalCash;
             });
         }
 
         function deleteOrder(id) {
-            if(confirm("Удалить заказ?")) {
+            if(confirm("Заказ выполнен или отменен?")) {
                 db.collection("orders").doc(id).delete();
             }
         }
     </script>
 </body>
-  </html>
+</html>
