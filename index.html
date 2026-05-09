@@ -2,198 +2,134 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX - Реттиховка Экспресс</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реттиховка Экспресс — Доставка</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        :root { --bg: #ffffff; --text: #000000; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
-        
-        /* Анимации */
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        .error-shake { animation: shake 0.4s ease-in-out; border-color: #ff4b4b !important; }
-
-        @keyframes digit-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); color: #22c55e; } }
-        .success-bounce { animation: digit-bounce 0.6s ease-in-out; }
-
-        .slide-up { transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
-        .slide-up.active { transform: translateY(0); }
-        
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; }
+        .slide-up { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .orange-glow { box-shadow: 0 0 30px rgba(249, 115, 22, 0.2); }
         .hidden { display: none !important; }
-        .login-btn { @apply w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border transition-all active:scale-95; }
     </style>
 </head>
-<body>
+<body class="p-6">
 
-    <div id="screen-login" class="flex flex-col items-center justify-center min-h-screen p-8 bg-white">
-        <div class="text-center mb-10">
-            <h1 class="text-6xl font-black italic tracking-tighter">RX</h1>
-            <p class="text-[10px] font-bold uppercase tracking-[0.4em] mt-2 opacity-30">пос. Реттиховка</p>
+    <header class="flex justify-between items-center mb-10 slide-up">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter uppercase">RX Delivery</h1>
+            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Реттиховка • Экспресс</p>
         </div>
-
-        <div class="w-full max-w-xs space-y-3">
-            <div class="mb-4">
-                <input id="email-input" type="email" placeholder="Ваша почта" 
-                       class="w-full p-5 bg-zinc-50 rounded-2xl border-2 border-transparent focus:border-black outline-none font-bold transition-all mb-2">
-                <button onclick="handleAuthNext()" class="w-full bg-black text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Продолжить</button>
-            </div>
-
-            <div class="flex items-center gap-2 opacity-10 my-4">
-                <hr class="flex-grow border-black"> <span class="text-[10px] font-black">ИЛИ</span> <hr class="flex-grow border-black">
-            </div>
-
-            <button onclick="socialLogin('Google')" class="login-btn bg-white border-zinc-200">
-                <img src="https://www.google.com/favicon.ico" class="w-4 h-4"> Google
-            </button>
-            <button onclick="socialLogin('Apple ID')" class="login-btn bg-black text-white border-black">
-                <span class="text-lg"></span> Apple ID
-            </button>
+        <div id="user-info" class="hidden flex items-center gap-3">
+            <img id="user-avatar" src="" class="w-10 h-10 rounded-xl border border-white/10">
+            <button onclick="auth.signOut(); location.reload()" class="opacity-30 text-[10px] font-bold uppercase">Выйти</button>
         </div>
-    </div>
+        <button id="login-btn" onclick="login()" class="bg-white text-black px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest">Войти</button>
+    </header>
 
-    <div id="screen-sms" class="hidden flex flex-col items-center justify-center min-h-screen p-8 text-center">
-        <button onclick="showLogin()" class="absolute top-10 left-8 text-xs font-black opacity-30 uppercase tracking-widest">← Назад</button>
-        <h2 class="text-2xl font-black mb-2 uppercase italic">Введите код</h2>
-        <p id="sms-info" class="text-xs opacity-40 mb-10">Код отправлен на ваше устройство</p>
+    <div class="grid grid-cols-1 gap-4 mb-32 slide-up" style="animation-delay: 0.1s">
+        <h3 class="text-xs font-black uppercase opacity-30 tracking-widest mb-2">Меню на сегодня</h3>
         
-        <input id="sms-input" type="number" placeholder="0000" 
-               class="w-full max-w-[200px] bg-zinc-100 p-5 rounded-[25px] text-center text-4xl font-black tracking-[0.3em] outline-none border-2 border-transparent transition-all">
-        
-        <button onclick="verifySMS()" class="mt-10 bg-black text-white w-full max-w-xs py-5 rounded-full font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Подтвердить</button>
-    </div>
-
-    <div id="screen-main" class="hidden min-h-screen">
-        <header class="p-6 flex justify-between items-center sticky top-0 bg-white/80 backdrop-blur-md z-40">
-            <div class="font-black italic text-2xl tracking-tighter">RX</div>
-            <div class="flex gap-4">
-                <button onclick="openCart()" class="text-2xl">🛒</button>
-                <button onclick="openProfile()" class="w-10 h-10 rounded-full bg-zinc-100 overflow-hidden border border-zinc-200">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bogdan" alt="Ava">
-                </button>
-            </div>
-        </header>
-
-        <main class="p-6">
-            <p class="text-[10px] font-black opacity-30 mb-4 uppercase tracking-widest">Доставка в Реттиховке</p>
-            <div class="space-y-4">
-                <div onclick="addToCart('Пицца из печи', 650)" class="h-44 bg-black text-white rounded-[35px] p-8 flex flex-col justify-end active:scale-95 transition-all cursor-pointer">
-                    <p class="text-3xl font-black italic">🍕 ЕДА</p>
-                    <p class="text-[10px] opacity-50 uppercase font-bold">Горячая доставка</p>
-                </div>
-                <div onclick="addToCart('Заказ ОЗОН', 150)" class="h-44 bg-zinc-100 rounded-[35px] p-8 flex flex-col justify-end border border-zinc-200 active:scale-95 transition-all cursor-pointer text-black">
-                    <p class="text-3xl font-black italic">📦 ОЗОН</p>
-                    <p class="text-[10px] opacity-40 uppercase font-bold">Заберем за вас</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div id="modal-profile" class="slide-up fixed inset-0 bg-white z-[70] p-8">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-black italic tracking-tighter">ПРОФИЛЬ</h2>
-            <button onclick="closeModals()" class="text-4xl">×</button>
-        </div>
-        <div class="bg-zinc-50 p-6 rounded-[30px] flex items-center gap-4 mb-8">
-            <div class="w-14 h-14 bg-zinc-200 rounded-full overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bogdan" alt="Ava">
-            </div>
+        <div class="glass p-6 rounded-[35px] flex justify-between items-center">
             <div>
-                <p class="font-black">Богдан</p>
-                <p class="text-[10px] font-bold text-orange-500 uppercase">Реттиховка, Приморский край</p>
+                <h4 class="text-xl font-black italic uppercase">Пицца «Реттиховская»</h4>
+                <p class="text-orange-500 font-black tracking-tighter">650 ₽</p>
             </div>
+            <button onclick="addToCart('Пицца Реттиховская', 650)" class="w-12 h-12 bg-white text-black rounded-2xl flex items-center justify-center text-xl font-bold">+</button>
         </div>
-        <div class="grid grid-cols-2 gap-2 mb-10">
-            <button onclick="setTheme('light')" class="p-4 bg-zinc-100 rounded-2xl text-[10px] font-black uppercase">Светлая</button>
-            <button onclick="setTheme('dark')" class="p-4 bg-zinc-800 text-white rounded-2xl text-[10px] font-black uppercase">Темная</button>
+
+        <div class="glass p-6 rounded-[35px] flex justify-between items-center">
+            <div>
+                <h4 class="text-xl font-black italic uppercase">Доставка из OZON</h4>
+                <p class="text-orange-500 font-black tracking-tighter">150 ₽</p>
+            </div>
+            <button onclick="addToCart('Доставка OZON', 150)" class="w-12 h-12 bg-white text-black rounded-2xl flex items-center justify-center text-xl font-bold">+</button>
         </div>
-        <button onclick="deleteAccount()" class="w-full text-red-500 font-bold text-xs p-4 uppercase tracking-widest">Удалить аккаунт</button>
     </div>
 
-    <div id="modal-cart" class="slide-up fixed inset-0 bg-white z-[60] p-8 flex flex-col">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-3xl font-black italic tracking-tighter">КОРЗИНА</h2>
-            <button onclick="closeModals()" class="text-4xl">×</button>
-        </div>
-        <div id="cart-list" class="flex-grow space-y-4 overflow-y-auto mb-6"></div>
-        <div class="p-6 bg-zinc-50 rounded-[35px] space-y-4">
-            <input id="addr-input" type="text" placeholder="Улица и дом в Реттиховке" class="w-full bg-white p-5 rounded-2xl outline-none font-bold text-sm border border-zinc-200 focus:border-black">
-            <div class="flex justify-between items-center">
-                <span class="text-[10px] font-black opacity-30 uppercase">Итого</span>
-                <span id="total-price" class="text-3xl font-black italic">0 ₽</span>
+    <div id="cart-panel" class="fixed bottom-8 left-6 right-6 glass p-8 rounded-[40px] orange-glow slide-up hidden" style="animation-delay: 0.2s">
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <p class="text-[10px] font-black opacity-30 uppercase tracking-widest mb-1">Ваш заказ</p>
+                <h2 id="cart-items-text" class="text-xl font-black italic uppercase leading-none">Корзина пуста</h2>
             </div>
-            <button onclick="alert('Заказ оформлен!')" class="w-full bg-black text-white py-5 rounded-full font-black uppercase text-[10px] tracking-widest">Оформить</button>
+            <p id="total-price" class="text-3xl font-black italic text-orange-500">0 ₽</p>
         </div>
+        
+        <input id="order-address" type="text" placeholder="Введите адрес в Реттиховке..." class="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 mb-4 text-sm font-bold outline-none focus:border-orange-500 transition-all">
+        
+        <button onclick="sendOrder()" class="w-full bg-orange-500 py-5 rounded-[25px] font-black uppercase text-[11px] tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 transition-all">Оформить доставку</button>
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+            authDomain: "deliverygov11.firebaseapp.com",
+            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
+            projectId: "deliverygov11",
+            storageBucket: "deliverygov11.firebasestorage.app",
+            messagingSenderId: "562994407235",
+            appId: "1:562994407235:web:dde4e7438511fa1bc871f6",
+            measurementId: "G-0KDKG67YQL"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
         let cart = [];
+        let total = 0;
 
-        function handleAuthNext() {
-            const email = document.getElementById('email-input').value;
-            if (email.includes('@')) {
-                document.getElementById('screen-login').classList.add('hidden');
-                document.getElementById('screen-sms').classList.remove('hidden');
-                document.getElementById('sms-info').innerText = "Код отправлен на " + email;
-            } else {
-                document.getElementById('email-input').classList.add('error-shake');
-                setTimeout(() => document.getElementById('email-input').classList.remove('error-shake'), 400);
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('login-btn').classList.add('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('user-avatar').src = user.photoURL;
             }
-        }
+        });
 
-        function verifySMS() {
-            const input = document.getElementById('sms-input');
-            if (input.value === "1234") {
-                input.classList.add('success-bounce');
-                setTimeout(() => {
-                    document.getElementById('screen-sms').classList.add('hidden');
-                    document.getElementById('screen-main').classList.remove('hidden');
-                }, 800);
-            } else {
-                input.classList.add('error-shake');
-                setTimeout(() => input.classList.remove('error-shake'), 400);
-            }
-        }
-
-        function socialLogin(name) {
-            alert("Вход через " + name);
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('screen-main').classList.remove('hidden');
-        }
-
-        function showLogin() {
-            document.getElementById('screen-sms').classList.add('hidden');
-            document.getElementById('screen-login').classList.remove('hidden');
-        }
-
-        function openCart() { document.getElementById('modal-cart').classList.add('active'); }
-        function openProfile() { document.getElementById('modal-profile').classList.add('active'); }
-        function closeModals() {
-            document.getElementById('modal-cart').classList.remove('active');
-            document.getElementById('modal-profile').classList.remove('active');
-        }
+        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
         function addToCart(name, price) {
-            cart.push({name, price});
-            const list = document.getElementById('cart-list');
-            list.innerHTML = cart.map(i => `<div class="p-5 bg-zinc-50 rounded-2xl flex justify-between font-bold"><span>${i.name}</span><span>${i.price} ₽</span></div>`).join('');
-            document.getElementById('total-price').innerText = cart.reduce((s, i) => s + i.price, 0) + ' ₽';
-            openCart();
+            cart.push(name);
+            total += price;
+            updateCartUI();
         }
 
-        function deleteAccount() {
-            if (confirm("Вы хотите удалить аккаунт?")) {
-                if (confirm("Вы ТОЧНО хотите удалить аккаунт? Это действие нельзя отменить.")) {
-                    localStorage.clear();
-                    location.reload();
-                }
+        function updateCartUI() {
+            document.getElementById('cart-panel').classList.remove('hidden');
+            document.getElementById('cart-items-text').innerText = cart.join(', ');
+            document.getElementById('total-price').innerText = total + ' ₽';
+        }
+
+        async function sendOrder() {
+            const user = auth.currentUser;
+            const address = document.getElementById('order-address').value;
+
+            if (!user) return alert("Сначала войдите в аккаунт!");
+            if (address.length < 5) return alert("Введите точный адрес!");
+
+            try {
+                await db.collection("orders").add({
+                    items: cart.join(', '),
+                    price: total,
+                    address: address,
+                    customer: user.displayName,
+                    email: user.email,
+                    status: "new",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Заказ принят! Богдан и курьеры уже видят его.");
+                cart = []; total = 0;
+                location.reload();
+            } catch (e) {
+                alert("Ошибка: " + e.message);
             }
-        }
-
-        function setTheme(t) {
-            document.body.style.backgroundColor = (t === 'dark') ? '#121212' : '#ffffff';
-            document.body.style.color = (t === 'dark') ? '#ffffff' : '#000000';
-            closeModals();
         }
     </script>
 </body>
