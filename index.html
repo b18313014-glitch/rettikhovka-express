@@ -2,109 +2,101 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Delivery — Secure Core</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RX Delivery — Вход</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #000; overflow-x: hidden; }
-        .liquid-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(0,0,0,0.05); }
-        .slide-up { animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
+        
+        /* Тот самый Liquid Glass: очень маленький и центрированный */
+        .glass-box { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(0,0,0,0.05); 
+            width: 280px; /* Еще компактнее */
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
+
+        .input-rx { 
+            background: #f4f4f4; border: none; font-size: 11px; font-weight: 700; 
+            width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 8px;
+        }
+        .input-rx:focus { outline: none; background: #eee; }
+
+        .btn-black { 
+            background: #000; color: #fff; font-size: 9px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 1px; padding: 12px; 
+            border-radius: 12px; width: 100%; transition: 0.2s; 
+        }
+        .btn-black:active { transform: scale(0.97); }
+
+        .social-row { display: flex; gap: 8px; margin-top: 10px; }
+        .social-btn { 
+            border: 1px solid rgba(0,0,0,0.05); padding: 8px; border-radius: 10px; 
+            flex: 1; display: flex; justify-content: center; align-items: center;
+        }
+        .social-btn img { width: 14px; height: 14px; }
+
         .hidden { display: none !important; }
-        input { background: #f8f8f8; border: 1px solid transparent; transition: all 0.3s; }
-        input:focus { background: #fff; border-color: #000; outline: none; }
-        .rank-badge { background: #f3f3f3; color: #aaa; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
-        .rank-dev { background: #000 !important; color: #fff !important; }
+        .slide { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-6">
+<body>
 
-    <div class="fixed top-0 left-0 w-full h-full z-[-1]">
-        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-100 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-100 rounded-full blur-[120px]"></div>
-    </div>
-
-    <div id="auth-screen" class="w-full max-w-sm slide-up">
-        <div class="text-center mb-10">
-            <h1 class="text-5xl font-black italic tracking-tighter uppercase">RX</h1>
-            <p class="text-[10px] font-black opacity-20 uppercase tracking-[0.4em]">Система Безопасности</p>
+    <div class="flex flex-col items-center slide">
+        <div class="text-center mb-5">
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter">RX</h1>
+            <p class="text-[7px] font-black opacity-20 uppercase tracking-[0.3em]">Core Access</p>
         </div>
 
-        <div class="liquid-glass p-8 rounded-[45px] shadow-2xl space-y-4">
-            <div class="space-y-3">
-                <input id="email" type="email" placeholder="Почта" class="w-full p-5 rounded-2xl text-sm font-bold">
-                <input id="password" type="password" placeholder="Пароль" class="w-full p-5 rounded-2xl text-sm font-bold">
-                <button onclick="loginEmail()" class="w-full bg-black text-white p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Войти</button>
+        <div class="glass-box">
+            <div id="auth-fields">
+                <input id="email" type="email" placeholder="Почта" class="input-rx">
+                <div class="relative">
+                    <input id="password" type="password" placeholder="Пароль" class="input-rx">
+                    <button onclick="resetPass()" class="absolute right-3 top-3 text-[7px] font-black opacity-20 hover:opacity-100 uppercase">Забыл?</button>
+                </div>
+                <button onclick="loginEmail()" class="btn-black">Войти</button>
             </div>
 
-            <div class="flex items-center gap-4 py-2">
-                <div class="h-[1px] bg-black/5 flex-grow"></div>
-                <span class="text-[8px] font-black opacity-10 uppercase">или</span>
-                <div class="h-[1px] bg-black/5 flex-grow"></div>
+            <div id="phone-fields" class="hidden mt-2 pt-2 border-t border-black/5 slide">
+                <p class="text-[7px] font-black opacity-30 uppercase text-center mb-3 tracking-widest">Нужно подтверждение</p>
+                <div id="recaptcha-container"></div>
+                <input id="phone-number" type="tel" placeholder="+7 900 000 00 00" class="input-rx text-center">
+                
+                <div id="sms-area" class="hidden">
+                    <input id="sms-code" type="number" placeholder="Код" class="input-rx text-center tracking-[0.5em] text-sm">
+                    <button onclick="confirmSms()" class="btn-black bg-orange-500">Подтвердить</button>
+                </div>
+                
+                <button id="btn-send" onclick="sendSms()" class="btn-black">Получить код</button>
             </div>
 
-            <div class="flex gap-3">
-                <button onclick="loginGoogle()" class="flex-1 flex items-center justify-center gap-2 border border-black/5 p-4 rounded-2xl hover:bg-white transition-all active:scale-90">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4">
-                    <span class="text-[9px] font-black uppercase">Google</span>
-                </button>
-                <button onclick="loginApple()" class="flex-1 flex items-center justify-center gap-2 border border-black/5 p-4 rounded-2xl hover:bg-white transition-all active:scale-90">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="w-3.5 mb-0.5">
-                    <span class="text-[9px] font-black uppercase">Apple</span>
-                </button>
-            </div>
-            <button onclick="registerEmail()" class="w-full text-center text-[9px] font-black opacity-20 uppercase mt-4 hover:opacity-100 transition-all tracking-widest">Создать аккаунт</button>
-        </div>
-    </div>
+            <div id="social-area">
+                <div class="flex items-center gap-2 my-3">
+                    <div class="h-[1px] bg-black/5 flex-grow"></div>
+                    <span class="text-[6px] font-black opacity-10 uppercase">или</span>
+                    <div class="h-[1px] bg-black/5 flex-grow"></div>
+                </div>
 
-    <div id="phone-screen" class="hidden w-full max-w-sm slide-up text-center">
-        <div class="liquid-glass p-10 rounded-[50px] shadow-2xl">
-            <div class="text-4xl mb-6">🛡️</div>
-            <h2 class="text-xl font-black uppercase mb-2">Защита Ядра</h2>
-            <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.2em] mb-8">Подтвердите номер телефона</p>
-            
-            <div id="recaptcha-container" class="mb-4"></div>
-            
-            <div id="phone-input-group">
-                <input id="phone-number" type="tel" placeholder="+7 900 000 00 00" class="w-full p-5 rounded-2xl bg-gray-50 text-center font-black text-lg mb-4">
-                <button onclick="sendSmsCode()" class="w-full bg-black text-white p-5 rounded-3xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Получить код</button>
+                <div class="social-row">
+                    <button onclick="loginGoogle()" class="social-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"></button>
+                    <button onclick="loginApple()" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"></button>
+                </div>
+                
+                <button onclick="regEmail()" class="text-[7px] font-black opacity-10 uppercase tracking-widest block w-full mt-4 hover:opacity-40 transition-all">Создать аккаунт</button>
             </div>
-
-            <div id="code-input-group" class="hidden">
-                <input id="sms-code" type="number" placeholder="000000" class="w-full p-5 rounded-2xl bg-gray-50 text-center font-black text-2xl tracking-[0.3em] mb-4">
-                <button onclick="verifySmsCode()" class="w-full bg-orange-500 text-white p-5 rounded-3xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Подтвердить</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="main-window" class="hidden w-full max-w-4xl slide-up">
-        <div class="flex justify-between items-center mb-10 px-4">
-            <h1 class="text-2xl font-black italic uppercase italic">RX Delivery</h1>
-            <div id="user-rank" class="rank-badge">Ранг 1</div>
-        </div>
-        
-        <div class="liquid-glass p-10 rounded-[50px] flex flex-wrap justify-center gap-6">
-            <button class="w-40 h-40 liquid-glass rounded-[40px] flex flex-col items-center justify-center gap-3 hover:scale-105 transition-all">
-                <span class="text-4xl">🍕</span>
-                <span class="text-[10px] font-black uppercase">Еда</span>
-            </button>
-            <button class="w-40 h-40 liquid-glass rounded-[40px] flex flex-col items-center justify-center gap-3 hover:scale-105 transition-all">
-                <span class="text-4xl">📦</span>
-                <span class="text-[10px] font-black uppercase">OZON</span>
-            </button>
-        </div>
-        
-        <div class="mt-10 text-center">
-            <button onclick="auth.signOut(); location.reload()" class="text-[9px] font-black opacity-20 uppercase tracking-widest hover:opacity-100 transition-all">Выйти из системы</button>
         </div>
     </div>
 
     <script>
-        // Инициализация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
@@ -117,55 +109,26 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let confirmationResult;
-
-        // Невидимая капча для SMS
+        let verId;
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
 
-        // МОНИТОРИНГ СОСТОЯНИЯ
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                const userRef = db.collection("users").doc(user.uid);
-                const doc = await userRef.get();
+                const doc = await db.collection("users").doc(user.uid).get();
                 const data = doc.data();
 
-                // 1. ПРОВЕРКА НА БАН
-                if (data && (data.isBlocked || data.rating <= 0)) {
-                    window.location.href = "support.html";
-                    return;
-                }
+                if (data && data.isBlocked) { window.location.href = "support.html"; return; }
 
-                // 2. ЗАЩИТА ЯДРА (Ранг 26)
-                if (data && data.rank >= 26 && user.email !== "b18313014@gmail.com") {
-                    await userRef.update({ isBlocked: true, blockReason: "Attempted Core Access" });
-                    window.location.href = "support.html";
-                    return;
-                }
-
-                // 3. ПРОВЕРКА ТЕЛЕФОНА (Твоя главная фишка)
+                // Если зашел, но телефон не привязан — показываем только поле телефона
                 if (!data || !data.phoneVerified) {
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('phone-screen').classList.remove('hidden');
-                    return;
-                }
-
-                // ВСЁ ОК — ПОКАЗЫВАЕМ МЕНЮ
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('phone-screen').classList.add('hidden');
-                document.getElementById('main-window').classList.remove('hidden');
-                
-                // Настройка Ранга
-                const rankBadge = document.getElementById('user-rank');
-                if (user.email === "b18313014@gmail.com") {
-                    rankBadge.innerText = "DEV / CORE";
-                    rankBadge.classList.add('rank-dev');
+                    document.getElementById('auth-fields').classList.add('hidden');
+                    document.getElementById('phone-fields').classList.remove('hidden');
                 } else {
-                    rankBadge.innerText = "Ранг " + (data.rank || 1);
+                    alert("Доступ разрешен!"); // Тут твой переход в приложение
                 }
             }
         });
 
-        // ФУНКЦИИ ВХОДА
         function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function loginApple() { auth.signInWithPopup(new firebase.auth.OAuthProvider('apple.com')); }
         
@@ -175,42 +138,36 @@
             auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
-        function registerEmail() {
+        function regEmail() {
             const e = document.getElementById('email').value;
             const p = document.getElementById('password').value;
             auth.createUserWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
-        // ЛОГИКА SMS
-        async function sendSmsCode() {
+        function sendSms() {
             const phone = document.getElementById('phone-number').value;
-            if (!phone) return alert("Введите номер!");
-            
-            // Проверка на бан телефона
-            const phoneBan = await db.collection("banned_phones").doc(phone).get();
-            if (phoneBan.exists) return alert("Этот номер заблокирован!");
-
-            auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
-                .then(res => {
-                    confirmationResult = res;
-                    document.getElementById('phone-input-group').classList.add('hidden');
-                    document.getElementById('code-input-group').classList.remove('hidden');
-                }).catch(err => alert(err.message));
+            auth.signInWithPhoneNumber(phone, window.recaptchaVerifier).then(res => {
+                verId = res;
+                document.getElementById('btn-send').classList.add('hidden');
+                document.getElementById('sms-area').classList.remove('hidden');
+            }).catch(err => alert(err.message));
         }
 
-        function verifySmsCode() {
+        function confirmSms() {
             const code = document.getElementById('sms-code').value;
-            confirmationResult.confirm(code).then(async (result) => {
-                // Привязываем телефон к профилю в базе
+            verId.confirm(code).then(async () => {
                 await db.collection("users").doc(auth.currentUser.uid).set({
-                    phoneVerified: true,
-                    phone: auth.currentUser.phoneNumber || document.getElementById('phone-number').value,
-                    rank: 1,
-                    rating: 5,
-                    isBlocked: false
+                    phoneVerified: true, phone: document.getElementById('phone-number').value,
+                    rank: 1, rating: 5, isBlocked: false
                 }, { merge: true });
                 location.reload();
-            }).catch(() => alert("Неверный код!"));
+            }).catch(() => alert("Код неверный!"));
+        }
+
+        function resetPass() {
+            const e = document.getElementById('email').value;
+            if(!e) return alert("Введи почту!");
+            auth.sendPasswordResetEmail(e).then(() => alert("Проверь почту!")).catch(err => alert(err.message));
         }
     </script>
 </body>
