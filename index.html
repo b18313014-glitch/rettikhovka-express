@@ -12,86 +12,85 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #ffffff; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
         
-        /* Тот самый Liquid Glass: очень маленький и центрированный */
-        .glass-box { 
-            background: rgba(255, 255, 255, 0.8); 
+        /* Жестко фиксируем размер контейнера, чтобы не плыл на планшете */
+        .auth-card { 
+            background: rgba(255, 255, 255, 0.9); 
             backdrop-filter: blur(20px); 
             border: 1px solid rgba(0,0,0,0.05); 
-            width: 280px; /* Еще компактнее */
+            width: 280px; 
             padding: 20px;
             border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            text-align: center;
         }
 
-        .input-rx { 
-            background: #f4f4f4; border: none; font-size: 11px; font-weight: 700; 
-            width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 8px;
+        .rx-input { 
+            background: #f2f2f2; border: none; font-size: 11px; font-weight: 700; 
+            width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 6px;
         }
-        .input-rx:focus { outline: none; background: #eee; }
+        .rx-input:focus { outline: none; background: #ebebeb; }
 
-        .btn-black { 
+        .rx-btn { 
             background: #000; color: #fff; font-size: 9px; font-weight: 900; 
             text-transform: uppercase; letter-spacing: 1px; padding: 12px; 
-            border-radius: 12px; width: 100%; transition: 0.2s; 
+            border-radius: 12px; width: 100%; transition: 0.2s; margin-top: 4px;
         }
-        .btn-black:active { transform: scale(0.97); }
+        .rx-btn:active { transform: scale(0.97); }
 
-        .social-row { display: flex; gap: 8px; margin-top: 10px; }
-        .social-btn { 
-            border: 1px solid rgba(0,0,0,0.05); padding: 8px; border-radius: 10px; 
-            flex: 1; display: flex; justify-content: center; align-items: center;
-        }
-        .social-btn img { width: 14px; height: 14px; }
+        .social-icon { width: 14px; height: 14px; }
+        .social-grid { display: flex; gap: 8px; margin-top: 10px; }
+        .social-box { border: 1px solid rgba(0,0,0,0.05); padding: 8px; border-radius: 10px; flex: 1; display: flex; justify-content: center; }
 
         .hidden { display: none !important; }
-        .slide { animation: fadeIn 0.3s ease; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="flex flex-col items-center slide">
-        <div class="text-center mb-5">
+    <div class="auth-card fade-in">
+        <div class="mb-5">
             <h1 class="text-3xl font-black italic uppercase tracking-tighter">RX</h1>
-            <p class="text-[7px] font-black opacity-20 uppercase tracking-[0.3em]">Core Access</p>
+            <p class="text-[7px] font-black opacity-20 uppercase tracking-[0.3em]">Secure Access</p>
         </div>
 
-        <div class="glass-box">
-            <div id="auth-fields">
-                <input id="email" type="email" placeholder="Почта" class="input-rx">
-                <div class="relative">
-                    <input id="password" type="password" placeholder="Пароль" class="input-rx">
-                    <button onclick="resetPass()" class="absolute right-3 top-3 text-[7px] font-black opacity-20 hover:opacity-100 uppercase">Забыл?</button>
-                </div>
-                <button onclick="loginEmail()" class="btn-black">Войти</button>
+        <div id="login-form">
+            <input id="email" type="email" placeholder="Почта" class="rx-input">
+            <div class="relative">
+                <input id="password" type="password" placeholder="Пароль" class="rx-input">
+                <button onclick="sendReset()" class="absolute right-3 top-3 text-[7px] font-black opacity-20 hover:opacity-100 uppercase">Забыл?</button>
             </div>
-
-            <div id="phone-fields" class="hidden mt-2 pt-2 border-t border-black/5 slide">
-                <p class="text-[7px] font-black opacity-30 uppercase text-center mb-3 tracking-widest">Нужно подтверждение</p>
+            
+            <div id="phone-section" class="hidden border-t border-black/5 mt-2 pt-3 fade-in">
+                <p class="text-[7px] font-black opacity-30 uppercase mb-2 tracking-widest text-center">Подтверждение номера</p>
                 <div id="recaptcha-container"></div>
-                <input id="phone-number" type="tel" placeholder="+7 900 000 00 00" class="input-rx text-center">
+                <input id="phone-number" type="tel" placeholder="+7 900 000 00 00" class="rx-input text-center">
                 
-                <div id="sms-area" class="hidden">
-                    <input id="sms-code" type="number" placeholder="Код" class="input-rx text-center tracking-[0.5em] text-sm">
-                    <button onclick="confirmSms()" class="btn-black bg-orange-500">Подтвердить</button>
+                <div id="sms-section" class="hidden">
+                    <input id="sms-code" type="number" placeholder="Код из SMS" class="rx-input text-center tracking-[0.4em]">
+                    <button onclick="confirmCode()" class="rx-btn bg-orange-500">Подтвердить</button>
                 </div>
                 
-                <button id="btn-send" onclick="sendSms()" class="btn-black">Получить код</button>
+                <button id="btn-send-sms" onclick="handleSms()" class="rx-btn">Получить код</button>
             </div>
 
-            <div id="social-area">
+            <button id="btn-login" onclick="doLogin()" class="rx-btn">Войти</button>
+
+            <div id="social-section">
                 <div class="flex items-center gap-2 my-3">
                     <div class="h-[1px] bg-black/5 flex-grow"></div>
                     <span class="text-[6px] font-black opacity-10 uppercase">или</span>
                     <div class="h-[1px] bg-black/5 flex-grow"></div>
                 </div>
-
-                <div class="social-row">
-                    <button onclick="loginGoogle()" class="social-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"></button>
-                    <button onclick="loginApple()" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"></button>
+                <div class="social-grid">
+                    <button onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())" class="social-box">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="social-icon">
+                    </button>
+                    <button onclick="auth.signInWithPopup(new firebase.auth.OAuthProvider('apple.com'))" class="social-box">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="social-icon">
+                    </button>
                 </div>
-                
-                <button onclick="regEmail()" class="text-[7px] font-black opacity-10 uppercase tracking-widest block w-full mt-4 hover:opacity-40 transition-all">Создать аккаунт</button>
+                <button onclick="doRegister()" class="text-[7px] font-black opacity-10 uppercase tracking-widest block w-full mt-4 hover:opacity-50">Регистрация</button>
             </div>
         </div>
     </div>
@@ -109,7 +108,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let verId;
+        let verificationResult;
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
 
         auth.onAuthStateChanged(async (user) => {
@@ -119,55 +118,53 @@
 
                 if (data && data.isBlocked) { window.location.href = "support.html"; return; }
 
-                // Если зашел, но телефон не привязан — показываем только поле телефона
+                // Если номер еще не подтвержден — показываем секцию телефона
                 if (!data || !data.phoneVerified) {
-                    document.getElementById('auth-fields').classList.add('hidden');
-                    document.getElementById('phone-fields').classList.remove('hidden');
+                    document.getElementById('btn-login').classList.add('hidden');
+                    document.getElementById('social-section').classList.add('hidden');
+                    document.getElementById('phone-section').classList.remove('hidden');
                 } else {
-                    alert("Доступ разрешен!"); // Тут твой переход в приложение
+                    alert("Вход разрешен!"); 
                 }
             }
         });
 
-        function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function loginApple() { auth.signInWithPopup(new firebase.auth.OAuthProvider('apple.com')); }
-        
-        function loginEmail() {
+        function doLogin() {
             const e = document.getElementById('email').value;
             const p = document.getElementById('password').value;
             auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
-        function regEmail() {
+        function doRegister() {
             const e = document.getElementById('email').value;
             const p = document.getElementById('password').value;
             auth.createUserWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
-        function sendSms() {
+        function handleSms() {
             const phone = document.getElementById('phone-number').value;
             auth.signInWithPhoneNumber(phone, window.recaptchaVerifier).then(res => {
-                verId = res;
-                document.getElementById('btn-send').classList.add('hidden');
-                document.getElementById('sms-area').classList.remove('hidden');
+                verificationResult = res;
+                document.getElementById('btn-send-sms').classList.add('hidden');
+                document.getElementById('sms-section').classList.remove('hidden');
             }).catch(err => alert(err.message));
         }
 
-        function confirmSms() {
+        function confirmCode() {
             const code = document.getElementById('sms-code').value;
-            verId.confirm(code).then(async () => {
+            verificationResult.confirm(code).then(async () => {
                 await db.collection("users").doc(auth.currentUser.uid).set({
                     phoneVerified: true, phone: document.getElementById('phone-number').value,
                     rank: 1, rating: 5, isBlocked: false
                 }, { merge: true });
                 location.reload();
-            }).catch(() => alert("Код неверный!"));
+            }).catch(() => alert("Ошибка кода!"));
         }
 
-        function resetPass() {
+        function sendReset() {
             const e = document.getElementById('email').value;
-            if(!e) return alert("Введи почту!");
-            auth.sendPasswordResetEmail(e).then(() => alert("Проверь почту!")).catch(err => alert(err.message));
+            if(!e) return alert("Введите почту!");
+            auth.sendPasswordResetEmail(e).then(() => alert("Проверьте почту!")).catch(err => alert(err.message));
         }
     </script>
 </body>
