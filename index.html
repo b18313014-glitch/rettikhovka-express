@@ -3,277 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX DELIVERY | BOGDAN EDITION</title>
+    <title>RX DELIVERY | FINAL VERSION</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* БАЗОВЫЕ ПЕРЕМЕННЫЕ (СИСТЕМА ТЕМ) */
         :root {
             --accent: #ff8233;
             --bg: #fffcf9;
             --card: #ffffff;
             --text: #1a1a1a;
+            --border: 3px solid #000;
             --shadow: 6px 6px 0px #000;
-            --border: 2px solid #000;
+            --trans: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ТЕМЫ */
+        /* ТЕМЫ ОФОРМЛЕНИЯ */
         body.theme-beige { --bg: #f5f5dc; --accent: #d2b48c; }
         body.theme-orange { --bg: #fff5ed; --accent: #ff6600; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        
-        body { margin: 0; background: var(--bg); color: var(--text); overflow: hidden; transition: 0.3s; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; transition: var(--trans); }
 
-        /* КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
-        .app-container {
-            width: 100%; max-width: 500px; height: 100vh; margin: 0 auto;
-            position: relative; overflow: hidden; display: flex; flex-direction: column;
-            border-left: var(--border); border-right: var(--border);
-        }
+        /* ОСНОВНОЙ КОНТЕЙНЕР (ЦЕНТРИРОВАНИЕ ДЛЯ ПЛАНШЕТОВ) */
+        .app { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: var(--border); border-right: var(--border); background: var(--bg); }
 
-        /* ЭКРАНЫ */
-        .screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; z-index: 10; background: var(--bg);
-        }
-        .screen.active { display: flex; animation: slideIn 0.3s ease-out; }
-
+        /* СИСТЕМА ЭКРАНОВ */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: var(--bg); z-index: 10; }
+        .screen.active { display: flex; animation: slideIn 0.4s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
         /* ОНБОРДИНГ */
         .slide { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .dot-container { display: flex; gap: 8px; justify-content: center; padding: 20px; }
-        .dot { width: 10px; height: 10px; border: 2px solid #000; border-radius: 50%; }
-        .dot.active { background: var(--accent); width: 25px; border-radius: 10px; }
+        .dot-container { display: flex; gap: 10px; justify-content: center; padding: 20px; }
+        .dot { width: 12px; height: 12px; border: 2px solid #000; border-radius: 50%; transition: 0.3s; }
+        .dot.active { background: var(--accent); width: 30px; border-radius: 10px; }
 
         /* КНОПКИ */
-        .btn-main {
-            width: 100%; padding: 18px; border: var(--border); border-radius: 18px;
-            font-size: 16px; font-weight: 900; text-transform: uppercase;
-            cursor: pointer; box-shadow: var(--shadow); transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .btn-main:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000; }
-        
-        .btn-icon {
-            width: 45px; height: 45px; background: #fff; border: var(--border);
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 4px 4px 0 #000; cursor: pointer;
-        }
+        .btn-main { width: 100%; padding: 20px; border: var(--border); border-radius: 20px; font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: var(--shadow); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .btn-main:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 #000; }
+        .btn-icon { width: 50px; height: 50px; background: #fff; border: var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0 #000; cursor: pointer; font-size: 20px; }
 
         /* ШАПКА */
-        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
+        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* СВАЙП-ПАНЕЛИ (BOTTOM SHEETS) */
-        .bottom-sheet {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-            width: 100%; max-width: 500px; background: #fff; border-top: 3px solid #000;
-            border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-            padding: 20px; max-height: 90vh; overflow-y: auto;
-        }
-        .bottom-sheet.open { transform: translateX(-50%) translateY(0); }
-        .handle { width: 50px; height: 5px; background: #ddd; border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
+        /* МАГАЗИН (НА ВЕСЬ ЭКРАН) */
+        .search-container { padding: 0 20px 15px; }
+        .search-bar { width: 100%; padding: 15px; border: var(--border); border-radius: 15px; font-size: 16px; font-weight: 600; }
+        .cat-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 20px; scrollbar-width: none; }
+        .cat-pill { padding: 10px 25px; background: #fff; border: 2px solid #000; border-radius: 25px; white-space: nowrap; font-weight: 800; cursor: pointer; }
+        .cat-pill.active { background: var(--accent); color: #fff; }
 
-        /* МАГАЗИН */
-        .search-row { padding: 0 20px; margin-bottom: 15px; }
-        .search-bar { width: 100%; padding: 12px; border: var(--border); border-radius: 12px; }
-        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 15px; scrollbar-width: none; }
-        .cat-item { padding: 8px 20px; background: #fff; border: 1px solid #000; border-radius: 20px; white-space: nowrap; font-size: 13px; font-weight: 700; }
-        .cat-item.active { background: var(--accent); color: #fff; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 20px 100px; overflow-y: auto; }
+        .p-card { background: #fff; border: var(--border); border-radius: 25px; padding: 15px; box-shadow: 4px 4px 0 #000; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .p-price-row { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
 
-        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .p-card { background: #fff; border: var(--border); border-radius: 20px; padding: 15px; box-shadow: 4px 4px 0 #000; }
-        .p-img { font-size: 40px; margin-bottom: 10px; text-align: center; }
-        .p-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .add-btn { background: #000; color: #fff; border: none; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; }
+        /* ВЫЛЕТАЮЩИЕ ПАНЕЛИ (BOTTOM SHEETS) */
+        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: 4px solid #000; border-radius: 40px 40px 0 0; z-index: 1000; transition: 0.5s cubic-bezier(0, 0.5, 0, 1); padding: 30px; max-height: 85vh; overflow-y: auto; }
+        .sheet.open { transform: translateX(-50%) translateY(0); }
+        .sheet-handle { width: 60px; height: 6px; background: #ddd; border-radius: 10px; margin: -10px auto 25px; cursor: pointer; }
 
-        /* ТЕМЫ В ПРОФИЛЕ */
-        .theme-selector { display: flex; gap: 15px; margin: 15px 0; }
-        .theme-dot { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #000; cursor: pointer; }
-
-        /* ОПЦИИ ДОСТАВКИ */
-        .delivery-option {
-            border: var(--border); border-radius: 15px; padding: 15px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-        }
-        .delivery-option input { width: 20px; height: 20px; }
+        /* НАСТРОЙКИ ТЕМ */
+        .theme-row { display: flex; gap: 20px; margin: 20px 0; }
+        .t-dot { width: 50px; height: 50px; border: 3px solid #000; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="app">
 
-    <div id="screen-onboarding" class="screen active">
-        <div id="slides">
-            <div class="slide" id="s1">
-                <div style="font-size: 80px;">👦🚀</div>
-                <h1>ПРИВЕТ В RX!</h1>
-                <p>Твоя лучшая доставка в Реттиховке. Кофе, еда и Ozon!</p>
-            </div>
-            <div class="slide" id="s2" style="display:none">
-                <div style="font-size: 80px;">🛡️⚖️</div>
-                <h1>БЕЗОПАСНОСТЬ</h1>
-                <p>Мы следим за каждым шагом курьера. Твой заказ под защитой.</p>
+    <div id="scr-onboarding" class="screen active">
+        <div class="slide" id="slide-box">
+            <div id="slide-content">
+                <div style="font-size: 100px;">👋</div>
+                <h1 style="font-size: 38px; font-weight: 900; margin: 10px 0;">ПРИВЕТ В RX!</h1>
+                <p style="font-weight: 600; color: #555;">Твоя доставка еды и Озона в Реттиховке.</p>
             </div>
         </div>
         <div class="dot-container">
-            <div class="dot active" id="d1"></div>
-            <div class="dot" id="d2"></div>
+            <div class="dot active" id="dot-1"></div>
+            <div class="dot" id="dot-2"></div>
+            <div class="dot" id="dot-3"></div>
         </div>
-        <div style="padding: 30px; display: flex; justify-content: space-between;">
-            <button class="btn-icon" id="onb-prev" onclick="moveSlide(-1)" style="opacity:0.3; pointer-events:none"><i class="fa-solid fa-arrow-left"></i></button>
-            <button class="btn-icon" id="onb-next" onclick="moveSlide(1)"><i class="fa-solid fa-arrow-right"></i></button>
+        <div style="padding: 40px; display: flex; justify-content: space-between;">
+            <button class="btn-icon" id="btn-back" onclick="changeSlide(-1)" style="opacity: 0.3; pointer-events: none;"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-icon" id="btn-next" onclick="changeSlide(1)"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
     </div>
 
-    <div id="screen-auth" class="screen">
+    <div id="scr-auth" class="screen">
         <div class="slide">
-            <div style="font-size: 60px;">🔐</div>
-            <h2>ВХОД В RX</h2>
-            <button class="btn-main" onclick="finishAuth()" style="background: #fff; margin-bottom: 15px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20"> ВОЙТИ ЧЕРЕЗ GOOGLE
+            <div style="font-size: 60px; margin-bottom: 20px;">🛡️</div>
+            <h2 style="font-weight: 900;">ВХОД В АККАУНТ</h2>
+            <button class="btn-main" onclick="goHome()" style="background: #fff; margin-bottom: 15px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="24"> GOOGLE
             </button>
-            <input type="email" placeholder="ПОЧТА" style="width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #ddd; margin-bottom: 10px;">
-            <button class="btn-main" onclick="finishAuth()" style="background: #000; color: #fff;">ВОЙТИ</button>
+            <button class="btn-main" onclick="goHome()" style="background: #000; color: #fff;">ВОЙТИ ПО SMS</button>
         </div>
     </div>
 
-    <div id="screen-home" class="screen">
+    <div id="scr-home" class="screen">
         <header>
             <div class="btn-icon" onclick="openSheet('sheet-profile')"><i class="fa-solid fa-user-gear"></i></div>
-            <div style="font-weight: 900; font-size: 24px;">RX DELIVERY</div>
+            <div style="font-weight: 900; font-size: 26px; letter-spacing: -1px;">RX DELIVERY</div>
             <div class="btn-icon" onclick="openSheet('sheet-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
         </header>
-        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px;">
-            <button class="btn-main" style="background: var(--accent); padding: 40px 20px;" onclick="toggleShop(true)">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 20px; gap: 20px;">
+            <button class="btn-main" style="background: var(--accent); padding: 50px 20px;" onclick="setShop(true)">
                 ЗАКАЗАТЬ ЕДУ <i class="fa-solid fa-utensils"></i>
             </button>
-            <button class="btn-main" style="background: #4d88ff; color: #fff;" onclick="alert('Открываем Ozon...')">
+            <button class="btn-main" style="background: #4d88ff; color: #fff;" onclick="alert('Открываем сканер Озон...')">
                 ЗАБРАТЬ OZON <i class="fa-solid fa-box-open"></i>
             </button>
         </div>
     </div>
 
-    <div id="screen-shop" class="screen" style="z-index: 50;">
+    <div id="scr-shop" class="screen" style="z-index: 100;">
         <header>
-            <div class="btn-icon" onclick="toggleShop(false)"><i class="fa-solid fa-chevron-left"></i></div>
-            <div style="font-weight: 900;">МАГАЗИН</div>
+            <div class="btn-icon" onclick="setShop(false)"><i class="fa-solid fa-chevron-left"></i></div>
+            <h2 style="font-weight: 900;">МАГАЗИН</h2>
             <div class="btn-icon" onclick="openSheet('sheet-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
         </header>
-        <div class="search-row"><input type="text" class="search-bar" placeholder="Поиск товаров..."></div>
-        <div class="categories">
-            <div class="cat-item active">Все</div>
-            <div class="cat-item">Напитки</div>
-            <div class="cat-item">Еда</div>
-            <div class="cat-item">Разное</div>
+        <div class="search-container"><input type="text" class="search-bar" placeholder="Поиск (Доширак, кофе...)"></div>
+        <div class="cat-scroll">
+            <div class="cat-pill active">Все</div>
+            <div class="cat-pill">Напитки</div>
+            <div class="cat-pill">Еда</div>
+            <div class="cat-pill">Ozon</div>
         </div>
         <div class="product-grid">
-            <div class="p-card">
-                <div class="p-img">☕</div>
-                <b>Золотой дедушка</b>
-                <div class="p-price-row"><span>60 ₽</span><button class="add-btn">+</button></div>
-            </div>
-            <div class="p-card">
-                <div class="p-img">🍜</div>
-                <b>Доширак (Острый)</b>
-                <div class="p-price-row"><span>65 ₽</span><button class="add-btn">+</button></div>
-            </div>
+            <div class="p-card"><div style="font-size: 50px;">☕</div><b>Дедушка</b><div class="p-price-row"><b>60 ₽</b><button class="btn-icon" style="width:35px;height:35px">+</button></div></div>
+            <div class="p-card"><div style="font-size: 50px;">🍜</div><b>Доширак</b><div class="p-price-row"><b>65 ₽</b><button class="btn-icon" style="width:35px;height:35px">+</button></div></div>
         </div>
     </div>
 
-    <div id="sheet-profile" class="bottom-sheet">
-        <div class="handle" onclick="closeSheet('sheet-profile')"></div>
-        <h2>ПРОФИЛЬ</h2>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 2px solid #000;">👦</div>
-            <h3 id="display-name">Богдан</h3>
+    <div id="sheet-profile" class="sheet">
+        <div class="sheet-handle" onclick="closeSheet('sheet-profile')"></div>
+        <h2 style="font-weight: 900; text-align: center;">МОЙ АККАУНТ</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 90px; height: 90px; background: #eee; border: 3px solid #000; border-radius: 50%; margin: 0 auto; font-size: 50px; display: flex; align-items: center; justify-content: center;">👦</div>
+            <button style="border: none; background: none; text-decoration: underline; margin-top: 10px;">Сменить фото</button>
         </div>
-        <label>ИМЯ И ФАМИЛИЯ</label>
-        <input type="text" value="Богдан" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid #ddd;">
+        <label style="font-weight: 800; font-size: 12px;">ИМЯ ПОЛЬЗОВАТЕЛЯ</label>
+        <input type="text" value="Богдан" style="width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; margin: 10px 0 20px;">
         
-        <label>ТЕМА ОФОРМЛЕНИЯ</label>
-        <div class="theme-selector">
-            <div class="theme-dot" style="background:#fff;" onclick="setTheme('default')"></div>
-            <div class="theme-dot" style="background:#f5f5dc;" onclick="setTheme('beige')"></div>
-            <div class="theme-dot" style="background:#fff5ed;" onclick="setTheme('orange')"></div>
+        <label style="font-weight: 800; font-size: 12px;">ТЕМА ПРИЛОЖЕНИЯ</label>
+        <div class="theme-row">
+            <div class="t-dot" style="background: #fff;" onclick="setTheme('light')"></div>
+            <div class="t-dot" style="background: #f5f5dc;" onclick="setTheme('beige')"></div>
+            <div class="t-dot" style="background: #fff5ed;" onclick="setTheme('orange')"></div>
         </div>
 
-        <button class="btn-main" style="background:#000; color:#fff; margin-top:20px;" onclick="closeSheet('sheet-profile')">СОХРАНИТЬ</button>
-        <button class="btn-main" style="border:none; box-shadow:none; color:red; margin-top:10px;" onclick="deleteAcc()">УДАЛИТЬ АККАУНТ</button>
+        <button class="btn-main" style="background: #000; color: #fff; margin-bottom: 10px;">МОИ ЗАКАЗЫ</button>
+        <button class="btn-main" style="background: none; color: red; border-color: red; box-shadow: none;" onclick="deleteMe()">УДАЛИТЬ АККАУНТ</button>
     </div>
 
-    <div id="sheet-cart" class="bottom-sheet">
-        <div class="handle" onclick="closeSheet('sheet-cart')"></div>
-        <h2>КОРЗИНА</h2>
-        <div class="delivery-option">
-            <span>Оставить у двери</span><input type="radio" name="del" checked>
+    <div id="sheet-cart" class="sheet">
+        <div class="sheet-handle" onclick="closeSheet('sheet-cart')"></div>
+        <h2 style="font-weight: 900;">КОРЗИНА</h2>
+        <div style="padding: 15px; border: 2px solid #000; border-radius: 15px; margin-bottom: 20px;">
+            <b>Ваш заказ: 0 товаров</b>
         </div>
-        <div class="delivery-option">
-            <span>Ждать курьера (Платно)</span><input type="radio" name="del">
-        </div>
-        <textarea placeholder="Сообщение курьеру..." style="width:100%; height:80px; border-radius:15px; padding:10px; border:1px solid #ddd;"></textarea>
-        <button class="btn-main" style="background:#00ff00; margin-top:20px;">ОПЛАТИТЬ</button>
+        <label style="font-weight: 800;">КАК ДОСТАВИТЬ?</label>
+        <select style="width: 100%; padding: 15px; border: 2px solid #000; border-radius: 15px; margin: 10px 0 20px;">
+            <option>Оставить у двери (Бесплатно)</option>
+            <option>Ждать курьера (Платно 5₽/мин)</option>
+        </select>
+        <button class="btn-main" style="background: #00ff00;">ОФОРМИТЬ ЗАКАЗ</button>
     </div>
 
 </div>
 
 <script>
-    let currentSlide = 1;
+    let curSlide = 1;
+    const slides = [
+        { emoji: "👋", title: "ПРИВЕТ В RX!", desc: "Твоя доставка в Реттиховке." },
+        { emoji: "☕📦", title: "ВСЁ В ОДНОМ", desc: "Кофе, еда и твои посылки Озон." },
+        { emoji: "🛡️⚖️", title: "КОНТРОЛЬ", desc: "Мы следим за качеством и курьерами." }
+    ];
 
-    // НАВИГАЦИЯ ОНБОРДИНГА
-    function moveSlide(direction) {
-        if (direction === 1 && currentSlide === 1) {
-            document.getElementById('s1').style.display = 'none';
-            document.getElementById('s2').style.display = 'flex';
-            document.getElementById('d1').classList.remove('active');
-            document.getElementById('d2').classList.add('active');
-            document.getElementById('onb-prev').style.opacity = '1';
-            document.getElementById('onb-prev').style.pointerEvents = 'auto';
-            document.getElementById('onb-next').innerHTML = '<i class="fa-solid fa-check"></i>';
-            currentSlide = 2;
-        } else if (direction === -1 && currentSlide === 2) {
-            document.getElementById('s2').style.display = 'none';
-            document.getElementById('s1').style.display = 'flex';
-            document.getElementById('d2').classList.remove('active');
-            document.getElementById('d1').classList.add('active');
-            document.getElementById('onb-prev').style.opacity = '0.3';
-            document.getElementById('onb-prev').style.pointerEvents = 'none';
-            document.getElementById('onb-next').innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
-            currentSlide = 1;
-        } else if (direction === 1 && currentSlide === 2) {
-            changeScreen('screen-auth');
-        }
+    function changeSlide(n) {
+        curSlide += n;
+        if (curSlide > 3) { changeScreen('scr-auth'); return; }
+        
+        const box = document.getElementById('slide-content');
+        box.style.opacity = 0;
+        setTimeout(() => {
+            box.innerHTML = `<div style="font-size: 100px;">${slides[curSlide-1].emoji}</div>
+                             <h1 style="font-size: 38px; font-weight: 900; margin: 10px 0;">${slides[curSlide-1].title}</h1>
+                             <p style="font-weight: 600; color: #555;">${slides[curSlide-1].desc}</p>`;
+            box.style.opacity = 1;
+        }, 200);
+
+        document.getElementById('btn-back').style.opacity = curSlide === 1 ? "0.3" : "1";
+        document.getElementById('btn-back').style.pointerEvents = curSlide === 1 ? "none" : "auto";
+        document.getElementById('btn-next').innerHTML = curSlide === 3 ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-arrow-right"></i>';
+        
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', (i+1) === curSlide));
     }
 
-    // ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
     function changeScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    function finishAuth() { changeScreen('screen-home'); }
-
-    // УПРАВЛЕНИЕ МАГАЗИНОМ
-    function toggleShop(open) {
-        if(open) document.getElementById('screen-shop').classList.add('active');
-        else document.getElementById('screen-shop').classList.remove('active');
-    }
-
-    // BOTTOM SHEETS
+    function goHome() { changeScreen('scr-home'); }
+    function setShop(open) { document.getElementById('scr-shop').classList.toggle('active', open); }
     function openSheet(id) { document.getElementById(id).classList.add('open'); }
     function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
-
-    // ТЕМЫ
+    
     function setTheme(name) {
-        document.body.className = '';
-        if(name !== 'default') document.body.classList.add('theme-' + name);
+        document.body.className = name === 'light' ? '' : 'theme-' + name;
     }
 
-    // УДАЛЕНИЕ
-    function deleteAcc() {
-        if(confirm("Удалить аккаунт? Все данные в Firebase будут стерты!")) {
-            location.reload(); // Возврат на старт
-        }
+    function deleteMe() {
+        if(confirm("Удалить аккаунт? Ты вылетишь на экран регистрации!")) location.reload();
     }
 </script>
 
