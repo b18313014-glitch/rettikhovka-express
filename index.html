@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Delivery - Исправленная версия</title>
+    <title>RX Delivery - Правильная версия</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --red: #ff4444; }
         
-        /* Эффект линзы и ограничение под телефон */
         html { background: #000; display: flex; justify-content: center; overflow: hidden; }
         body { 
             font-family: 'Ubuntu', sans-serif; margin: 0; background: var(--gray); 
@@ -17,131 +16,105 @@
             border-radius: 35px; border: 5px solid #222;
         }
 
-        /* ОБУЧЕНИЕ (СЛАЙДЕР) */
+        /* ОБУЧЕНИЕ */
         #onboarding {
             position: absolute; top: 0; left: 0; width: 500%; height: 100%;
             background: var(--main); z-index: 9999; display: flex; 
             transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .slide {
-            width: 20%; height: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center; padding: 40px; box-sizing: border-box;
-        }
-        .slide i { font-size: 80px; color: var(--dark); margin-bottom: 25px; text-shadow: 2px 2px 0px #fff; }
-        .slide h2 { font-size: 28px; margin-bottom: 15px; font-weight: 900; text-transform: uppercase; }
-        .slide p { font-size: 17px; line-height: 1.6; color: #222; font-weight: 500; }
+        .slide { width: 20%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; box-sizing: border-box; }
+        .slide i { font-size: 70px; margin-bottom: 20px; }
 
-        /* Навигация */
-        .onb-nav { position: absolute; bottom: 50px; width: 100%; display: flex; justify-content: center; gap: 30px; z-index: 10000; }
-        .btn-nav { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--dark); background: #fff; color: var(--dark); font-size: 24px; cursor: pointer; transition: 0.2s; }
-        .btn-nav:active { transform: scale(0.9); background: var(--dark); color: #fff; }
-        
-        .skip { position: absolute; top: 30px; right: 25px; z-index: 10001; background: var(--dark); color: #fff; border: none; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        /* ОКНО РЕГИСТРАЦИИ */
+        #auth-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9000; display: none; flex-direction: column;
+            padding: 30px; box-sizing: border-box; justify-content: center;
+        }
 
         /* ОСНОВНОЙ КОНТЕНТ */
-        header { background: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .container { padding: 20px; }
-        .item-card { background: #fff; border-radius: 25px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; }
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .container { padding: 15px; height: calc(100vh - 150px); overflow-y: auto; }
         
-        .btn-add { width: 50px; height: 50px; border-radius: 15px; border: none; background: var(--main); font-size: 24px; font-weight: bold; cursor: pointer; }
+        .item-card { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* КНОПКА ПОДДЕРЖКИ ВНИЗУ */
+        .support-footer {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; background: var(--dark); color: #fff;
+            padding: 18px; border-radius: 20px; text-align: center;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
 
-        /* ОКНА */
-        .fs-window { position: fixed; top: 0; width: 100%; max-width: 450px; height: 100%; background: #fff; z-index: 1000; left: 100%; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px; box-sizing: border-box; }
-        .fs-window.active { left: 0; }
+        .btn-nav { width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--dark); color: #fff; cursor: pointer; }
+        .btn-big { width: 100%; padding: 18px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .input-box { width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <button class="skip" id="skipBtn" onclick="finishOnboarding()">ПРОПУСТИТЬ</button>
-
     <div id="onboarding">
+        <div class="slide"><i class="fa-solid fa-truck-fast"></i><h2>RX Delivery</h2><p>Доставка №1 в Реттиховке.</p></div>
+        <div class="slide"><i class="fa-solid fa-qrcode"></i><h2>СБП</h2><p>Не забывай писать номер заказа в банке!</p></div>
+        <div class="slide"><i class="fa-solid fa-clock"></i><h2>Задержка?</h2><p>Если заказ опаздывает, жми на кнопку поддержки внизу экрана.</p></div>
+        <div class="slide"><i class="fa-solid fa-door-closed"></i><h2>У двери</h2><p>Оставим заказ у двери, если ты так захочешь.</p></div>
         <div class="slide">
-            <i class="fa-solid fa-bolt-lightning"></i>
-            <h2>RX DELIVERY</h2>
-            <p>Добро пожаловать в Корпорацию! Мы доставляем еду в Реттиховке быстрее всех.</p>
-        </div>
-        <div class="slide">
-            <i class="fa-solid fa-money-bill-transfer"></i>
-            <h2>ПЛАТИ ПРАВИЛЬНО</h2>
-            <p>Используй СБП. Обязательно впиши <b>номер заказа</b> в сообщение получателю, иначе мы не увидим оплату!</p>
-        </div>
-        <div class="slide">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <h2>ЗАКАЗ ЗАДЕРЖИВАЕТСЯ?</h2>
-            <p>Если курьера нет вовремя — не паникуй! Зайди в профиль и нажми на <b>шлем поддержки</b>. Мы на связи!</p>
-        </div>
-        <div class="slide">
-            <i class="fa-solid fa-box-open"></i>
-            <h2>У ДВЕРИ</h2>
-            <p>Выбрал "Оставить у двери"? Помни: после того как курьер ушел, ответственность за посылку несешь ты.</p>
-        </div>
-        <div class="slide">
-            <i class="fa-solid fa-star"></i>
-            <h2>ПОГНАЛИ!</h2>
-            <p>Регистрируйся и делай свой первый заказ. Приятного аппетита!</p>
-            <button class="btn-nav" style="width: 200px; border-radius: 15px; margin-top: 20px;" onclick="finishOnboarding()">НАЧАТЬ</button>
+            <i class="fa-solid fa-thumbs-up"></i><h2>Готов?</h2>
+            <button class="btn-big" style="background:var(--dark); color:#fff" onclick="showAuth()">ПЕРЕЙТИ К РЕГИСТРАЦИИ</button>
         </div>
     </div>
 
-    <div class="onb-nav" id="onbNav">
-        <button class="btn-nav" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="btn-nav" onclick="moveSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+    <div id="auth-screen">
+        <h2 style="text-align:center">Создай аккаунт</h2>
+        <p style="font-size:12px; color:#888;">Принимая регистрацию, вы соглашаетесь с правилами Корпорации.</p>
+        <input type="text" id="reg-name" class="input-box" placeholder="Имя">
+        <input type="text" id="reg-phone" class="input-box" placeholder="Номер телефона">
+        <input type="password" class="input-box" placeholder="Пароль">
+        <button class="btn-big" style="background:var(--main)" onclick="finishAuth()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
     </div>
 
     <header>
-        <div style="font-weight: 900; font-size: 20px;">RX DELIVERY</div>
-        <div style="display:flex; gap:20px;">
-            <i class="fa-solid fa-cart-shopping" onclick="openWin('cart-win')"></i>
-            <i class="fa-solid fa-user-gear" onclick="openWin('profile-win')"></i>
-        </div>
+        <div style="font-weight: 900;">RX DELIVERY</div>
+        <i class="fa-solid fa-cart-shopping" onclick="alert('Корзина')"></i>
     </header>
 
     <div class="container">
         <div class="item-card">
-            <div><b>Сет "Реттиховка"</b><br><small>350 ₽</small></div>
-            <button class="btn-add" onclick="alert('Добавлено!')">+</button>
+            <div><b>Фри МЕГА</b><br>150 ₽</div>
+            <button style="background:var(--main); border:none; padding:10px; border-radius:10px;">+</button>
         </div>
-    </div>
-
-    <div id="profile-win" class="fs-window">
-        <span onclick="closeWin('profile-win')" style="font-size: 40px; cursor: pointer;">&times;</span>
-        <h2>Профиль</h2>
-        <div class="item-card" style="background: var(--main); cursor: pointer;" onclick="alert('Чат с поддержкой открыт!')">
-            <i class="fa-solid fa-headset" style="font-size: 30px;"></i>
-            <b>СЛУЖБА ПОДДЕРЖКИ</b>
         </div>
-        <p style="font-size: 13px; color: #666;">Нажми сюда, если заказ задерживается или возникли проблемы.</p>
-    </div>
 
-    <div id="cart-win" class="fs-window">
-        <span onclick="closeWin('cart-win')" style="font-size: 40px; cursor: pointer;">&times;</span>
-        <h2>Корзина</h2>
-        <p>Тут будут твои вкусняшки...</p>
+    <div class="support-footer" onclick="alert('Связь с оператором...')">
+        <i class="fa-solid fa-headset"></i> СЛУЖБА ПОДДЕРЖКИ
     </div>
 
 <script>
     let currentSlide = 0;
     const slider = document.getElementById('onboarding');
 
-    function moveSlide(step) {
-        currentSlide += step;
-        if (currentSlide < 0) currentSlide = 0;
-        if (currentSlide > 4) {
-            finishOnboarding();
-            return;
+    // Листалка
+    window.addEventListener('click', (e) => {
+        if(document.getElementById('onboarding').style.display === 'none') return;
+        if(e.target.tagName !== 'BUTTON') {
+            currentSlide++;
+            if(currentSlide < 5) {
+                slider.style.transform = `translateX(-${currentSlide * 20}%)`;
+            }
         }
-        slider.style.transform = `translateX(-${currentSlide * 20}%)`;
+    });
+
+    function showAuth() {
+        slider.style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    function finishOnboarding() {
-        slider.style.transition = "0.8s cubic-bezier(0.7, 0, 0.3, 1)";
-        slider.style.transform = "translateY(-100%)";
-        document.getElementById('onbNav').style.display = 'none';
-        document.getElementById('skipBtn').style.display = 'none';
+    function finishAuth() {
+        const name = document.getElementById('reg-name').value;
+        if(!name) return alert("Введите имя!");
+        document.getElementById('auth-screen').style.display = 'none';
+        alert("Добро пожаловать, " + name + "!");
     }
-
-    function openWin(id) { document.getElementById(id).classList.add('active'); }
-    function closeWin(id) { document.getElementById(id).classList.remove('active'); }
 </script>
 
 </body>
