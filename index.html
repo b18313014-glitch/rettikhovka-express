@@ -1,191 +1,46 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX DELIVERY | RETTIKHOVKA ONLY</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root { 
-            /* Плавный, не монохромный фон */
-            --bg-soft: linear-gradient(160deg, #fff9f5 0%, #ffe9d9 100%);
-            --text-main: #3d3129;
-            --yellow-btn: #ffcc00;
-            --blue-btn: #005BFF;
-            --border: 2px solid #2d241e;
-        }
+<div id="auth-screen" style="
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 30px; 
+    background: var(--bg-gradient);">
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    <div style="font-size: 50px; margin-bottom: 10px;">⚡</div>
+    <h1 style="font-weight: 900; margin-bottom: 30px;">RX DELIVERY</h1>
 
-        body { 
-            margin: 0; 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-soft); 
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-        }
+    <button onclick="signInGoogle()" style="
+        width: 100%; 
+        padding: 15px; 
+        background: #fff; 
+        border: 2px solid #000; 
+        border-radius: 12px; 
+        font-weight: 700; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 10px;
+        box-shadow: 4px 4px 0 #000;
+        cursor: pointer;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20">
+        ВОЙТИ ЧЕРЕЗ GOOGLE
+    </button>
 
-        /* ШАПКА (ПРОФИЛЬ И КОРЗИНА РЯДОМ) */
-        .header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(8px);
-        }
+    <div style="margin: 25px 0; color: #888; font-size: 12px;">ИЛИ ЧЕРЕЗ ПОЧТУ</div>
 
-        .header-right {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
+    <input type="email" placeholder="EMAIL" style="width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; margin-bottom: 10px;">
+    <input type="password" placeholder="ПАРОЛЬ" style="width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; margin-bottom: 20px;">
 
-        .icon-circle {
-            width: 38px;
-            height: 38px;
-            border: var(--border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            cursor: pointer;
-        }
-
-        /* КНОПКИ (МИНИАТЮРНЫЕ) */
-        .action-container {
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .btn-mini {
-            width: 220px; /* Уменьшил ширину */
-            padding: 10px 15px;
-            border: var(--border);
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: 3px 3px 0px #2d241e;
-            text-transform: uppercase;
-        }
-
-        .btn-mini:active { transform: translate(2px, 2px); box-shadow: none; }
-        .yellow { background: var(--yellow-btn); }
-        .blue { background: var(--blue-btn); color: #fff; }
-
-        /* КОРЗИНА */
-        .cart-overlay {
-            position: fixed;
-            bottom: -100%;
-            left: 0;
-            width: 100%;
-            height: 85%;
-            background: #fff;
-            border-top: var(--border);
-            border-radius: 25px 25px 0 0;
-            transition: 0.5s;
-            z-index: 1000;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .cart-active { bottom: 0; }
-
-        .address-box {
-            background: #fdf2e9;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px dashed #ff8233;
-            margin-bottom: 20px;
-        }
-
-        .restriction-warn {
-            color: #d9534f;
-            font-size: 11px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        .pay-warning {
-            font-size: 11px;
-            background: #fff0f0;
-            padding: 10px;
-            border-radius: 8px;
-            color: #c00;
-            display: none;
-        }
-
-    </style>
-</head>
-<body>
-
-    <header class="header">
-        <div style="font-weight: 900; font-size: 18px; color: #ff8233;">RX</div>
-        <div class="header-right">
-            <div class="icon-circle" onclick="openCart()"><i class="fa-solid fa-cart-shopping"></i></div>
-            <div class="icon-circle" style="background: #FFD700;"><i class="fa-solid fa-user"></i></div>
-        </div>
-    </header>
-
-    <main style="text-align: center; margin-top: 20px;">
-        <h2 style="font-weight: 900; margin: 0; letter-spacing: -1px;">ДОСТАВКА В <span style="color: #ff8233;">РЕТТИХОВКУ</span></h2>
-        
-        <div class="action-container">
-            <button class="btn-mini yellow" onclick="alert('Магазины загружаются...')">Заказать доставку <i class="fa-solid fa-truck"></i></button>
-            <button class="btn-mini blue">Забрать OZON <i class="fa-solid fa-box-open"></i></button>
-        </div>
-    </main>
-
-    <div id="cart" class="cart-overlay">
-        <div style="width: 40px; height: 4px; background: #ddd; align-self: center; margin-bottom: 20px;" onclick="closeCart()"></div>
-        <h3 style="margin: 0 0 15px 0;">Ваш заказ</h3>
-
-        <div class="address-box">
-            <div style="font-size: 10px; opacity: 0.6;">АДРЕС ДОСТАВКИ:</div>
-            <div style="font-weight: 900;">пгт. Реттиховка, ул. <input type="text" placeholder="Введите дом" style="border:none; background:none; border-bottom:1px solid #000; outline:none; font-weight:900; width:80px;"></div>
-            <div class="restriction-warn">⚠️ ВНИМАНИЕ: Доставка за пределы посёлка невозможна!</div>
-        </div>
-
-        <div style="flex-grow: 1;">
-            <p style="text-align: center; color: #888; font-size: 13px;">Корзина пока пуста...</p>
-        </div>
-
-        <div class="cart-footer">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
-                <input type="checkbox" id="at-door" onchange="checkPay()">
-                <label for="at-door" style="font-size: 12px; font-weight: 800;">Оставить у двери</label>
-            </div>
-
-            <div id="pay-msg" class="pay-warning">Наличные отключены для безопасности курьера при доставке до двери.</div>
-
-            <button class="btn-mini" style="width: 100%; background: #000; color: #fff; margin-top: 10px;">Оформить</button>
-        </div>
-    </div>
-
-    <script>
-        function openCart() { document.getElementById('cart').classList.add('cart-active'); }
-        function closeCart() { document.getElementById('cart').classList.remove('cart-active'); }
-
-        function checkPay() {
-            const door = document.getElementById('at-door').checked;
-            const msg = document.getElementById('pay-msg');
-            if(door) {
-                msg.style.display = 'block';
-            } else {
-                msg.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+    <button onclick="signInEmail()" style="
+        width: 100%; 
+        padding: 15px; 
+        background: #000; 
+        color: #fff; 
+        border: none; 
+        border-radius: 12px; 
+        font-weight: 900;
+        cursor: pointer;">
+        ВОЙТИ В АККАУНТ
+    </button>
+</div>
