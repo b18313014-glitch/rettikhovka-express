@@ -3,44 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX DELIVERY | V2.3</title>
+    <title>RX DELIVERY | PRO ВЕРСИЯ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --accent: #ff8233;
             --bg: #fffcf9;
             --border: 3px solid #000;
-            --shadow: 6px 6px 0px #000;
+            --shadow: 5px 5px 0px #000;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body { margin: 0; background: var(--bg); overflow: hidden; }
 
-        .app-frame { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; border-left: var(--border); border-right: var(--border); background: var(--bg); }
+        .app-frame { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; border-left: var(--border); border-right: var(--border); background: var(--bg); display: flex; flex-direction: column; }
 
         /* ЭКРАНЫ */
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: var(--bg); z-index: 10; }
         .screen.active { display: flex; }
 
-        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-icon { width: 50px; height: 50px; background: #fff; border: var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0 #000; cursor: pointer; }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; border-bottom: var(--border); }
+        .btn-icon { width: 45px; height: 45px; background: #fff; border: var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 #000; cursor: pointer; }
 
-        /* ШТРИХ-КОД БЛОК */
-        .barcode-box { background: #fff; border: var(--border); border-radius: 25px; margin: 20px; padding: 30px; text-align: center; box-shadow: var(--shadow); }
-        .upload-area { border: 2px dashed #000; padding: 20px; border-radius: 15px; cursor: pointer; margin-top: 15px; }
-        .file-info { margin-top: 10px; font-size: 14px; font-weight: 700; }
+        /* ПРОФИЛЬ (ПЛАШКИ) */
+        .profile-list { padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .p-item { background: #fff; border: var(--border); padding: 18px; border-radius: 18px; display: flex; align-items: center; gap: 15px; font-weight: 800; box-shadow: 4px 4px 0 var(--accent); cursor: pointer; }
+        .p-item i { color: var(--accent); font-size: 20px; width: 25px; }
 
-        /* МАГАЗИН */
-        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; overflow-y: auto; }
-        .p-card { background: #fff; border: var(--border); border-radius: 20px; padding: 15px; box-shadow: 4px 4px 0 #000; }
-        .price-tag { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: #f0f0f0; padding: 5px 10px; border-radius: 10px; }
-        .add-to-cart { background: #000; color: #fff; border: none; border-radius: 8px; padding: 8px; cursor: pointer; }
+        /* КОРЗИНА */
+        .cart-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 2px dashed #ddd; font-weight: 700; }
+        .input-group { margin-top: 20px; }
+        .input-group label { display: block; font-weight: 900; margin-bottom: 5px; font-size: 14px; }
+        .rx-input { width: 100%; padding: 12px; border: var(--border); border-radius: 12px; margin-bottom: 15px; font-weight: 600; }
 
-        /* КНОПКИ ОПЛАТЫ */
-        .btn-pay { width: 100%; padding: 18px; border: var(--border); border-radius: 15px; font-weight: 900; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: 4px solid #000; border-radius: 35px 35px 0 0; z-index: 1000; transition: 0.4s; padding: 25px; }
+        /* ЧЕК */
+        .receipt { background: #eee; padding: 15px; border-radius: 15px; border: 2px solid #000; margin-top: 10px; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .receipt-total { border-top: 2px solid #000; padding-top: 5px; font-weight: 900; font-size: 18px; }
+
+        /* BOTTOM SHEETS */
+        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: var(--border); border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s; padding: 20px; box-shadow: 0 -10px 20px rgba(0,0,0,0.1); }
         .sheet.open { transform: translateX(-50%) translateY(0); }
+
+        .btn-pay { width: 100%; padding: 15px; border: var(--border); border-radius: 12px; font-weight: 900; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--shadow); }
     </style>
 </head>
 <body>
@@ -49,247 +55,92 @@
 
     <div id="scr-home" class="screen active">
         <header>
-            <div class="btn-icon" onclick="openSheet('sheet-profile')"><i class="fa-solid fa-bars"></i></div>
-            <b style="font-size:22px;">RX DELIVERY</b>
-            <div class="btn-icon" onclick="openSheet('sheet-cart')"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="btn-icon" onclick="switchScreen('scr-profile')"><i class="fa-solid fa-user"></i></div>
+            <b style="font-size:20px; letter-spacing:-1px;">RX DELIVERY</b>
+            <div class="btn-icon" onclick="switchScreen('scr-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
         </header>
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:20px; gap:15px;">
-            <button class="btn-pay" style="background:var(--accent); padding:40px;" onclick="switchScreen('scr-shop')">МАГАЗИН <i class="fa-solid fa-shop"></i></button>
-            <button class="btn-pay" style="background:#4d88ff; color:#fff; padding:40px;" onclick="switchScreen('scr-ozon')">ОЗОН ШТРИХ-КОД <i class="fa-solid fa-barcode"></i></button>
+            <button class="btn-pay" style="background:var(--accent); padding:45px;" onclick="switchScreen('scr-shop')">ЗАКАЗАТЬ ЕДУ <i class="fa-solid fa-pizza-slice"></i></button>
+            <button class="btn-pay" style="background:#4d88ff; color:#fff; padding:45px;" onclick="switchScreen('scr-ozon')">OZON ШТРИХ-КОД <i class="fa-solid fa-barcode"></i></button>
+        </div>
+    </div>
+
+    <div id="scr-profile" class="screen">
+        <header>
+            <div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <b>МОЙ ПРОФИЛЬ</b>
+            <div></div>
+        </header>
+        <div class="profile-list">
+            <div class="p-item"><i class="fa-solid fa-clock-rotate-left"></i> Мои заказы</div>
+            <div class="p-item"><i class="fa-solid fa-address-card"></i> Мои данные</div>
+            <div class="p-item"><i class="fa-solid fa-map-location-dot"></i> Мой адрес</div>
+            <div class="p-item"><i class="fa-solid fa-store"></i> Магазин: <span style="color:#000; margin-left:auto;">Алина</span></div>
+            <div class="p-item"><i class="fa-solid fa-palette"></i> Тема: <span style="color:#000; margin-left:auto;">Оранжевая</span></div>
         </div>
     </div>
 
     <div id="scr-shop" class="screen">
         <header>
             <div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div>
-            <b>КАТЕГОРИИ</b>
-            <div></div>
+            <b>МАГАЗИН</b>
+            <div class="btn-icon" onclick="switchScreen('scr-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
         </header>
-        <div class="product-grid">
-            <div class="p-card">
-                <div style="font-size:30px;">☕</div>
-                <b>Золотой Дедушка</b>
-                <div class="price-tag">
-                    <span>60 ₽</span>
-                    <button class="add-to-cart" onclick="alert('Добавлено!')"><i class="fa-solid fa-basket-shopping"></i></button>
-                </div>
+        <div style="padding:20px; text-align:center;">
+            <div style="background:#fff; border:var(--border); padding:15px; border-radius:20px; box-shadow:4px 4px 0 #000;">
+                <div style="font-size:40px;">☕</div>
+                <b>Золотой Дедушка</b><br>60 ₽
+                <button class="btn-pay" style="margin-top:10px; padding:10px;" onclick="alert('Добавлено в корзину!')">В КОРЗИНУ</button>
             </div>
         </div>
     </div>
 
-    <div id="scr-ozon" class="screen">
+    <div id="scr-cart" class="screen">
         <header>
             <div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div>
-            <b>OZON ПОСЫЛКИ</b>
+            <b>КОРЗИНА</b>
             <div></div>
         </header>
-        <div class="barcode-box">
-            <i class="fa-solid fa-barcode" style="font-size:50px;"></i>
-            <h3>Загрузи штрих-код</h3>
-            <p style="font-size:12px; color:red;">Максимум 3 МБ. Большие файлы не принимаем!</p>
+        <div class="cart-body">
+            <h3>Твои товары:</h3>
+            <div class="cart-item"><span>Золотой Дедушка x1</span> <span>60 ₽</span></div>
             
-            <div class="upload-area" onclick="document.getElementById('barcode-input').click()">
-                <span id="upload-text">Нажми, чтобы выбрать фото</span>
-                <input type="file" id="barcode-input" style="display:none" onchange="validateBarcode(event)">
+            <div class="input-group">
+                <label>АДРЕС ДОСТАВКИ (Реттиховка)</label>
+                <input type="text" class="rx-input" placeholder="Улица, дом, квартира">
+                
+                <label>ПРОМОКОД</label>
+                <input type="text" class="rx-input" placeholder="Введите код...">
             </div>
-            <div id="file-status" class="file-info"></div>
+
+            <div class="receipt">
+                <div class="receipt-row"><span>Товары:</span> <span>60 ₽</span></div>
+                <div class="receipt-row"><span>Доставка:</span> <span>50 ₽</span></div>
+                <div class="receipt-row receipt-total"><span>ИТОГО:</span> <span>110 ₽</span></div>
+            </div>
+            
+            <button class="btn-pay" style="background:#00ff00; margin-top:20px;" onclick="openSheet('sheet-payment')">ОФОРМИТЬ ЗАКАЗ</button>
         </div>
     </div>
 
-    <div id="sheet-cart" class="sheet">
-        <h2 style="text-align:center;">ОПЛАТА ЗАКАЗА</h2>
-        <button class="btn-pay" style="background:#00ff00;" onclick="window.location.href='https://qr.nspk.ru/...'"><i class="fa-solid fa-bolt"></i> ОПЛАТИТЬ СБП</button>
-        <button class="btn-pay" style="background:#ef4444; color:#fff;" onclick="window.location.href='https://alfabank.ru/...'"><i class="fa-solid fa-building-columns"></i> АЛЬФА-БАНК</button>
-        <button class="btn-pay" onclick="closeSheet('sheet-cart')">ОТМЕНА</button>
+    <div id="sheet-payment" class="sheet">
+        <h3 style="text-align:center;">ВЫБЕРИТЕ СПОСОБ ОПЛАТЫ</h3>
+        <button class="btn-pay" style="background:#fff;" onclick="window.location.href='https://qr.nspk.ru/...'"><img src="https://upload.wikimedia.org/wikipedia/commons/b/bb/Logo_of_the_System_of_Fast_Payments.svg" width="40"> СБП</button>
+        <button class="btn-pay" style="background:#ef4444; color:#fff;" onclick="window.location.href='https://alfabank.ru/payment/'">АЛЬФА-БАНК</button>
+        <button class="btn-pay" style="background:#000; color:#fff;" onclick="closeSheet('sheet-payment')">НАЗАД</button>
     </div>
 
 </div>
 
 <script>
-    // 1. ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ (ФИКС НАСЛАИВАНИЯ)
     function switchScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-    }
-
-    // 2. ВАЛИДАЦИЯ ФАЙЛА (ОТСЕИВАЕМ БОЛЬШЕ 3МБ)
-    function validateBarcode(event) {
-        const file = event.target.files[0];
-        const status = document.getElementById('file-status');
-        const text = document.getElementById('upload-text');
-
-        if (!file) return;
-
-        const fileSizeMB = file.size / (1024 * 1024);
-
-        if (fileSizeMB > 3) {
-            status.style.color = "red";
-            status.innerText = "ОШИБКА: Файл " + fileSizeMB.toFixed(2) + " МБ — слишком тяжелый! Выберите другой.";
-            event.target.value = ""; // Очищаем выбор
-            text.innerText = "Нажми, чтобы выбрать фото";
-        } else {
-            status.style.color = "green";
-            status.innerText = "Файл принят (" + fileSizeMB.toFixed(2) + " МБ). Штрих-код готов к отправке!";
-            text.innerText = "Файл: " + file.name;
-        }
+        closeSheet('sheet-payment');
     }
 
     function openSheet(id) { document.getElementById(id).classList.add('open'); }
     function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
-</script>
-
-</body>
-</html>        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .p-card { background:#fff; border:var(--border); padding:15px; border-radius:20px; box-shadow:4px 4px 0 #000; }
-        
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    </style>
-</head>
-<body>
-
-<div class="app">
-
-    <div id="scr-onboarding" class="screen active">
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-            <div id="ob-icon" style="font-size: 100px; margin-bottom: 20px;">👋</div>
-            <h1 id="ob-title" style="font-size: 32px; font-weight: 900;">ПРИВЕТ В RX!</h1>
-            <p id="ob-text" style="font-weight: 600; color: #666;">Лучшая доставка в Реттиховке.</p>
-        </div>
-        <div style="padding: 40px; display: flex; justify-content: space-between;">
-            <button class="btn-icon" onclick="moveOb(-1)"><i class="fa-solid fa-arrow-left"></i></button>
-            <button class="btn-icon" onclick="moveOb(1)"><i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-    </div>
-
-    <div id="scr-auth" class="screen">
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px;">
-            <h2 style="font-weight:900;">ВХОД В СИСТЕМУ</h2>
-            <button class="btn-main" onclick="loginGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20"> GOOGLE ВХОД
-            </button>
-            <button class="btn-main" style="background: #000; color: #fff;">ВХОД ПО SMS</button>
-        </div>
-    </div>
-
-    <div id="scr-home" class="screen">
-        <header>
-            <div class="btn-icon" onclick="openSheet('sheet-profile')"><i class="fa-solid fa-user-gear"></i></div>
-            <b style="font-size: 22px;">RX DELIVERY</b>
-            <div class="btn-icon" onclick="openSheet('sheet-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
-        </header>
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
-            <button class="btn-main" style="background: var(--accent); padding: 40px;" onclick="changeScreen('scr-shop')">ЗАКАЗАТЬ ЕДУ</button>
-            <button class="btn-main" style="background: #4d88ff; color: #fff;">ЗАБРАТЬ OZON</button>
-        </div>
-    </div>
-
-    <div id="scr-shop" class="screen">
-        <header>
-            <div class="btn-icon" onclick="changeScreen('scr-home')"><i class="fa-solid fa-xmark"></i></div>
-            <h2 style="font-weight: 900;">МАГАЗИН</h2>
-            <div></div>
-        </header>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px;">
-            <div class="p-card"><b>Кофе</b><br>60₽ <button style="float:right">+</button></div>
-            <div class="p-card"><b>Доширак</b><br>65₽ <button style="float:right">+</button></div>
-        </div>
-    </div>
-
-    <div id="sheet-profile" class="sheet">
-        <div class="handle"></div>
-        <h2 style="text-align:center;">ПРОФИЛЬ</h2>
-        <input type="text" id="user-display-name" value="Богдан" style="width:100%; padding:15px; border-radius:12px; border:2px solid #eee; margin-bottom:20px;">
-        <label>ТЕМА</label>
-        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
-            <div onclick="setTheme('default')" style="width:40px; height:40px; background:#fff; border:2px solid #000; border-radius:50%;"></div>
-            <div onclick="setTheme('beige')" style="width:40px; height:40px; background:#f5f5dc; border:2px solid #000; border-radius:50%;"></div>
-            <div onclick="setTheme('orange')" style="width:40px; height:40px; background:#ff8233; border:2px solid #000; border-radius:50%;"></div>
-        </div>
-        <button class="btn-main" style="background: red; color: #fff; border: none;" onclick="deleteUserAccount()">УДАЛИТЬ АККАУНТ</button>
-    </div>
-
-    <div id="sheet-cart" class="sheet">
-        <div class="handle"></div>
-        <h2 style="text-align:center;">КОРЗИНА</h2>
-        <select style="width:100%; padding:15px; border:2px solid #000; border-radius:15px; margin-bottom:20px;">
-            <option>Оставить у двери (0₽)</option>
-            <option>Ждать курьера (Платно)</option>
-        </select>
-        <button class="btn-main" style="background: #00ff00;">ОПЛАТИТЬ</button>
-    </div>
-
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, deleteUser, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // ТВОИ КЛЮЧИ ИНТЕГРИРОВАНЫ
-    const firebaseConfig = {
-      apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-      authDomain: "deliverygov11.firebaseapp.com",
-      projectId: "deliverygov11",
-      storageBucket: "deliverygov11.firebasestorage.app",
-      messagingSenderId: "562994407235",
-      appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    // ПРОВЕРКА ВХОДА
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('user-display-name').value = user.displayName || "Пользователь";
-            if (document.getElementById('scr-auth').classList.contains('active')) changeScreen('scr-home');
-        }
-    });
-
-    window.loginGoogle = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (e) { alert("Ошибка входа: " + e.message); }
-    };
-
-    window.deleteUserAccount = async () => {
-        if(confirm("Удалить профиль? Это нельзя отменить.")) {
-            try {
-                await deleteUser(auth.currentUser);
-                location.reload();
-            } catch (e) { alert("Нужно перевойти для удаления"); }
-        }
-    };
-
-    // МЕНЕДЖЕР ЭКРАНОВ
-    window.changeScreen = (id) => {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.sheet').forEach(sh => sh.classList.remove('open'));
-        document.getElementById(id).classList.add('active');
-    };
-
-    // ОНБОРДИНГ
-    let step = 1;
-    window.moveOb = (n) => {
-        step += n;
-        if(step > 2) return changeScreen('scr-auth');
-        if(step < 1) step = 1;
-        document.getElementById('ob-title').innerText = step === 1 ? "ПРИВЕТ В RX!" : "БЕЗОПАСНОСТЬ";
-        document.getElementById('ob-icon').innerText = step === 1 ? "👋" : "🛡️";
-    };
-
-    window.openSheet = (id) => document.getElementById(id).classList.add('open');
-    window.closeSheet = (id) => document.getElementById(id).classList.remove('open');
-    window.setTheme = (t) => document.body.className = t === 'default' ? '' : 'theme-' + t;
-
-    // СВАЙП ВНИЗ
-    let ts = 0;
-    document.querySelectorAll('.sheet').forEach(sh => {
-        sh.addEventListener('touchstart', e => ts = e.touches[0].clientY);
-        sh.addEventListener('touchmove', e => {
-            if (e.touches[0].clientY - ts > 80) closeSheet(sh.id);
-        });
-    });
 </script>
 
 </body>
