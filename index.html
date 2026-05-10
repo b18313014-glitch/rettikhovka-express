@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX DELIVERY | ACTIVE</title>
+    <title>RX DELIVERY | V2.3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -12,29 +12,134 @@
             --border: 3px solid #000;
             --shadow: 6px 6px 0px #000;
         }
-        body.theme-beige { --bg: #f5f5dc; --accent: #d2b48c; }
-        body.theme-orange { --bg: #fff5ed; --accent: #ff6600; }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        body { margin: 0; background: var(--bg); overflow: hidden; transition: 0.3s; color: #1a1a1a; }
+        body { margin: 0; background: var(--bg); overflow: hidden; }
 
-        .app { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; border-left: var(--border); border-right: var(--border); background: var(--bg); }
+        .app-frame { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; border-left: var(--border); border-right: var(--border); background: var(--bg); }
 
         /* ЭКРАНЫ */
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: var(--bg); z-index: 10; }
-        .screen.active { display: flex; animation: slideUp 0.4s ease-out; }
-
-        /* ПАНЕЛИ (BOTTOM SHEETS) */
-        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: 4px solid #000; border-radius: 35px 35px 0 0; z-index: 1000; transition: 0.5s cubic-bezier(0, 0.5, 0, 1); padding: 25px; }
-        .sheet.open { transform: translateX(-50%) translateY(0); }
-        .handle { width: 60px; height: 6px; background: #ddd; border-radius: 10px; margin: -10px auto 20px; cursor: pointer; }
-
-        /* КНОПКИ */
-        .btn-main { width: 100%; padding: 20px; border: var(--border); border-radius: 20px; font-weight: 900; font-size: 16px; box-shadow: var(--shadow); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; background: #fff; }
-        .btn-main:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 #000; }
-        .btn-icon { width: 50px; height: 50px; background: #fff; border: var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0 #000; cursor: pointer; }
+        .screen.active { display: flex; }
 
         header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-icon { width: 50px; height: 50px; background: #fff; border: var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0 #000; cursor: pointer; }
+
+        /* ШТРИХ-КОД БЛОК */
+        .barcode-box { background: #fff; border: var(--border); border-radius: 25px; margin: 20px; padding: 30px; text-align: center; box-shadow: var(--shadow); }
+        .upload-area { border: 2px dashed #000; padding: 20px; border-radius: 15px; cursor: pointer; margin-top: 15px; }
+        .file-info { margin-top: 10px; font-size: 14px; font-weight: 700; }
+
+        /* МАГАЗИН */
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; overflow-y: auto; }
+        .p-card { background: #fff; border: var(--border); border-radius: 20px; padding: 15px; box-shadow: 4px 4px 0 #000; }
+        .price-tag { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: #f0f0f0; padding: 5px 10px; border-radius: 10px; }
+        .add-to-cart { background: #000; color: #fff; border: none; border-radius: 8px; padding: 8px; cursor: pointer; }
+
+        /* КНОПКИ ОПЛАТЫ */
+        .btn-pay { width: 100%; padding: 18px; border: var(--border); border-radius: 15px; font-weight: 900; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: 4px solid #000; border-radius: 35px 35px 0 0; z-index: 1000; transition: 0.4s; padding: 25px; }
+        .sheet.open { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+
+    <div id="scr-home" class="screen active">
+        <header>
+            <div class="btn-icon" onclick="openSheet('sheet-profile')"><i class="fa-solid fa-bars"></i></div>
+            <b style="font-size:22px;">RX DELIVERY</b>
+            <div class="btn-icon" onclick="openSheet('sheet-cart')"><i class="fa-solid fa-cart-shopping"></i></div>
+        </header>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:20px; gap:15px;">
+            <button class="btn-pay" style="background:var(--accent); padding:40px;" onclick="switchScreen('scr-shop')">МАГАЗИН <i class="fa-solid fa-shop"></i></button>
+            <button class="btn-pay" style="background:#4d88ff; color:#fff; padding:40px;" onclick="switchScreen('scr-ozon')">ОЗОН ШТРИХ-КОД <i class="fa-solid fa-barcode"></i></button>
+        </div>
+    </div>
+
+    <div id="scr-shop" class="screen">
+        <header>
+            <div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <b>КАТЕГОРИИ</b>
+            <div></div>
+        </header>
+        <div class="product-grid">
+            <div class="p-card">
+                <div style="font-size:30px;">☕</div>
+                <b>Золотой Дедушка</b>
+                <div class="price-tag">
+                    <span>60 ₽</span>
+                    <button class="add-to-cart" onclick="alert('Добавлено!')"><i class="fa-solid fa-basket-shopping"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="scr-ozon" class="screen">
+        <header>
+            <div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <b>OZON ПОСЫЛКИ</b>
+            <div></div>
+        </header>
+        <div class="barcode-box">
+            <i class="fa-solid fa-barcode" style="font-size:50px;"></i>
+            <h3>Загрузи штрих-код</h3>
+            <p style="font-size:12px; color:red;">Максимум 3 МБ. Большие файлы не принимаем!</p>
+            
+            <div class="upload-area" onclick="document.getElementById('barcode-input').click()">
+                <span id="upload-text">Нажми, чтобы выбрать фото</span>
+                <input type="file" id="barcode-input" style="display:none" onchange="validateBarcode(event)">
+            </div>
+            <div id="file-status" class="file-info"></div>
+        </div>
+    </div>
+
+    <div id="sheet-cart" class="sheet">
+        <h2 style="text-align:center;">ОПЛАТА ЗАКАЗА</h2>
+        <button class="btn-pay" style="background:#00ff00;" onclick="window.location.href='https://qr.nspk.ru/...'"><i class="fa-solid fa-bolt"></i> ОПЛАТИТЬ СБП</button>
+        <button class="btn-pay" style="background:#ef4444; color:#fff;" onclick="window.location.href='https://alfabank.ru/...'"><i class="fa-solid fa-building-columns"></i> АЛЬФА-БАНК</button>
+        <button class="btn-pay" onclick="closeSheet('sheet-cart')">ОТМЕНА</button>
+    </div>
+
+</div>
+
+<script>
+    // 1. ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ (ФИКС НАСЛАИВАНИЯ)
+    function switchScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // 2. ВАЛИДАЦИЯ ФАЙЛА (ОТСЕИВАЕМ БОЛЬШЕ 3МБ)
+    function validateBarcode(event) {
+        const file = event.target.files[0];
+        const status = document.getElementById('file-status');
+        const text = document.getElementById('upload-text');
+
+        if (!file) return;
+
+        const fileSizeMB = file.size / (1024 * 1024);
+
+        if (fileSizeMB > 3) {
+            status.style.color = "red";
+            status.innerText = "ОШИБКА: Файл " + fileSizeMB.toFixed(2) + " МБ — слишком тяжелый! Выберите другой.";
+            event.target.value = ""; // Очищаем выбор
+            text.innerText = "Нажми, чтобы выбрать фото";
+        } else {
+            status.style.color = "green";
+            status.innerText = "Файл принят (" + fileSizeMB.toFixed(2) + " МБ). Штрих-код готов к отправке!";
+            text.innerText = "Файл: " + file.name;
+        }
+    }
+
+    function openSheet(id) { document.getElementById(id).classList.add('open'); }
+    function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+</script>
+
+</body>
+</html>        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .p-card { background:#fff; border:var(--border); padding:15px; border-radius:20px; box-shadow:4px 4px 0 #000; }
         
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
