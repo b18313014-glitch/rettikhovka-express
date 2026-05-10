@@ -2,130 +2,172 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX SYSTEM | Реттиховка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RX DELIVERY | PREMIUM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --border: 3px solid #000; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; color: #000; margin: 0; }
-
-        /* Экраны */
-        .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
-        .active { display: flex; }
-
-        /* Дизайн корзины */
-        .cart-item {
-            width: 100%; max-width: 500px;
-            border: var(--border); padding: 15px; margin-bottom: 15px;
-            display: flex; align-items: center; gap: 15px;
-        }
-        .item-img { width: 80px; height: 80px; background: #eee; border: 2px solid #000; }
-        .controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-        .btn-qty { background: #000; color: #fff; border: none; width: 30px; height: 30px; cursor: pointer; }
-
-        /* Окно согласия (Оставить у двери) */
-        #leave-door-box {
-            background: #f0f0f0; border: var(--border);
-            padding: 20px; margin-top: 20px; display: none;
-            max-width: 500px; text-align: left;
+        :root { --border: 2px solid #000; --radius: 12px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; font-family: 'Inter', sans-serif; 
+            background: #fff; color: #000; overflow-x: hidden;
         }
 
-        /* Статус-бар рейтинга */
-        .status-bar {
-            width: 100%; padding: 10px; background: #000; color: #fff;
-            position: sticky; top: 0; display: flex; justify-content: space-around;
+        /* ШАПКА */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-bottom: var(--border);
         }
 
-        .btn-pay { background: #000; color: #fff; padding: 20px; width: 100%; font-weight: 900; border: none; margin-top: 20px; cursor: pointer; }
-        .disabled { opacity: 0.3; pointer-events: none; }
+        /* ПРОФИЛЬ В УГЛУ */
+        .profile-trigger {
+            width: 45px; height: 45px; border: var(--border);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; background: #fff;
+        }
+
+        /* ГЛАВНЫЙ КОНТЕЙНЕР */
+        .main-container {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 40px 20px; text-align: center;
+        }
+
+        /* КНОПКИ (НЕ РАСТЯГИВАЮТСЯ) */
+        .btn-ui {
+            width: 280px; /* Фиксированная ширина для всех экранов */
+            padding: 16px; margin: 10px 0;
+            background: #000; color: #fff;
+            border: none; border-radius: var(--radius);
+            font-weight: 800; text-transform: uppercase;
+            cursor: pointer; font-size: 14px;
+        }
+
+        /* МЕНЮ НАСТРОЕК (ПРОФИЛЬ) */
+        .settings-view {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: #fff; z-index: 200;
+            flex-direction: column; padding: 20px;
+        }
+
+        .settings-item {
+            width: 100%; max-width: 400px; margin: 0 auto;
+            border-bottom: 1px solid #eee; padding: 15px 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* МОДАЛЬНЫЕ ОКНА (ДЛЯ УДАЛЕНИЯ) */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+
+        .modal-box {
+            background: #fff; border: var(--border); padding: 30px;
+            width: 300px; text-align: center; border-radius: var(--radius);
+        }
+
+        /* ИНСПЕКТОР (КАК У ДУРОВА) */
+        #inspector-panel {
+            position: fixed; bottom: 10px; right: 10px;
+            background: #000; color: #00ff00; font-family: monospace;
+            padding: 10px; font-size: 10px; border-radius: 5px;
+            display: none; z-index: 500; opacity: 0.8;
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="status" class="status-bar">
-        <span>УРОВЕНЬ: <b id="lvl-val">1</b></span>
-        <span>РЕЙТИНГ: <b id="rate-val">5</b></span>
+    <div id="inspector-panel">
+        UID: <span id="ins-uid">...</span><br>
+        IP: <span id="ins-ip">...</span><br>
+        STATUS: ONLINE
     </div>
 
-    <section id="cart-screen" class="screen active">
-        <h2 style="text-transform: uppercase;">Ваш заказ</h2>
+    <div class="header">
+        <b style="letter-spacing: 2px;">RX DELIVERY</b>
+        <div class="profile-trigger" onclick="toggleSettings(true)">
+            <i class="fa-solid fa-user"></i>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h2>ГЛАВНАЯ</h2>
+        <button class="btn-ui" onclick="alert('Переход к еде')">Заказать еду</button>
+        <button class="btn-ui" onclick="alert('Переход к Ozon')">Забрать Ozon</button>
         
-        <div class="cart-item">
-            <div class="item-img"><img src="" alt="" id="prod-img"></div>
-            <div style="flex-grow: 1;">
-                <b id="prod-name">Кириешки (пачка)</b><br>
-                <span>Цена: 35₽</span>
-                <div class="controls">
-                    <button class="btn-qty" onclick="changeQty(-1)">-</button>
-                    <b id="qty">1</b>
-                    <button class="btn-qty" onclick="changeQty(1)">+</button>
-                </div>
-            </div>
+        <p style="margin-top: 50px; font-size: 12px; color: #aaa;" onclick="showInspector()">v1.0.4 (нажми 5 раз для инспектора)</p>
+    </div>
+
+    <div id="settings" class="settings-view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <i class="fa-solid fa-chevron-left fa-lg" onclick="toggleSettings(false)"></i>
+            <b style="text-transform: uppercase;">Настройки профиля</b>
+            <span></span>
         </div>
 
-        <div id="weight-warning" style="color: red; display: none; font-weight: bold; margin-bottom: 10px;">
-            ⚠️ ОШИБКА: Вес более 20кг! Мы не сможем это довезти.
-        </div>
+        <div class="settings-item"><span>Фото / Фамилия</span> <i class="fa-solid fa-pen"></i></div>
+        <div class="settings-item"><span>Почта</span> <small id="user-mail">bogdan@rx.ru</small></div>
+        <div class="settings-item"><span>Номер телефона</span> <small>+7 (9XX) XXX-XX-XX</small></div>
+        <div class="settings-item" onclick="changeTheme()" style="cursor:pointer;"><span>Сменить тему</span> <i class="fa-solid fa-moon"></i></div>
 
-        <div style="margin: 20px 0;">
-            <input type="checkbox" id="at-door" onchange="toggleDoorWarning()"> 
-            <label for="at-door">Оставить у двери</label>
-        </div>
+        <button class="btn-ui" style="background: red; margin-top: auto;" onclick="confirmDelete(1)">Удалить аккаунт</button>
+    </div>
 
-        <div id="leave-door-box">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <b>СОГЛАШЕНИЕ:</b> Если товар украдут или вы его не найдете — мы не несем ответственности. Все претензии к вам.
-            <br><br>
-            <input type="checkbox" id="agree-check" onchange="checkLock()"> Я согласен
+    <div id="modal-1" class="modal">
+        <div class="modal-box">
+            <b>УДАЛИТЬ?</b>
+            <p style="font-size: 13px;">Ваш рейтинг и уровень будут стерты из базы навсегда.</p>
+            <button class="btn-ui" style="width: 100%;" onclick="confirmDelete(2)">ПРОДОЛЖИТЬ</button>
+            <p onclick="closeModals()" style="cursor:pointer; margin-top: 15px; font-weight: bold;">ОТМЕНА</p>
         </div>
+    </div>
 
-        <button id="pay-btn" class="btn-pay" onclick="order()">ОФОРМИТЬ ЗАКАЗ</button>
-    </section>
+    <div id="modal-2" class="modal">
+        <div class="modal-box" style="border-color: red;">
+            <b style="color: red;">ПОСЛЕДНИЙ ШАГ</b>
+            <p style="font-size: 13px;">Данные UID и IP будут удалены из Firebase. Вы уверены?</p>
+            <button class="btn-ui" style="width: 100%; background: red;" onclick="finalDelete()">УДАЛИТЬ НАВСЕГДА</button>
+            <p onclick="closeModals()" style="cursor:pointer; margin-top: 15px; font-weight: bold;">Я ПЕРЕДУМАЛ</p>
+        </div>
+    </div>
 
     <script>
-        let qty = 1;
-        let rating = 10; // Допустим, у тебя рейтинг 10
-        let level = rating >= 10 ? 2 : 1;
+        let clickCount = 0;
 
-        document.getElementById('lvl-val').innerText = level;
-        document.getElementById('rate-val').innerText = rating;
+        function toggleSettings(show) {
+            document.getElementById('settings').style.display = show ? 'flex' : 'none';
+        }
 
-        function changeQty(amt) {
-            qty += amt;
-            if (qty < 1) qty = 1;
-            document.getElementById('qty').innerText = qty;
-            
-            // Проверка на 20кг (допустим пачка 100г)
-            if (qty > 200) {
-                document.getElementById('weight-warning').style.display = 'block';
-                document.getElementById('pay-btn').classList.add('disabled');
-            } else {
-                document.getElementById('weight-warning').style.display = 'none';
-                document.getElementById('pay-btn').classList.remove('disabled');
+        function confirmDelete(step) {
+            closeModals();
+            document.getElementById('modal-' + step).style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        function finalDelete() {
+            alert("Аккаунт удален из Firebase. Данные очищены.");
+            window.location.reload();
+        }
+
+        function changeTheme() {
+            document.body.style.filter = document.body.style.filter === 'invert(1)' ? 'invert(0)' : 'invert(1)';
+        }
+
+        // Скрытый инспектор (5 кликов по версии)
+        function showInspector() {
+            clickCount++;
+            if (clickCount >= 5) {
+                document.getElementById('inspector-panel').style.display = 'block';
+                document.getElementById('ins-uid').innerText = "UID-" + Math.floor(Math.random()*100000);
+                fetch('https://api.ipify.org?format=json')
+                    .then(r => r.json()).then(d => document.getElementById('ins-ip').innerText = d.ip);
             }
-        }
-
-        function toggleDoorWarning() {
-            const box = document.getElementById('leave-door-box');
-            box.style.display = document.getElementById('at-door').checked ? 'block' : 'none';
-            checkLock();
-        }
-
-        function checkLock() {
-            const needsAgree = document.getElementById('at-door').checked;
-            const hasAgreed = document.getElementById('agree-check').checked;
-            const btn = document.getElementById('pay-btn');
-
-            if (needsAgree && !hasAgreed) {
-                btn.classList.add('disabled');
-            } else {
-                btn.classList.remove('disabled');
-            }
-        }
-
-        function order() {
-            alert("Заказ принят! Если сумма большая — оплатите по QR-коду СБП.");
         }
     </script>
 </body>
