@@ -2,175 +2,155 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RX DELIVERY | V3.0</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX Delivery - Доставка в Реттиховке</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --accent: #ff8233; --bg: #fffcf9; --border: 3px solid #000; --shadow: 5px 5px 0px #000; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); overflow: hidden; }
+        :root {
+            --main-color: #ffcc00;
+            --bg-color: #f4f4f4;
+            --text-color: #333;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg-color); color: var(--text-color); }
+        header { background: #fff; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .container { padding: 20px; max-width: 600px; margin: auto; }
         
-        .app-frame { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; position: relative; border-left: var(--border); border-right: var(--border); background: var(--bg); }
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: var(--bg); padding: 20px; z-index: 10; }
-        .screen.active { display: flex; }
+        /* Карточки товаров */
+        .product-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .product-info h3 { margin: 0; font-size: 18px; }
+        .product-info p { margin: 5px 0; color: #777; }
+        .btn-add { background: var(--main-color); border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
 
-        header { padding: 15px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; margin-bottom: 15px; }
-        .btn-icon { width: 45px; height: 45px; background: #fff; border: var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 #000; cursor: pointer; }
+        /* Плавающие окна (Sheet) */
+        .sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 25px 25px 0 0; transition: 0.4s; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
+        .sheet.active { bottom: 0; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+        .overlay.active { display: block; }
 
-        .btn-main { width: 100%; padding: 18px; border: var(--border); border-radius: 15px; font-weight: 900; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 4px 4px 0 #000; transition: 0.1s; }
-        .btn-main:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-pay { background: #000; color: #fff; }
         
-        .rx-card { background: #fff; border: var(--border); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 15px; }
-        .rx-input { width: 100%; padding: 15px; border: var(--border); border-radius: 12px; margin-bottom: 10px; font-weight: 600; font-size: 16px; }
-
-        /* ПЛАШКИ ПРОФИЛЯ */
-        .p-item { background: #fff; border: var(--border); padding: 15px; border-radius: 15px; display: flex; align-items: center; gap: 15px; font-weight: 800; margin-bottom: 10px; box-shadow: 4px 4px 0 var(--accent); cursor: pointer; }
-        .p-item i { color: var(--accent); font-size: 20px; }
-
-        /* ЧЕК В КОРЗИНЕ */
-        .receipt { background: #f0f0f0; padding: 15px; border-radius: 15px; border: 2px solid #000; margin-top: 10px; }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; font-weight: 600; }
-
-        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: #fff; border-top: var(--border); border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s; padding: 25px; box-shadow: 0 -10px 20px rgba(0,0,0,0.1); }
-        .sheet.open { transform: translateX(-50%) translateY(0); }
+        .cart-btn { position: fixed; bottom: 20px; right: 20px; background: var(--main-color); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 98; }
     </style>
 </head>
 <body>
 
-<div class="app-frame">
+<header>
+    <h2 style="margin:0;">🚀 RX DELIVERY</h2>
+    <small>Доставка в пос. Реттиховка</small>
+</header>
 
-    <div id="scr-welcome" class="screen">
-        <div class="rx-card" style="margin-top: 60px; text-align: center;">
-            <h1 style="font-weight: 900; font-size: 32px;">RX DELIVERY</h1>
-            <p>Доставка в Реттиховке стала быстрее!</p>
-            <button class="btn-main" style="background: var(--accent); color:#fff;" onclick="switchScreen('scr-auth')">ВОЙТИ ЧЕРЕЗ GOOGLE</button>
-        </div>
-    </div>
-
-    <div id="scr-auth" class="screen">
-        <header><div class="btn-icon" onclick="switchScreen('scr-welcome')"><i class="fa-solid fa-arrow-left"></i></div><b>ВХОД</b><div></div></header>
-        <button class="btn-main" style="background: #fff;" onclick="loginGoogle()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20"> ПРОДОЛЖИТЬ С GOOGLE
-        </button>
-        <p style="text-align: center; color: #777;">Нажимая кнопку, ты входишь в систему RX</p>
-    </div>
-
-    <div id="scr-home" class="screen">
-        <header>
-            <div class="btn-icon" onclick="switchScreen('scr-profile')"><i class="fa-solid fa-user"></i></div>
-            <b style="font-size: 20px;">ГЛАВНАЯ</b>
-            <div class="btn-icon" onclick="switchScreen('scr-cart')"><i class="fa-solid fa-basket-shopping"></i></div>
-        </header>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:20px;">
-            <button class="btn-main" style="background: var(--accent); padding: 45px; font-size: 20px;" onclick="switchScreen('scr-shop')">ЗАКАЗАТЬ ЕДУ <i class="fa-solid fa-pizza-slice"></i></button>
-            <button class="btn-main" style="background: #4d88ff; color:#fff; padding: 45px; font-size: 20px;" onclick="switchScreen('scr-ozon')">OZON ШТРИХ <i class="fa-solid fa-barcode"></i></button>
-        </div>
-    </div>
-
-    <div id="scr-profile" class="screen">
-        <header><div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div><b>ПРОФИЛЬ</b><div></div></header>
-        <div class="p-item"><i class="fa-solid fa-circle-user"></i> Мои данные</div>
-        <div class="p-item"><i class="fa-solid fa-map-location-dot"></i> Мой адрес</div>
-        <div class="p-item"><i class="fa-solid fa-store"></i> Магазин: Алина</div>
-        <button class="btn-main" style="margin-top:auto; background: #ff4444; color:#fff; border:none;" onclick="logout()">ВЫЙТИ</button>
-    </div>
-
-    <div id="scr-shop" class="screen">
-        <header><div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div><b>МАГАЗИН</b><div></div></header>
-        <div class="rx-card">
-            <div style="font-size:45px;">☕</div>
-            <b style="font-size:18px;">Золотой Дедушка</b><br>
-            <p>Классический кофе для бодрости.</p>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <b style="font-size:20px;">60 ₽</b>
-                <button class="btn-icon" style="background:var(--accent); color:#fff; box-shadow:none;" onclick="alert('Добавлено в корзину!')"><i class="fa-solid fa-cart-plus"></i></button>
+<div class="container">
+    <div id="products-list">
+        <div class="product-card">
+            <div class="product-info">
+                <h3>Картошка фри</h3>
+                <p>110 ₽</p>
             </div>
+            <button class="btn-add" onclick="addToCart('Картошка фри', 110)">+</button>
         </div>
-    </div>
-
-    <div id="scr-cart" class="screen">
-        <header><div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div><b>КОРЗИНА</b><div></div></header>
-        <div style="flex:1; overflow-y:auto;">
-            <div class="rx-card"><b>Золотой Дедушка x1</b> <span style="float:right;">60 ₽</span></div>
-            <input type="text" class="rx-input" placeholder="Улица, дом, кв.">
-            <input type="text" class="rx-input" placeholder="Промокод">
-            <div class="receipt">
-                <div class="receipt-row"><span>Товары:</span> <span>60 ₽</span></div>
-                <div class="receipt-row"><span>Доставка:</span> <span>50 ₽</span></div>
-                <div class="receipt-row" style="border-top:2px solid #000; padding-top:5px; font-weight:900;"><span>ИТОГО:</span> <span>110 ₽</span></div>
+        
+        <div class="product-card">
+            <div class="product-info">
+                <h3>Кофе (Американо)</h3>
+                <p>90 ₽</p>
             </div>
-            <button class="btn-main" style="background:#00ff00; margin-top:20px;" onclick="openSheet('pay-sheet')">ОФОРМИТЬ ЗАКАЗ</button>
+            <button class="btn-add" onclick="addToCart('Кофе', 90)">+</button>
         </div>
     </div>
-
-    <div id="scr-ozon" class="screen">
-        <header><div class="btn-icon" onclick="switchScreen('scr-home')"><i class="fa-solid fa-arrow-left"></i></div><b>OZON</b><div></div></header>
-        <div class="rx-card" style="text-align:center;">
-            <i class="fa-solid fa-barcode" style="font-size:60px; margin-bottom:15px;"></i>
-            <h3>Загрузи штрих-код</h3>
-            <p style="font-size:12px; color:red;">Файлы больше 3МБ не принимаем!</p>
-            <input type="file" id="ozon-upload" style="display:none;" onchange="validateFile(this)">
-            <button class="btn-main" onclick="document.getElementById('ozon-upload').click()">ВЫБРАТЬ ФОТО</button>
-            <div id="ozon-status" style="margin-top:10px; font-weight:800;"></div>
-        </div>
-    </div>
-
-    <div id="pay-sheet" class="sheet">
-        <h3 style="text-align:center;">ВЫБЕРИТЕ ОПЛАТУ</h3>
-        <button class="btn-main" onclick="location.href='https://qr.nspk.ru/'"><i class="fa-solid fa-bolt"></i> СБП</button>
-        <button class="btn-main" style="background:#ef4444; color:#fff;" onclick="location.href='https://alfabank.ru/'">АЛЬФА-БАНК</button>
-        <button class="btn-main" onclick="closeSheet('pay-sheet')">ОТМЕНА</button>
-    </div>
-
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<div class="cart-btn" onclick="openSheet('cart-sheet')">
+    <i class="fa-solid fa-basket-shopping"></i>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-      authDomain: "deliverygov11.firebaseapp.com",
-      projectId: "deliverygov11",
-      storageBucket: "deliverygov11.firebasestorage.app",
-      messagingSenderId: "562994407235",
-      appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-    };
+<div id="overlay" class="overlay" onclick="closeAll()"></div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+<div id="cart-sheet" class="sheet">
+    <h3>🛒 Ваша корзина</h3>
+    <div id="cart-items"></div>
+    <hr>
+    <div style="display:flex; justify-content:space-between; font-weight:bold;">
+        <span>Итого:</span>
+        <span id="cart-total">0 ₽</span>
+    </div>
+    <button class="btn-main" style="background: var(--main-color);" onclick="openSheet('pay-sheet')">Оформить заказ</button>
+    <button class="btn-main" onclick="closeSheet('cart-sheet')">Закрыть</button>
+</div>
 
-    // КОНТРОЛЬ ДОСТУПА
-    onAuthStateChanged(auth, (user) => {
-        if (user) switchScreen('scr-home');
-        else switchScreen('scr-welcome');
-    });
+<div id="pay-sheet" class="sheet">
+    <h3 style="text-align:center;">ВЫБЕРИТЕ СПОСОБ ОПЛАТЫ</h3>
+    <p style="text-align:center; color:#666;">Заказ будет передан курьеру после оплаты</p>
+    
+    <button class="btn-main btn-pay" onclick="handleSBP()">
+        <i class="fa-solid fa-qrcode"></i> ОПЛАТИТЬ ЧЕРЕЗ СБП (110 ₽)
+    </button>
+    
+    <button class="btn-main" style="background:#eee;" onclick="closeSheet('pay-sheet')">НАЗАД</button>
+</div>
 
-    window.switchScreen = (id) => {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+<script>
+    let cart = [];
+
+    // Добавление в корзину
+    function addToCart(name, price) {
+        cart.push({ name, price });
+        updateCartUI();
+        alert(name + " добавлен в корзину!");
+    }
+
+    // Обновление интерфейса корзины
+    function updateCartUI() {
+        const itemsDiv = document.getElementById('cart-items');
+        const totalSpan = document.getElementById('cart-total');
+        itemsDiv.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.price;
+            itemsDiv.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>${item.name}</span>
+                <span>${item.price} ₽</span>
+            </div>`;
+        });
+
+        totalSpan.innerText = total + " ₽";
+    }
+
+    // Управление окнами
+    function openSheet(id) {
+        document.getElementById('overlay').classList.add('active');
         document.getElementById(id).classList.add('active');
-        closeSheet('pay-sheet');
-    };
+    }
 
-    window.loginGoogle = async () => { await signInWithPopup(auth, provider); };
-    window.logout = async () => { await signOut(auth); };
-
-    window.validateFile = (input) => {
-        const file = input.files[0];
-        const status = document.getElementById('ozon-status');
-        if (file.size > 3 * 1024 * 1024) {
-            status.style.color = "red";
-            status.innerText = "ОШИБКА: СЛИШКОМ ТЯЖЕЛЫЙ!";
-            input.value = "";
-        } else {
-            status.style.color = "green";
-            status.innerText = "ШТРИХ-КОД ПРИНЯТ!";
+    function closeSheet(id) {
+        document.getElementById(id).classList.remove('active');
+        if (id === 'cart-sheet' || id === 'pay-sheet') {
+            document.getElementById('overlay').classList.remove('active');
         }
-    };
+    }
 
-    window.openSheet = (id) => document.getElementById(id).classList.add('open');
-    window.closeSheet = (id) => document.getElementById(id).classList.remove('open');
+    function closeAll() {
+        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+        document.getElementById('overlay').classList.remove('active');
+    }
+
+    // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
+    window.handleSBP = () => {
+        const sbpLink = "https://c2c.cbrpay.ru/AS1I003EI3T7RIPG9018PF66SR2FTN0V";
+        
+        // Тут можно добавить сохранение в Firebase перед оплатой
+        console.log("Заказ отправлен в обработку...");
+
+        // Переход к оплате
+        window.location.href = sbpLink;
+
+        // Очистка после перехода
+        cart = [];
+        updateCartUI();
+        closeAll();
+    };
 </script>
+
 </body>
 </html>
