@@ -2,187 +2,126 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX-ULTIMATE | ADMIN</title>
+    <title>RETTIKHOVKA EXPRESS | CLIENT</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #007bff; --red: #ff4757; --green: #2ecc71; --bg: #050505; }
-        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 70px; }
-        .tab { display: none; padding: 15px; }
+        :root { --main: #007bff; --bg: #0a0a0a; --card: #161616; }
+        body { background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; margin: 0; }
+        
+        .screen { display: none; padding: 20px; }
         .active { display: block; }
         
-        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
-        .btn { border: none; padding: 12px; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%; color: white; margin-top: 5px; }
-        .btn-blue { background: var(--main); }
-        .btn-red { background: var(--red); }
+        .btn-big { background: var(--main); padding: 25px; border-radius: 20px; margin: 10px 0; text-align: center; font-weight: 900; cursor: pointer; }
+        .shop-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; }
         
-        input, select { width: 100%; padding: 12px; margin: 5px 0; background: #222; border: 1px solid #444; color: white; border-radius: 8px; }
+        /* Модальное окно доставки */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 25px; width: 85%; border: 1px solid var(--main); }
         
-        /* Навигация */
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111; display: flex; justify-content: space-around; padding: 10px; border-top: 2px solid var(--main); }
-        .nav div { font-size: 10px; text-align: center; cursor: pointer; opacity: 0.5; }
-        .nav .active-nav { opacity: 1; color: var(--main); }
-
-        #preview-img { width: 100%; height: 200px; object-fit: contain; border-radius: 10px; display: none; filter: contrast(1.1) brightness(1.1); }
-        #interactive.viewport { width: 100%; height: 180px; border-radius: 10px; overflow: hidden; border: 1px solid var(--main); }
-        
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
+        .p-img-processed { filter: contrast(1.2) brightness(1.1); border: 2px solid white; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div id="tab-scan" class="tab active">
-    <h2>СУПЕР-СКАНЕР</h2>
-    <div class="card">
-        <div id="interactive" class="viewport"></div>
-        <button class="btn btn-blue" onclick="startScan()">СКАНИРОВАТЬ (КРЫШКА/БОК)</button>
-        <img id="preview-img" src="">
-        <input type="file" id="cam" accept="image/*" capture="environment" style="display:none" onchange="processImage(this)">
-        <button class="btn" style="background:var(--green)" onclick="document.getElementById('cam').click()">📸 ФОТО (НЕЙРО-ФИЛЬТР)</button>
-        <input type="text" id="p-barcode" placeholder="Штрих-код">
-        <input type="text" id="p-name" placeholder="Название">
-        <input type="number" id="p-price" placeholder="Цена">
-        <select id="p-shop"></select>
-        <button class="btn btn-blue" id="save-btn" onclick="saveProduct()">СОХРАНИТЬ</button>
+<div id="screen-main" class="screen active">
+    <h1>RX EXPRESS</h1>
+    <div class="btn-big" onclick="showShops()">ЗАКАЗАТЬ ЕДУ</div>
+    <div class="btn-big" style="background: #6c5ce7;" onclick="openDeliveryModal()">ЗАКАЗАТЬ ДОСТАВКУ</div>
+    
+    <hr>
+    <h3>СРОЧНО (Срок годности!)</h3>
+    <div id="urgent-items"></div>
+</div>
+
+<div id="screen-shops" class="screen">
+    <button onclick="goBack('main')">← Назад</button>
+    <h2>Выберите магазин</h2>
+    <div id="shops-list"></div>
+</div>
+
+<div id="screen-catalog" class="screen">
+    <button onclick="goBack('shops')">← К магазинам</button>
+    <h2 id="current-shop-name">Магазин</h2>
+    <div id="categories-nav"></div>
+    <div id="products-list"></div>
+</div>
+
+<div id="delivery-modal" class="modal">
+    <div class="modal-content">
+        <h3>Новая доставка</h3>
+        <p style="font-size: 12px; color: #ff4757;">⚠️ Файлы > 3МБ не принимаются! Только JPG/PNG.</p>
+        <input type="file" id="delivery-file" accept="image/jpeg,image/png">
+        <button class="btn-big" style="width:100%;" onclick="uploadDelivery()">ОТПРАВИТЬ</button>
+        <button onclick="closeModal()" style="background:none; color:white; border:none; margin-top:10px; width:100%;">ОТМЕНА</button>
     </div>
 </div>
 
-<div id="tab-users" class="tab">
-    <h2>ПОЛЬЗОВАТЕЛИ И КУРЬЕРЫ</h2>
-    <div id="users-list" class="card">Загрузка...</div>
-    <hr>
-    <h3>КУРЬЕРЫ ОНЛАЙН</h3>
-    <div id="courier-list" class="card"></div>
-</div>
-
-<div id="tab-items" class="tab">
-    <h2>ВСЕ ТОВАРЫ</h2>
-    <div id="items-list"></div>
-</div>
-
-<div class="nav">
-    <div class="active-nav" onclick="switchTab('scan', this)">СКАНЕР</div>
-    <div onclick="switchTab('users', this)">ЮЗЕРЫ</div>
-    <div onclick="switchTab('items', this)">ТОВАРЫ</div>
-</div>
-
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ", authDomain: "deliverygov11.firebaseapp.com", projectId: "deliverygov11" };
+    // Firebase Config
+    const firebaseConfig = { apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ", projectId: "deliverygov11" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function switchTab(id, el) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active-nav'));
-        document.getElementById('tab-' + id).classList.add('active');
-        el.classList.add('active-nav');
-        if(id === 'users') loadUsers();
-        if(id === 'items') loadItems();
+    // 1. СИСТЕМА ФОТО (НЕЙРО-ОБРЕЗКА)
+    function processImage(file) {
+        if(file.size > 3 * 1024 * 1024) return alert("ФАЙЛ СЛИШКОМ БОЛЬШОЙ!");
+        // Здесь мы применяем фильтры для "белого фона" при выводе
+        return true;
     }
 
-    // 1. СКАНЕР С ПРОВЕРКОЙ НА ДУБЛИКАТЫ
-    function startScan() {
-        Quagga.init({
-            inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive') },
-            decoder: { readers: ["ean_reader", "code_128_reader", "code_39_reader"] }
-        }, (err) => { Quagga.start(); });
-        
-        Quagga.onDetected(async (data) => {
-            const code = data.codeResult.code;
-            document.getElementById('p-barcode').value = code;
-            Quagga.stop();
-
-            // ПРОВЕРКА: Есть ли такой товар?
-            const snap = await db.collection('products').where('barcode', '==', code).get();
-            if(!snap.empty) {
-                const existing = snap.docs[0].data();
-                alert("ВНИМАНИЕ: Товар уже есть в базе! Подтягиваю данные...");
-                document.getElementById('p-name').value = existing.name;
-                document.getElementById('p-price').value = existing.price;
-            } else {
-                fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`)
-                .then(r => r.json()).then(d => { if(d.status === 1) document.getElementById('p-name').value = d.product.product_name; });
-            }
-        });
-    }
-
-    // 2. НЕЙРО-ФИЛЬТР ДЛЯ ФОТО
-    function processImage(input) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = document.getElementById('preview-img');
-            img.src = e.target.result;
-            img.style.display = 'block';
-            // Эмуляция обработки: повышаем контраст и чистим фон через CSS фильтр
-            img.style.filter = "contrast(1.2) brightness(1.1) saturate(1.1)";
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // 3. КОНТРОЛЬ ПОЛЬЗОВАТЕЛЕЙ
-    function loadUsers() {
-        db.collection('users').onSnapshot(snap => {
-            const list = document.getElementById('users-list');
+    // 2. ВЫБОР МАГАЗИНА
+    function showShops() {
+        switchTab('shops');
+        db.collection('shops').get().then(snap => {
+            const list = document.getElementById('shops-list');
             list.innerHTML = '';
             snap.forEach(doc => {
-                const u = doc.data();
-                list.innerHTML += `<div class="user-row">
-                    <span>${u.email || doc.id}</span>
-                    <button class="btn btn-red" style="width:70px; font-size:10px;" onclick="deleteDoc('users', '${doc.id}')">БАН</button>
-                </div>`;
-            });
-        });
-        // Курьеры
-        db.collection('couriers').onSnapshot(snap => {
-            const list = document.getElementById('courier-list');
-            list.innerHTML = '';
-            snap.forEach(doc => {
-                const c = doc.data();
-                list.innerHTML += `<div class="card">🚚 ${c.name} - ${c.status || 'В ожидании'}</div>`;
+                list.innerHTML += `<div class="shop-card" onclick="showCatalog('${doc.id}', '${doc.data().name}')">${doc.data().name}</div>`;
             });
         });
     }
 
-    // 4. СПИСОК И УДАЛЕНИЕ ТОВАРОВ
-    function loadItems() {
-        db.collection('products').onSnapshot(snap => {
-            const list = document.getElementById('items-list');
+    // 3. КАТАЛОГ С КАТЕГОРИЯМИ
+    function showCatalog(id, name) {
+        switchTab('catalog');
+        document.getElementById('current-shop-name').innerText = name;
+        db.collection('products').where('shopId', '==', id).onSnapshot(snap => {
+            const list = document.getElementById('products-list');
             list.innerHTML = '';
             snap.forEach(doc => {
                 const p = doc.data();
-                list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><b>${p.name}</b><br>${p.price}₽</div>
-                    <button class="btn btn-red" style="width:100px;" onclick="deleteDoc('products', '${doc.id}')">УДАЛИТЬ</button>
-                </div>`;
+                list.innerHTML += `
+                    <div style="background:#111; padding:10px; border-radius:10px; margin-bottom:10px;">
+                        <img src="${p.img}" class="p-img-processed" style="width:80px;">
+                        <b>${p.name}</b> - ${p.price}₽
+                        <br><small>Годен до: ${p.expiryDate || '—'}</small>
+                        <button onclick="addToCart('${doc.id}')">+</button>
+                    </div>`;
             });
         });
     }
 
-    function deleteDoc(col, id) {
-        if(confirm("Удалить это нафиг?")) db.collection(col).doc(id).delete();
+    // 4. СРОК ГОДНОСТИ НА ГЛАВНОЙ
+    function loadUrgent() {
+        const now = new Date().toISOString().split('T')[0];
+        db.collection('products').where('expiryDate', '<=', now).limit(3).get().then(snap => {
+            const div = document.getElementById('urgent-items');
+            snap.forEach(doc => {
+                div.innerHTML += `<div style="color:red; font-size:12px;">🔥 ${doc.data().name} - СРОЧНО!</div>`;
+            });
+        });
     }
 
-    db.collection('shops').onSnapshot(snap => {
-        const s = document.getElementById('p-shop');
-        s.innerHTML = '';
-        snap.forEach(doc => s.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`);
-    });
-
-    function saveProduct() {
-        const data = {
-            barcode: document.getElementById('p-barcode').value,
-            name: document.getElementById('p-name').value,
-            price: Number(document.getElementById('p-price').value),
-            shopId: document.getElementById('p-shop').value,
-            img: document.getElementById('preview-img').src,
-            date: new Date()
-        };
-        db.collection('products').add(data).then(() => alert("Сохранено!"));
+    function switchTab(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-' + id).classList.add('active');
     }
+
+    function openDeliveryModal() { document.getElementById('delivery-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('delivery-modal').style.display = 'none'; }
+
+    loadUrgent();
 </script>
 </body>
 </html>
