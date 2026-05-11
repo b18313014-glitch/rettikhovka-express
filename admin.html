@@ -1,143 +1,86 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>RX ADMIN - ПАНЕЛЬ УПРАВЛЕНИЯ</title>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: #1a1a1a; color: white; display: flex; }
-        .sidebar { width: 250px; background: #111; height: 100vh; padding: 20px; box-sizing: border-box; }
-        .content { flex: 1; padding: 30px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
-        .card { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-family: inherit; }
-        input, select { background: #333; color: white; }
-        button { background: #007bff; color: white; font-weight: 900; cursor: pointer; }
-        .nav-link { padding: 10px; cursor: pointer; display: block; color: #888; text-decoration: none; }
-        .nav-link.active { color: #007bff; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
-        .badge { padding: 5px 10px; border-radius: 5px; font-size: 10px; }
-        .badge-new { background: #ffc107; color: #000; }
-    </style>
-</head>
-<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
-    <div class="sidebar">
-        <h2 style="color: #007bff;">RX ADMIN</h2>
-        <div class="nav-link active" onclick="showTab('orders')">Заказы</div>
-        <div class="nav-link" onclick="showTab('products')">Товары</div>
-        <div class="nav-link" onclick="showTab('users')">Пользователи</div>
+<div id="items-sec" style="display:none">
+    <h3>Управление товарами</h3>
+    
+    <div class="card">
+        <button class="btn" onclick="startScanner()" style="background: #6c5ce7; margin-bottom: 15px;">
+            <i class="fa-solid fa-barcode"></i> ОТКРЫТЬ СКАНЕР
+        </button>
+        <div id="scanner-container" style="width: 100%; display:none; margin-bottom: 10px; border-radius: 15px; overflow: hidden;"></div>
+        
+        <input type="text" id="p-barcode" placeholder="Штрих-код (сам появится после скана)">
+        <input type="text" id="p-name" placeholder="Название товара">
+        <input type="number" id="p-price" placeholder="Цена (₽)">
+        
+        <label style="font-size: 12px; color: #888;">Выберите магазин:</label>
+        <select id="p-shop-select" style="background:#222; color:white; padding:10px; width:100%; border-radius:5px; margin-top:5px;"></select>
+        
+        <button class="btn" style="margin-top: 20px;" onclick="saveProduct()">СОХРАНИТЬ ТОВАР</button>
     </div>
-
-    <div class="content">
-        <div id="tab-orders" class="tab-content">
-            <h1>Активные заказы</h1>
-            <div id="orders-list"></div>
+    
+    <div id="list-items">
         </div>
+</div>
 
-        <div id="tab-products" class="tab-content" style="display:none;">
-            <h1>Добавить товар</h1>
-            <div class="card">
-                <input type="text" id="p-name" placeholder="Название товара">
-                <input type="number" id="p-price" placeholder="Цена (₽)">
-                <input type="text" id="p-shop" placeholder="ID Магазина (Напр: berizka)">
-                <input type="text" id="p-img" placeholder="Ссылка на фото (Dropbox/URL)">
-                <button onclick="addProduct()">ДОБАВИТЬ В БАЗУ</button>
-            </div>
-            <div id="products-list"></div>
-        </div>
+<script>
+// ЗАГРУЗКА МАГАЗИНОВ В СПИСОК
+function loadShopsToSelect() {
+    db.collection('shops').onSnapshot(snap => {
+        const select = document.getElementById('p-shop-select');
+        select.innerHTML = '';
+        snap.forEach(doc => {
+            select.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+    });
+}
 
-        <div id="tab-users" class="tab-content" style="display:none;">
-            <h1>Пользователи системы</h1>
-            <div id="users-list"></div>
-        </div>
-    </div>
+// ЛОГИКА СКАНЕРА
+function startScanner() {
+    document.getElementById('scanner-container').style.display = 'block';
+    Quagga.init({
+        inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#scanner-container') },
+        decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader"] }
+    }, function(err) {
+        if (err) { console.log(err); return; }
+        Quagga.start();
+    });
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-            authDomain: "deliverygov11.firebaseapp.com",
-            projectId: "deliverygov11",
-            storageBucket: "deliverygov11.firebasestorage.app",
-            messagingSenderId: "562994407235",
-            appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    Quagga.onDetected(function(data) {
+        const code = data.codeResult.code;
+        document.getElementById('p-barcode').value = code;
+        
+        // Поиск товара в базе по штрих-коду
+        db.collection('products').where('barcode', '==', code).get().then(snap => {
+            if(!snap.empty) {
+                const p = snap.docs[0].data();
+                document.getElementById('p-name').value = p.name;
+                document.getElementById('p-price').value = p.price;
+            }
+        });
+        
+        Quagga.stop();
+        document.getElementById('scanner-container').style.display = 'none';
+    });
+}
 
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-            document.getElementById('tab-' + id).style.display = 'block';
-            if(id === 'orders') loadOrders();
-            if(id === 'products') loadProducts();
-            if(id === 'users') loadUsers();
-        }
+// СОХРАНЕНИЕ
+function saveProduct() {
+    const barcode = document.getElementById('p-barcode').value;
+    const name = document.getElementById('p-name').value;
+    const price = Number(document.getElementById('p-price').value);
+    const shopId = document.getElementById('p-shop-select').value;
+    const shopName = document.getElementById('p-shop-select').options[document.getElementById('p-shop-select').selectedIndex].text;
 
-        // ДОБАВИТЬ ТОВАР
-        function addProduct() {
-            const name = document.getElementById('p-name').value;
-            const price = Number(document.getElementById('p-price').value);
-            const shopId = document.getElementById('p-shop').value;
-            const img = document.getElementById('p-img').value;
+    db.collection('products').add({
+        barcode, name, price, shopId, shopName, date: new Date()
+    }).then(() => {
+        alert("Товар для магазина " + shopName + " добавлен!");
+        document.getElementById('p-barcode').value = '';
+        document.getElementById('p-name').value = '';
+        document.getElementById('p-price').value = '';
+    });
+}
 
-            db.collection('products').add({
-                name, price, shopId, img, date: new Date()
-            }).then(() => {
-                alert("Товар добавлен!");
-                loadProducts();
-            });
-        }
-
-        // ЗАГРУЗКА ЗАКАЗОВ
-        function loadOrders() {
-            db.collection('orders').orderBy('date', 'desc').onSnapshot(snap => {
-                const list = document.getElementById('orders-list');
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    const o = doc.data();
-                    list.innerHTML += `<div class="card">
-                        <b>Заказ от ${o.email}</b><br>
-                        Адрес: ${o.address}<br>
-                        Сумма: ${o.total}₽<br>
-                        Статус: <span class="badge badge-new">${o.status}</span>
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button style="background: #28a745; font-size:10px;" onclick="updateStatus('${doc.id}', 'В пути')">В ПУТИ</button>
-                            <button style="background: #dc3545; font-size:10px;" onclick="updateStatus('${doc.id}', 'Доставлено')">ДОСТАВЛЕНО</button>
-                        </div>
-                    </div>`;
-                });
-            });
-        }
-
-        function updateStatus(id, status) {
-            db.collection('orders').doc(id).update({ status: status });
-        }
-
-        // ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ
-        function loadUsers() {
-            db.collection('users').get().then(snap => {
-                const list = document.getElementById('users-list');
-                list.innerHTML = '<table><tr><th>Email</th><th>Телефон</th><th>Действие</th></tr>';
-                snap.forEach(doc => {
-                    const u = doc.data();
-                    list.innerHTML += `<tr>
-                        <td>${doc.id}</td>
-                        <td>${u.phone || 'Нет'}</td>
-                        <td><button style="background:red; width: auto; padding: 5px;" onclick="deleteUser('${doc.id}')">УДАЛИТЬ</button></td>
-                    </tr>`;
-                });
-                list.innerHTML += '</table>';
-            });
-        }
-
-        function deleteUser(id) {
-            if(confirm("Удалить пользователя?")) db.collection('users').doc(id).delete();
-        }
-
-        loadOrders(); // По умолчанию при входе
-    </script>
-</body>
-</html>
+loadShopsToSelect();
+</script>
