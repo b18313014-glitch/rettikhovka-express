@@ -1,5 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX HUB - Global</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main: #ffcc00; --gray: #f4f4f4; --green: #2ecc71; --red: #e74c3c; --dark: #1a1a1a; }
+        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; }
+        body { background: #000; height: 100vh; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow: hidden; }
+
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
+        .page.active { display: flex; }
+
+        header { background: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; outline: none; font-size: 16px; }
+
+        .code-container { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
+        .code-input { width: 42px; height: 55px; text-align: center; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; background: #fff; transition: 0.3s; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        .shake { animation: shake 0.3s; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="auth-screen" class="page active">
+        <div style="padding: 40px 25px; text-align: center;">
+            <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 30px;">RX HUB</h2>
+            <div style="background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <button class="btn-action" style="background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginGoogle()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" width="18"> Google
+                </button>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                <input type="tel" id="user-phone" class="input-field" placeholder="89641238904">
+                <button class="btn-action" style="background: var(--dark); color: #fff;" onclick="sendSmsRu()">ВОЙТИ ПО SMS</button>
+                <input type="email" id="user-email" class="input-field" placeholder="Почта" style="margin-top: 20px;">
+                <button class="btn-action" style="background: var(--main);" onclick="sendEmailReal()">ВОЙТИ ПО ПОЧТЕ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="code-screen" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('auth-screen')"></i><b>ПОДТВЕРЖДЕНИЕ</b><div></div></header>
+        <div style="padding: 30px; text-align: center;">
+            <p id="verify-info" style="color: gray; margin-bottom: 20px;"></p>
+            <div class="code-container">
+                <input type="number" class="code-input" id="c1" oninput="step(this, 'c2')">
+                <input type="number" class="code-input" id="c2" oninput="step(this, 'c3')">
+                <input type="number" class="code-input" id="c3" oninput="step(this, 'c4')">
+                <input type="number" class="code-input" id="c4" oninput="step(this, 'c5')">
+                <input type="number" class="code-input" id="c5" oninput="step(this, 'c6')">
+                <input type="number" class="code-input" id="c6" oninput="checkFinal()">
+            </div>
+        </div>
+    </div>
+
+    <div id="main-hub" class="page">
+        <header><b>RX HUB</b><i class="fa-solid fa-circle-user" onclick="openPage('profile-page')"></i></header>
+        <div style="padding: 20px;">
+            <div style="background: var(--main); padding: 30px; border-radius: 20px; text-align: center;">
+                <h2 id="welcome-user">Привет!</h2>
+                <p>Вы успешно вошли.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-page" class="page">
+        <header><i class="fa-solid fa-xmark" onclick="openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div style="padding: 30px; text-align: center;">
+            <h2 id="display-name">Богдан</h2>
+            <button class="btn-action" style="background: var(--red); color: #fff; margin-top: 50px;" onclick="location.reload()">ВЫЙТИ</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
-    // Настройки для Google (для входа через Google)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -14,84 +93,53 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    let targetCode = ""; // Переменная для хранения отправленного кода
+    let targetCode = "";
 
-    // Переключение страниц
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    // Автопереход между ячейками кода
     window.step = (curr, next) => { if(curr.value.length >= 1) document.getElementById(next).focus(); };
 
-    // 1. ОТПРАВКА SMS ЧЕРЕЗ SMS.RU
     window.sendSmsRu = () => {
-        const phoneInput = document.getElementById('user-phone').value;
-        if(!phoneInput) return alert("Введите номер!");
-
-        // Исправляем номер (8 на 7)
-        let cleanPhone = phoneInput.replace(/\D/g, '');
-        if (cleanPhone.startsWith('8')) cleanPhone = '7' + cleanPhone.slice(1);
+        const ph = document.getElementById('user-phone').value;
+        if(!ph) return alert("Введите номер!");
+        let clean = ph.replace(/\D/g, '');
+        if (clean.startsWith('8')) clean = '7' + clean.slice(1);
         
-        const api_id = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019"; // Твой ключ
+        const api_id = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019"; 
         const code = Math.floor(100000 + Math.random() * 900000); 
         targetCode = code.toString();
 
-        fetch(`https://sms.ru/sms/send?api_id=${api_id}&to=${cleanPhone}&msg=Код+RX+HUB:+${code}&json=1`)
-        .then(r => r.json())
-        .then(data => {
+        fetch(`https://sms.ru/sms/send?api_id=${api_id}&to=${clean}&msg=Код+RX+HUB:+${code}&json=1`)
+        .then(r => r.json()).then(data => {
             if(data.status == "OK") {
-                document.getElementById('verify-info').innerText = "Код отправлен на " + cleanPhone;
+                document.getElementById('verify-info').innerText = "Код отправлен на " + clean;
                 openPage('code-screen');
-            } else {
-                alert("Ошибка SMS.RU: " + data.status_text);
-            }
-        }).catch(e => alert("Ошибка сети: " + e.message));
+            } else alert("Ошибка: " + data.status_text);
+        });
     };
 
-    // 2. ВЕРСИЯ ДЛЯ ПОЧТЫ (РЕАЛЬНАЯ ПРОВЕРКА ЦВЕТОМ)
     window.sendEmailReal = () => {
-        const email = document.getElementById('user-email').value;
-        if(!email) return alert("Введите почту!");
-        
-        targetCode = "123321"; // Тестовый код для твоей почты
-        document.getElementById('verify-info').innerText = "Код отправлен на " + email + " (Тест: 123321)";
+        targetCode = "123321";
+        document.getElementById('verify-info').innerText = "Код на почту (Тест: 123321)";
         openPage('code-screen');
     };
 
-    // 3. ПРОВЕРКА КОДА (КРАСНЫЙ / ЗЕЛЕНЫЙ)
     window.checkFinal = () => {
         const inputs = Array.from(document.querySelectorAll('.code-input'));
-        const enteredCode = inputs.map(i => i.value).join('');
-        
-        if(enteredCode.length < 6) return;
+        const val = inputs.map(i => i.value).join('');
+        if(val.length < 6) return;
 
-        if(enteredCode === targetCode) {
-            // УСПЕХ: Все поля становятся зелеными
-            inputs.forEach(i => {
-                i.style.borderColor = "var(--green)";
-                i.style.color = "var(--green)";
-                i.style.background = "#e8f5e9";
-            });
-            setTimeout(() => {
-                document.getElementById('display-name').innerText = "Пользователь RX";
-                openPage('main-hub');
-            }, 800);
+        if(val === targetCode) {
+            inputs.forEach(i => { i.style.borderColor = "var(--green)"; i.style.color = "var(--green)"; });
+            setTimeout(() => openPage('main-hub'), 600);
         } else {
-            // ОШИБКА: Поля краснеют и очищаются
             inputs.forEach(i => {
+                i.classList.add('shake');
                 i.style.borderColor = "var(--red)";
-                i.style.color = "var(--red)";
-                i.classList.add('error'); // Тряска из CSS
-                
-                setTimeout(() => {
-                    i.classList.remove('error');
-                    i.style.borderColor = "#ddd";
-                    i.style.color = "#000";
-                    i.style.background = "#fff";
-                    i.value = '';
-                }, 1000);
+                setTimeout(() => { i.classList.remove('shake'); i.value = ''; i.style.borderColor = "#ddd"; }, 1000);
             });
             document.getElementById('c1').focus();
         }
@@ -104,3 +152,6 @@
         });
     };
 </script>
+
+</body>
+</html>
