@@ -3,67 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX | Welcome</title>
+    <title>RX-EXPRESS | МОНОЛИТ</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
     <style>
         :root { --blue: #007bff; --bg: #050505; --card: #121212; --red: #ff4757; --green: #2ecc71; }
-        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; overflow: hidden; }
-        .screen { display: none; height: 100vh; padding: 30px; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .active { display: flex; }
-
-        h1 { font-size: 40px; font-weight: 900; margin-bottom: 10px; color: var(--blue); }
-        p { opacity: 0.8; line-height: 1.5; }
-
-        .btn { background: var(--blue); color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-weight: 900; cursor: pointer; margin-top: 15px; font-size: 16px; }
-        .btn-google { background: #fff; color: #000; }
-        
-        input { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 12px; color: white; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-size: 16px; }
-        
-        /* Сетка для кода восстановления */
-        .code-inputs { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .code-digit { width: 45px; height: 55px; background: var(--card); border: 2px solid #333; border-radius: 10px; text-align: center; font-size: 24px; font-weight: 900; transition: 0.3s; }
-        .code-digit.wrong { border-color: var(--red); color: var(--red); }
-        .code-digit.correct { border-color: var(--green); color: var(--green); }
-
-        .link { color: var(--blue); font-size: 14px; cursor: pointer; margin-top: 10px; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 80px; }
+        .screen { display: none; padding: 20px; box-sizing: border-box; min-height: 100vh; }
+        .active { display: block; }
+        .btn { background: var(--blue); padding: 20px; border-radius: 20px; border: none; color: white; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px; font-size: 16px; text-transform: uppercase; }
+        input, select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box; margin: 10px 0; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .modal-box { background: var(--card); width: 85%; padding: 25px; border-radius: 30px; border: 2px solid var(--blue); text-align: center; }
+        #interactive.viewport { width: 100%; height: 180px; border-radius: 15px; overflow: hidden; border: 2px solid var(--blue); background: #000; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px; border-top: 2px solid #222; }
+        .nav-item { font-size: 10px; opacity: 0.5; cursor: pointer; text-align: center; font-weight: 900; }
+        .nav-item.active { opacity: 1; color: var(--blue); }
     </style>
 </head>
 <body>
 
-<div id="scr-welcome" class="screen active">
-    <h1>RETTIKHOVKA<br>EXPRESS</h1>
-    <p>Твой сервис самой быстрой доставки еды и товаров в Реттиховке. Заказывай из магазинов, забирай из OZON — мы всё привезём!</p>
-    <button class="btn" onclick="showScr('auth')">ПРОДОЛЖИТЬ</button>
+<div id="scr-auth" class="screen active">
+    <h1 style="color:var(--blue); font-size: 40px; margin-bottom: 0;">RX EXPRESS</h1>
+    <p style="opacity: 0.6;">Твоя доставка в Реттиховке</p>
+    <button class="btn" onclick="googleAuth()">🚀 ВОЙТИ С GOOGLE</button>
 </div>
 
-<div id="scr-auth" class="screen">
-    <h2>ВХОД</h2>
-    <input type="email" id="email" placeholder="Почта">
-    <input type="password" id="pass" placeholder="Пароль">
-    <div class="link" onclick="showScr('reset')">Забыли пароль?</div>
-    
-    <button class="btn" onclick="emailAuth()">ВОЙТИ</button>
-    <button class="btn btn-google" onclick="googleAuth()">🚀 ПРОДОЛЖИТЬ С GOOGLE</button>
+<div id="scr-home" class="screen">
+    <h2>ГЛАВНАЯ</h2>
+    <div class="btn" onclick="alert('Загружаем магазины...')">МАГАЗИНЫ</div>
+    <div class="btn" style="background:#6c5ce7;" onclick="alert('Доставка OZON')">ДОСТАВКА (3MB MAX)</div>
 </div>
 
-<div id="scr-reset" class="screen">
-    <h2>СБРОС ПАРОЛЯ</h2>
-    <p id="reset-msg">Введите почту, мы отправим код</p>
-    <input type="email" id="reset-email" placeholder="Почта для кода">
-    <button class="btn" id="send-code-btn" onclick="sendResetCode()">ОТПРАВИТЬ КОД</button>
+<div id="scr-admin" class="screen">
+    <h2>ДИСПЕТЧЕР</h2>
+    <div id="interactive" class="viewport"></div>
+    <button class="btn" onclick="startScan()">СКАНИРОВАТЬ</button>
+    <input type="text" id="adm-barcode" placeholder="Штрих-код">
+    <input type="text" id="adm-name" placeholder="Название">
+    <input type="number" id="adm-price" placeholder="Цена">
+    <button class="btn" style="background:var(--green)" onclick="saveProduct()">СОХРАНИТЬ</button>
+</div>
 
-    <div class="code-inputs" id="code-box" style="display:none;">
-        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 0)">
-        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 1)">
-        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 2)">
-        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 3)">
+<div id="modal-phone" class="modal">
+    <div class="modal-box">
+        <h3>НУЖЕН НОМЕР!</h3>
+        <p style="color:var(--red); font-size:12px;">Без номера мы не сможем вернуть деньги!</p>
+        <input type="tel" id="reg-phone" placeholder="+7 (___) ___-__-__">
+        <button class="btn" onclick="saveUserWithPhone()">СОХРАНИТЬ</button>
     </div>
-    <div class="link" style="margin-top:20px" onclick="showScr('auth')">Вернуться назад</div>
 </div>
+
+<div id="modal-charge" class="modal">
+    <div class="modal-box">
+        <h3 style="color:#ffc107">ДОСТАВКА 50₽</h3>
+        <p>Выдача заказа в пункте стоит 50 рублей.</p>
+        <button class="btn" style="background:var(--green)" onclick="alert('Оплата...')">СОГЛАСЕН</button>
+    </div>
+</div>
+
+<nav class="nav" id="main-nav" style="display:none;">
+    <div class="nav-item active" onclick="switchTab('home')">МАГАЗИН</div>
+    <div class="nav-item" onclick="switchTab('admin')">АДМИН</div>
+</nav>
 
 <script>
+    // КОНФИГ ИЗ ТВОЕГО ПАСПОРТА
     const firebaseConfig = {
         apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
         authDomain: "deliverygov11.firebaseapp.com",
@@ -73,56 +83,60 @@
         appId: "1:562994407235:web:27765b2d4916e82ec871f6"
     };
     firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Навигация
-    function showScr(id) {
+    // ВХОД С ПРОВЕРКОЙ
+    async function googleAuth() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const res = await auth.signInWithPopup(provider);
+        const doc = await db.collection('users').doc(res.user.uid).get();
+        if (doc.exists && doc.data().phone) {
+            enterApp();
+        } else {
+            document.getElementById('modal-phone').style.display = 'flex';
+        }
+    }
+
+    async function saveUserWithPhone() {
+        const phone = document.getElementById('reg-phone').value;
+        if(phone.length < 10) return alert("Мало цифр!");
+        const user = auth.currentUser;
+        await db.collection('users').doc(user.uid).set({ phone, email: user.email }, {merge: true});
+        enterApp();
+    }
+
+    function enterApp() {
+        document.getElementById('modal-phone').style.display = 'none';
+        document.getElementById('scr-auth').style.display = 'none';
+        document.getElementById('main-nav').style.display = 'flex';
+        switchTab('home');
+    }
+
+    // АДМИНКА: СКАНЕР И ДУБЛИКАТЫ
+    function startScan() {
+        Quagga.init({
+            inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive') },
+            decoder: { readers: ["ean_reader", "code_128_reader"] }
+        }, () => Quagga.start());
+        
+        Quagga.onDetected(async (res) => {
+            const code = res.codeResult.code;
+            document.getElementById('adm-barcode').value = code;
+            Quagga.stop();
+            const snap = await db.collection('products').where('barcode', '==', code).get();
+            if(!snap.empty) {
+                const p = snap.docs[0].data();
+                document.getElementById('adm-name').value = p.name;
+                document.getElementById('adm-price').value = p.price;
+                alert("Товар найден, данные подгружены!");
+            }
+        });
+    }
+
+    function switchTab(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('scr-' + id).classList.add('active');
-    }
-
-    // Google Auth
-    function googleAuth() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).then(() => { location.href = 'index.html'; });
-    }
-
-    // Email Auth
-    function emailAuth() {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('pass').value;
-        auth.signInWithEmailAndPassword(e, p)
-            .then(() => { location.href = 'index.html'; })
-            .catch(err => alert("Ошибка: " + err.message));
-    }
-
-    // Логика кода восстановления
-    const SECRET_CODE = "1234"; // Имитация кода для проверки анимации
-
-    function sendResetCode() {
-        const email = document.getElementById('reset-email').value;
-        if(!email) return alert("Введите почту!");
-        document.getElementById('reset-msg').innerText = "Код отправлен на " + email;
-        document.getElementById('code-box').style.display = 'flex';
-        document.getElementById('send-code-btn').style.display = 'none';
-    }
-
-    function checkDigit(el, index) {
-        const digits = document.querySelectorAll('.code-digit');
-        if (el.value === SECRET_CODE[index]) {
-            el.classList.remove('wrong');
-            el.classList.add('correct');
-            if (index < 3) digits[index + 1].focus();
-        } else {
-            el.classList.add('wrong');
-            el.classList.remove('correct');
-        }
-
-        // Если все верно
-        const result = Array.from(digits).map(d => d.value).join('');
-        if (result === SECRET_CODE) {
-            setTimeout(() => { alert("Пароль сброшен! Войдите заново."); showScr('auth'); }, 500);
-        }
     }
 </script>
 </body>
