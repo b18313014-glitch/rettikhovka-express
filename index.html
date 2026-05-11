@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Delivery System</title>
+    <title>RX HUB - Приветствие</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
@@ -13,243 +13,152 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --blue: #007bff;
-            --yellow: #ffc107;
-            --dark: #1a1a1a;
-            --danger: #ff4d4d;
-            --gray: #f4f4f9;
-        }
+        :root { --blue: #007bff; --yellow: #ffc107; --bg: #f8f9fa; --white: #ffffff; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); overflow: hidden; }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            background: var(--gray);
-            color: var(--dark);
-            -webkit-tap-highlight-color: transparent;
+        /* АНИМАЦИИ */
+        .screen { 
+            position: absolute; width: 100%; height: 100vh; 
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box; text-align: center;
+            animation: fadeIn 0.5s ease;
         }
+        .active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* --- ПРИВЕТСТВЕННЫЙ ЭКРАН --- */
-        #splash {
+        /* КНОПКИ НАВИГАЦИИ */
+        .nav-controls { position: absolute; bottom: 40px; display: flex; gap: 50px; align-items: center; }
+        .nav-arrow { font-size: 30px; color: var(--blue); cursor: pointer; transition: 0.3s; opacity: 0.6; }
+        .nav-arrow:hover { opacity: 1; transform: scale(1.2); }
+
+        /* ДИЗАЙН ЭКРАНОВ */
+        h1 { font-weight: 900; font-size: 32px; color: var(--blue); margin-bottom: 10px; }
+        p { color: #666; line-height: 1.6; max-width: 280px; }
+        .step-img { width: 200px; height: 200px; margin-bottom: 30px; object-fit: contain; }
+
+        /* РЕГИСТРАЦИЯ */
+        .auth-btn { 
+            width: 80%; max-width: 300px; padding: 15px; border-radius: 15px; border: none;
+            margin: 10px 0; font-weight: 700; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-google { background: white; border: 1px solid #ddd; }
+        .btn-email { background: var(--blue); color: white; }
+
+        /* МОДАЛКА ТЕЛЕФОНА */
+        .phone-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--blue); color: white;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 9999; transition: 0.5s;
+            background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000;
         }
-        .loader {
-            width: 50px; height: 50px; border: 5px solid #fff;
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite; margin-top: 20px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- ШАПКА --- */
-        header {
-            background: #fff; padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-            position: sticky; top: 0; z-index: 100;
-        }
-        .brand { font-weight: 900; font-size: 22px; color: var(--blue); }
-        .head-icons i { font-size: 20px; margin-left: 15px; cursor: pointer; color: #555; }
-
-        /* --- КОНТЕНТ --- */
-        .page { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
-        .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* ТВОЙ БЛОК "ВАМ МОЖЕТ ПОНРАВИТЬСЯ" */
-        .recommend-title { font-weight: 900; font-size: 22px; margin-bottom: 15px; display: block; }
-        .promo-slider {
-            display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px;
-            scrollbar-width: none; /* Скрываем полосу прокрутки */
-        }
-        .promo-slider::-webkit-scrollbar { display: none; }
-        .product-card {
-            min-width: 150px; background: #fff; border-radius: 20px;
-            padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            text-align: center; position: relative;
-        }
-        .product-card img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px; }
-        .product-card .price { font-weight: 900; color: var(--blue); font-size: 18px; }
-        .product-card .old-tag { font-size: 10px; color: var(--danger); font-weight: bold; }
-
-        /* КНОПКИ МАГАЗИНОВ */
-        .main-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .service-btn {
-            height: 140px; border-radius: 25px; border: none; padding: 20px;
-            font-weight: 900; font-size: 18px; text-align: left;
-            position: relative; overflow: hidden; cursor: pointer; transition: 0.2s;
-        }
-        .service-btn:active { transform: scale(0.96); }
-        .btn-y { background: var(--yellow); }
-        .btn-b { background: var(--blue); color: white; }
-        .service-btn i { position: absolute; bottom: 15px; right: 15px; font-size: 45px; opacity: 0.2; }
-
-        /* ТВОЙ АДМИН-ПУЛЬТ (СКРЫТЫЙ) */
-        .admin-panel { background: #333; color: #fff; padding: 20px; border-radius: 20px; margin-top: 20px; }
-        .admin-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; box-sizing: border-box; }
-        
-        /* НИЖНЯЯ НАВИГАЦИЯ */
-        .nav-bar {
-            position: fixed; bottom: 0; width: 100%; background: #fff;
-            display: flex; justify-content: space-around; padding: 15px 0;
-            border-top: 1px solid #eee; z-index: 1000;
-        }
-        .nav-btn { text-align: center; color: #bbb; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .nav-btn.active { color: var(--blue); }
-        .nav-btn i { font-size: 20px; margin-bottom: 4px; }
+        .phone-content { background: white; padding: 30px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; }
+        .warn-text { color: #d63031; font-size: 13px; font-weight: bold; margin: 15px 0; }
+        .btn-later { background: #eee; border: none; padding: 10px; margin-top: 10px; cursor: pointer; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="splash">
-        <div style="font-size: 42px; font-weight: 900;">RX HUB</div>
-        <div class="loader"></div>
+    <div id="step1" class="screen active">
+        <img src="https://cdn-icons-png.flaticon.com/512/3442/3442113.png" class="step-img">
+        <h1>Добро пожаловать!</h1>
+        <p>Мы рады видеть вас в <b>RX HUB</b>. Давайте познакомимся с нашим сервисом.</p>
+        <div class="nav-controls">
+            <span></span> <i class="fa-solid fa-circle-arrow-right nav-arrow" onclick="nextStep(2)"></i>
+        </div>
     </div>
 
-    <header>
-        <div class="brand">RX HUB</div>
-        <div class="head-icons">
-            <i class="fa-solid fa-gear" onclick="checkAdminPassword()"></i>
-            <i class="fa-solid fa-circle-user" onclick="showPage('profile')"></i>
+    <div id="step2" class="screen">
+        <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" class="step-img">
+        <h1>Что мы можем?</h1>
+        <p>Доставка из магазинов, Ozon и умный склад. Всё в одном приложении!</p>
+        <div class="nav-controls">
+            <i class="fa-solid fa-circle-arrow-left nav-arrow" onclick="nextStep(1)"></i>
+            <i class="fa-solid fa-circle-arrow-right nav-arrow" onclick="nextStep(3)"></i>
         </div>
-    </header>
+    </div>
 
-    <div id="home" class="page active">
-        
-        <div class="recommend-section">
-            <span class="recommend-title">Вам может понравиться</span>
-            <div id="smart-list" class="promo-slider">
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2553/2553691.png">
-                    <div>Сникерс</div>
-                    <div class="price">65 ₽</div>
-                    <div class="old-tag">ЗАЛЕЖАЛОСЬ!</div>
-                </div>
+    <div id="step3" class="screen">
+        <h1>Почти готово</h1>
+        <p>Выберите способ входа для синхронизации ваших заказов.</p>
+        <button class="auth-btn btn-google" onclick="handleLogin('google')">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="20"> Войти через Google
+        </button>
+        <button class="auth-btn btn-email" onclick="alert('Регистрация по почте скоро!')">
+            Войти по почте
+        </button>
+    </div>
+
+    <div id="phoneModal" class="phone-modal">
+        <div class="phone-content">
+            <h2 style="font-weight: 900;">Номер телефона</h2>
+            <p>Укажите ваш номер телефона для связи.</p>
+            <input type="tel" id="userPhone" placeholder="+7 (999) 000-00-00" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px;">
+            <div class="warn-text">
+                <i class="fa-solid fa-triangle-exclamation"></i> 
+                Без номера телефона мы не сможем вернуть вам деньги в случае отмены заказа!
             </div>
-        </div>
-
-        <div class="main-menu">
-            <button class="btn-y service-btn" onclick="alert('Магазины скоро!')">
-                МАГАЗИНЫ <i class="fa-solid fa-shop"></i>
-            </button>
-            <button class="btn-b service-btn" onclick="document.getElementById('ozonFile').click()">
-                OZON <i class="fa-solid fa-truck-ramp-box"></i>
-            </button>
-        </div>
-        <input type="file" id="ozonFile" style="display:none" onchange="uploadOzonBarcode(this.files[0])">
-    </div>
-
-    <div id="dev-panel" class="page">
-        <h2 style="color: var(--blue);">Пульт Разработчика</h2>
-        <div class="admin-panel">
-            <p>Добавить товар на склад через штрих-код:</p>
-            <input type="text" id="dev-barcode" class="admin-input" placeholder="Штрих-код">
-            <input type="text" id="dev-name" class="admin-input" placeholder="Название товара">
-            <input type="number" id="dev-price" class="admin-input" placeholder="Цена">
-            <input type="number" id="dev-days" class="admin-input" placeholder="Срок годности (дней)">
-            <button class="service-btn btn-b" style="width:100%; height: 60px;" onclick="saveToWarehouse()">ПИКНУТЬ И СОХРАНИТЬ</button>
+            <button class="auth-btn btn-email" style="width: 100%;" onclick="savePhone()">ВВЕСТИ СЕЙЧАС</button>
+            <button class="btn-later" onclick="closePhoneModal()">Ввести потом</button>
         </div>
     </div>
 
-    <div id="profile" class="page" style="text-align: center;">
-        <div id="user-info">
-            <div class="avatar" style="width:100px; height:100px; background:#ddd; border-radius:50%; margin: 0 auto 20px;"></div>
-            <h2 id="u-name">Гость</h2>
-            <button class="service-btn btn-b" style="width:100%" onclick="loginGoogle()">Войти через Google</button>
+    <div id="mainApp" style="display:none">
         </div>
-    </div>
-
-    <nav class="nav-bar">
-        <div class="nav-btn active" onclick="showPage('home')"><i class="fa-solid fa-house"></i><div>Главная</div></div>
-        <div class="nav-btn" onclick="showPage('profile')"><i class="fa-solid fa-user"></i><div>Профиль</div></div>
-    </nav>
 
     <script>
-        // Инициализация (Богдан, вставь сюда свои данные Firebase)
-        const firebaseConfig = { 
-            projectId: "deliverygov11" 
-            // ... остальные поля
-        };
+        // Инициализация Firebase
+        const firebaseConfig = { projectId: "deliverygov11" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 1. Убираем Splash
-        setTimeout(() => { document.getElementById('splash').style.opacity = '0'; 
-            setTimeout(() => document.getElementById('splash').style.display='none', 500);
-        }, 1500);
-
-        // 2. Переключение страниц
-        function showPage(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // Навигация по шагам
+        function nextStep(n) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
         }
 
-        // 3. Секретный вход для Разработчика
-        function checkAdminPassword() {
-            let pass = prompt("Введите пароль разработчика:");
-            if(pass === "1234") { // Твой секретный пароль
-                showPage('dev-panel');
-            } else {
-                alert("Доступ запрещен!");
-            }
-        }
-
-        // 4. Логика Склада (Добавление только тобой)
-        async function saveToWarehouse() {
-            const barcode = document.getElementById('dev-barcode').value;
-            const name = document.getElementById('dev-name').value;
-            const price = Number(document.getElementById('dev-price').value);
-            const days = Number(document.getElementById('dev-days').value);
-
-            await db.collection('warehouse').add({
-                barcode: barcode,
-                name: name,
-                price: price,
-                addedAt: firebase.firestore.Timestamp.now(),
-                shelfLife: days,
-                status: "on_shelf"
-            });
-
-            alert("Товар " + name + " добавлен в систему!");
-            location.reload(); 
-        }
-
-        // 5. Умная лента (Авто-проверка залежавшихся товаров)
-        async function loadSmartFeed() {
-            const list = document.getElementById('smart-list');
-            const now = new Date();
-            const snapshot = await db.collection('warehouse').get();
-            
-            list.innerHTML = '';
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const addedDate = data.addedAt.toDate();
-                const diffDays = Math.ceil((now - addedDate) / (1000 * 60 * 60 * 24));
-
-                // Если лежит больше 5 дней - показываем в "Вам может понравиться"
-                if(diffDays >= 5) {
-                    list.innerHTML += `
-                        <div class="product-card">
-                            <img src="https://cdn-icons-png.flaticon.com/512/708/708842.png">
-                            <div style="font-weight:bold">${data.name}</div>
-                            <div class="price">${data.price} ₽</div>
-                            <div class="old-tag">УЖЕ ${diffDays} ДНЕЙ У НАС</div>
-                        </div>
-                    `;
+        // Логика входа
+        function handleLogin(type) {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then(res => {
+                const user = res.user;
+                // Проверяем, есть ли телефон
+                if (!user.phoneNumber) {
+                    document.getElementById('phoneModal').style.display = 'flex';
+                } else {
+                    finishLogin();
                 }
             });
         }
 
-        loadSmartFeed();
+        function savePhone() {
+            const phone = document.getElementById('userPhone').value;
+            if (phone.length < 10) {
+                alert("Введите правильный номер!");
+                return;
+            }
+            // Сохраняем в Firebase
+            const user = firebase.auth().currentUser;
+            db.collection('users').doc(user.uid).set({
+                phone: phone,
+                email: user.email,
+                name: user.displayName
+            }, { merge: true });
 
-        // 6. Dropbox и Ozon (из прошлых наработок)
-        const DROPBOX_TOKEN = "ТВОЙ_ТОКЕН"; 
-        async function uploadOzonBarcode(file) {
-            // Тут твоя функция загрузки...
-            alert("Штрих-код Озона отправлен в Dropbox и Firebase!");
+            alert("Номер сохранен!");
+            closePhoneModal();
+            finishLogin();
+        }
+
+        function closePhoneModal() {
+            document.getElementById('phoneModal').style.display = 'none';
+            finishLogin();
+        }
+
+        function finishLogin() {
+            // Перебрасываем на главную
+            document.getElementById('step3').classList.remove('active');
+            alert("С возвращением! Теперь вы можете заказать доставку.");
+            // Тут показываем твой основной интерфейс
         }
     </script>
 </body>
