@@ -3,127 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RETTIKHOVKA EXPRESS</title>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>RX | Welcome</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #007bff; --bg: #ffffff; --text: #000000; --card: #f5f5f5; }
-        /* ТЕМЫ */
-        body.dark-theme { --bg: #0a0a0a; --text: #ffffff; --card: #1a1a1a; }
-        body.rx-theme { --bg: #000510; --text: #ffffff; --card: #001530; --main: #00d4ff; }
+        :root { --blue: #007bff; --bg: #050505; --card: #121212; --red: #ff4757; --green: #2ecc71; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; overflow: hidden; }
+        .screen { display: none; height: 100vh; padding: 30px; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .active { display: flex; }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; transition: 0.3s; }
-        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        
-        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
-        .p-card { background: var(--card); border-radius: 20px; padding: 10px; text-align: center; position: relative; overflow: hidden; }
-        .p-img { width: 100%; height: 120px; object-fit: contain; border-radius: 15px; background: #fff; }
-        
-        .add-btn { background: var(--main); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; font-weight: 900; cursor: pointer; position: absolute; bottom: 10px; right: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        
-        /* КОРЗИНА */
-        .cart-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--main); color: white; padding: 15px; border-radius: 20px; display: none; justify-content: space-between; font-weight: 900; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { font-size: 40px; font-weight: 900; margin-bottom: 10px; color: var(--blue); }
+        p { opacity: 0.8; line-height: 1.5; }
 
-        .settings-btn { cursor: pointer; font-size: 20px; }
+        .btn { background: var(--blue); color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-weight: 900; cursor: pointer; margin-top: 15px; font-size: 16px; }
+        .btn-google { background: #fff; color: #000; }
+        
+        input { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 12px; color: white; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-size: 16px; }
+        
+        /* Сетка для кода восстановления */
+        .code-inputs { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .code-digit { width: 45px; height: 55px; background: var(--card); border: 2px solid #333; border-radius: 10px; text-align: center; font-size: 24px; font-weight: 900; transition: 0.3s; }
+        .code-digit.wrong { border-color: var(--red); color: var(--red); }
+        .code-digit.correct { border-color: var(--green); color: var(--green); }
+
+        .link { color: var(--blue); font-size: 14px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
-<body id="app-body">
+<body>
 
-<div class="header">
-    <h1 style="font-weight: 900; margin:0;">RX</h1>
-    <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+<div id="scr-welcome" class="screen active">
+    <h1>RETTIKHOVKA<br>EXPRESS</h1>
+    <p>Твой сервис самой быстрой доставки еды и товаров в Реттиховке. Заказывай из магазинов, забирай из OZON — мы всё привезём!</p>
+    <button class="btn" onclick="showScr('auth')">ПРОДОЛЖИТЬ</button>
 </div>
 
-<div id="settings-menu" style="display:none; padding: 20px; background: var(--card); margin: 15px; border-radius: 15px;">
-    <h3>Сменить тему:</h3>
-    <button onclick="setTheme('light')">Светлая</button>
-    <button onclick="setTheme('dark')">Темная</button>
-    <button onclick="setTheme('rx')">RX Neon</button>
+<div id="scr-auth" class="screen">
+    <h2>ВХОД</h2>
+    <input type="email" id="email" placeholder="Почта">
+    <input type="password" id="pass" placeholder="Пароль">
+    <div class="link" onclick="showScr('reset')">Забыли пароль?</div>
+    
+    <button class="btn" onclick="emailAuth()">ВОЙТИ</button>
+    <button class="btn btn-google" onclick="googleAuth()">🚀 ПРОДОЛЖИТЬ С GOOGLE</button>
 </div>
 
-<div class="product-grid" id="catalog">
+<div id="scr-reset" class="screen">
+    <h2>СБРОС ПАРОЛЯ</h2>
+    <p id="reset-msg">Введите почту, мы отправим код</p>
+    <input type="email" id="reset-email" placeholder="Почта для кода">
+    <button class="btn" id="send-code-btn" onclick="sendResetCode()">ОТПРАВИТЬ КОД</button>
+
+    <div class="code-inputs" id="code-box" style="display:none;">
+        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 0)">
+        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 1)">
+        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 2)">
+        <input type="text" maxlength="1" class="code-digit" oninput="checkDigit(this, 3)">
     </div>
-
-<div class="cart-bar" id="cart-view" onclick="goToCheckout()">
-    <span>КОРЗИНА: <span id="cart-count">0</span></span>
-    <span>ИТОГО: <span id="cart-total">0</span> ₽</span>
+    <div class="link" style="margin-top:20px" onclick="showScr('auth')">Вернуться назад</div>
 </div>
 
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
         authDomain: "deliverygov11.firebaseapp.com",
-        projectId: "deliverygov11"
+        projectId: "deliverygov11",
+        storageBucket: "deliverygov11.firebasestorage.app",
+        messagingSenderId: "562994407235",
+        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-    let cart = [];
-
-    // 1. ЗАГРУЗКА ТОВАРОВ ИЗ АДМИНКИ
-    function loadProducts() {
-        db.collection('products').orderBy('date', 'desc').onSnapshot(snap => {
-            const catalog = document.getElementById('catalog');
-            catalog.innerHTML = '';
-            snap.forEach(doc => {
-                const p = doc.data();
-                const image = p.img || 'https://via.placeholder.com/150';
-                catalog.innerHTML += `
-                    <div class="p-card">
-                        <img src="${image}" class="p-img">
-                        <div style="font-weight:900; margin-top:10px; font-size:14px;">${p.name}</div>
-                        <div style="color:var(--main); font-weight:700;">${p.price} ₽</div>
-                        <button class="add-btn" onclick="addToCart('${doc.id}', '${p.name}', ${p.price})">+</button>
-                    </div>
-                `;
-            });
-        });
+    // Навигация
+    function showScr(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-' + id).classList.add('active');
     }
 
-    // 2. ЛОГИКА ПЛЮСИКА (КОРЗИНА)
-    function addToCart(id, name, price) {
-        cart.push({ id, name, price });
-        updateCartUI();
-        
-        // Маленький эффект вибрации или анимации
-        navigator.vibrate(50); 
+    // Google Auth
+    function googleAuth() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then(() => { location.href = 'index.html'; });
     }
 
-    function updateCartUI() {
-        const cartView = document.getElementById('cart-view');
-        const cartCount = document.getElementById('cart-count');
-        const cartTotal = document.getElementById('cart-total');
+    // Email Auth
+    function emailAuth() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('pass').value;
+        auth.signInWithEmailAndPassword(e, p)
+            .then(() => { location.href = 'index.html'; })
+            .catch(err => alert("Ошибка: " + err.message));
+    }
 
-        if(cart.length > 0) {
-            cartView.style.display = 'flex';
-            cartCount.innerText = cart.length;
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            cartTotal.innerText = total;
+    // Логика кода восстановления
+    const SECRET_CODE = "1234"; // Имитация кода для проверки анимации
+
+    function sendResetCode() {
+        const email = document.getElementById('reset-email').value;
+        if(!email) return alert("Введите почту!");
+        document.getElementById('reset-msg').innerText = "Код отправлен на " + email;
+        document.getElementById('code-box').style.display = 'flex';
+        document.getElementById('send-code-btn').style.display = 'none';
+    }
+
+    function checkDigit(el, index) {
+        const digits = document.querySelectorAll('.code-digit');
+        if (el.value === SECRET_CODE[index]) {
+            el.classList.remove('wrong');
+            el.classList.add('correct');
+            if (index < 3) digits[index + 1].focus();
         } else {
-            cartView.style.display = 'none';
+            el.classList.add('wrong');
+            el.classList.remove('correct');
+        }
+
+        // Если все верно
+        const result = Array.from(digits).map(d => d.value).join('');
+        if (result === SECRET_CODE) {
+            setTimeout(() => { alert("Пароль сброшен! Войдите заново."); showScr('auth'); }, 500);
         }
     }
-
-    // 3. НАСТРОЙКИ ТЕМ
-    function toggleSettings() {
-        const menu = document.getElementById('settings-menu');
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function setTheme(theme) {
-        const body = document.getElementById('app-body');
-        body.className = '';
-        if(theme === 'dark') body.classList.add('dark-theme');
-        if(theme === 'rx') body.classList.add('rx-theme');
-        localStorage.setItem('rx-theme', theme);
-    }
-
-    // Сохраняем тему при перезагрузке
-    const savedTheme = localStorage.getItem('rx-theme');
-    if(savedTheme) setTheme(savedTheme);
-
-    loadProducts();
 </script>
 </body>
 </html>
