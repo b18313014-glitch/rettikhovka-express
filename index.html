@@ -3,74 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - РЕТТИХОВКА</title>
+    <title>RETTIKHOVKA EXPRESS - Заказать еду</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --blue: #007bff; --yellow: #ffc107; --bg: #f8f9fa; --red: #ff4757; --green: #2ed573; }
+        :root { --blue: #007bff; --bg: #f8f9fa; --green: #2ed573; --red: #ff4757; --yellow: #ffc107; }
         body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); overflow-x: hidden; }
         
-        /* ЭКРАНЫ */
+        /* Экраны */
         .page { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; z-index: 10; }
         .page.active { display: flex; }
         
         header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .container { padding: 20px; overflow-y: auto; flex: 1; }
-        
-        .go-btn { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* КОРЗИНА И ОПЛАТА */
-        .cart-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-        .address-box { background: white; padding: 20px; border-radius: 20px; margin-top: 20px; border: 2px solid #eee; }
-        select, input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
-
-        /* ТОВАРЫ */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 0; }
-        .card { background: white; border-radius: 15px; padding: 15px; text-align: center; position: relative; border: 1px solid #eee; }
+        /* Товары */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: white; border-radius: 20px; padding: 15px; text-align: center; border: 1px solid #eee; position: relative; }
         .card img { width: 70px; height: 70px; object-fit: contain; }
-        .add-plus { position: absolute; bottom: 10px; right: 10px; background: var(--blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; cursor: pointer; }
+        .add-btn { background: var(--blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; position: absolute; bottom: 10px; right: 10px; cursor: pointer; font-weight: 900; }
 
-        /* ПРОФИЛЬ */
-        .profile-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
-        .tech-support { margin-top: auto; padding: 20px; text-align: center; color: #888; font-size: 14px; }
+        /* Формы */
+        .go-btn { background: var(--blue); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
+
+        /* Корзина */
+        .cart-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        #min-warn { color: var(--red); font-size: 12px; text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="home-page" class="page active">
+    <div id="auth-page" class="page active" style="justify-content: center; align-items: center;">
+        <div style="width: 85%; max-width: 350px; text-align: center;">
+            <h1 style="font-weight: 900; color: var(--blue); margin-bottom: 5px;">RX HUB</h1>
+            <p style="font-size: 12px; margin-bottom: 20px;">ДОСТАВКА В РЕТТИХОВКЕ</p>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Пароль">
+            <button class="go-btn" onclick="handleAuth()">Войти / Регистрация</button>
+        </div>
+    </div>
+
+    <div id="main-page" class="page">
         <header>
-            <div style="font-weight: 900; color: var(--blue);">RX HUB</div>
+            <div style="font-weight: 900; color: var(--blue);">МАГАЗИН</div>
             <div style="font-size: 22px;">
-                <i class="fa-solid fa-basket-shopping" onclick="openCart()"></i>
-                <i class="fa-solid fa-user-circle" onclick="openPage('profile-page')" style="margin-left: 15px;"></i>
+                <i class="fa-solid fa-basket-shopping" onclick="showCart()"></i>
+                <i class="fa-solid fa-user" style="margin-left: 15px;" onclick="openPage('profile-page')"></i>
             </div>
         </header>
         <div class="container">
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="go-btn" style="background: var(--yellow); color: #333;" onclick="loadProducts()">ЕДА</button>
-                <button class="go-btn">OZON</button>
+            <div style="background: var(--yellow); padding: 15px; border-radius: 15px; margin-bottom: 20px; font-weight: bold; text-align: center;">
+                🚀 Доставка по поселку: 50₽
             </div>
-            <div id="product-list" class="grid"></div>
+            <div id="items-grid" class="grid"></div>
         </div>
     </div>
 
     <div id="cart-page" class="page">
         <header>
-            <i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i>
-            <div style="font-weight: 900;">ОФОРМЛЕНИЕ</div>
+            <i class="fa-solid fa-arrow-left" onclick="openPage('main-page')"></i>
+            <div style="font-weight: 900;">КОРЗИНА</div>
             <div></div>
         </header>
         <div class="container">
-            <div id="cart-items"></div>
-            <div style="font-weight: 900; font-size: 20px; margin: 20px 0;">Итого: <span id="total-sum">0</span> ₽</div>
+            <div id="cart-list"></div>
+            
+            <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 10px;">
+                <div style="display:flex; justify-content: space-between;"><span>Товары:</span><span id="goods-total">0</span> ₽</div>
+                <div style="display:flex; justify-content: space-between; color: var(--blue);"><span>Доставка:</span><span>50 ₽</span></div>
+                <div style="display:flex; justify-content: space-between; font-weight: 900; font-size: 20px; margin-top: 5px;">
+                    <span>ИТОГО:</span><span id="final-total">0</span> ₽
+                </div>
+            </div>
 
-            <div class="address-box">
-                <label>Выберите улицу:</label>
-                <select id="street-select" onchange="validateOrder()">
+            <div style="background: white; padding: 15px; border-radius: 15px; margin-top: 20px;">
+                <label style="font-weight: bold; font-size: 14px;">Адрес доставки:</label>
+                <select id="street" onchange="validate()">
                     <option value="">-- Выберите улицу --</option>
                     <option value="Октябрьская">Октябрьская</option>
                     <option value="Нагорная">Нагорная</option>
@@ -78,33 +94,25 @@
                     <option value="Лесная">Лесная</option>
                     <option value="Пушкина">Пушкина</option>
                 </select>
-                <input type="text" id="house-input" placeholder="Номер дома" oninput="validateOrder()">
-                <p id="addr-err" style="color: red; font-size: 12px; display: none; margin-top: 5px;">Мы не доставляем на Первомайскую и другие улицы.</p>
+                <input type="text" id="house" placeholder="Номер дома" oninput="validate()">
             </div>
 
-            <button id="pay-btn" class="go-btn" style="background: var(--green); margin-top: 30px;" disabled onclick="alert('Переход к OnePay...')">ОПЛАТИТЬ</button>
-            <p id="min-warn" style="text-align: center; color: red; font-size: 12px; margin-top: 10px;">Минимальный заказ 200₽</p>
+            <p id="min-warn">Минимальный заказ товаров — 200 ₽</p>
+            <button id="pay-btn" class="go-btn" style="background: var(--green);" disabled onclick="payUnitPay()">ОПЛАТИТЬ ЧЕРЕЗ UNITPAY</button>
         </div>
     </div>
 
     <div id="profile-page" class="page">
-        <header>
-            <i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i>
-            <div style="font-weight: 900;">АККАУНТ</div>
-            <div></div>
-        </header>
-        <div class="container">
-            <div class="profile-item"><i class="fa-solid fa-phone color-blue"></i> <span id="u-phone-display">Загрузка...</span></div>
-            <div class="profile-item"><i class="fa-solid fa-envelope"></i> <span id="u-email-display">Почта...</span></div>
-            
-            <div class="tech-support">
-                <p>Возникли проблемы или нет вашей улицы?</p>
-                <button class="go-btn" style="background: #333;" onclick="window.location.href='tel:+79000000000'"><i class="fa-solid fa-headset"></i> ТЕХПОДДЕРЖКА (ПОЗВОНИТЬ)</button>
-            </div>
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('main-page')"></i><div style="font-weight:900;">ПРОФИЛЬ</div><div></div></header>
+        <div class="container" style="text-align: center;">
+            <p id="user-info"></p>
+            <button class="go-btn" style="background: #333;" onclick="window.location.href='tel:+79641238904'">СВЯЗАТЬСЯ С НАМИ</button>
+            <button class="go-btn" style="background: var(--red); margin-top: 50px;" onclick="auth.signOut()">ВЫЙТИ</button>
         </div>
     </div>
 
     <script>
+        // Твой Firebase конфиг
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
@@ -118,24 +126,35 @@
         const auth = firebase.auth();
 
         let cart = [];
+        const DELIVERY_PRICE = 50;
 
         function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
+        // Авторизация
+        function handleAuth() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            auth.signInWithEmailAndPassword(e, p).catch(() => {
+                auth.createUserWithEmailAndPassword(e, p).catch(err => alert(err.message));
+            });
+        }
+
+        // Загрузка товаров
         function loadProducts() {
-            const list = document.getElementById('product-list');
-            list.innerHTML = 'Загрузка товаров...';
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = 'Загрузка...';
             db.collection('products').get().then(snap => {
-                list.innerHTML = '';
+                grid.innerHTML = '';
                 snap.forEach(doc => {
-                    let p = doc.data();
-                    list.innerHTML += `<div class="card">
-                        <img src="${p.img || 'https://cdn-icons-png.flaticon.com/512/708/708842.png'}">
-                        <div style="font-size:13px; font-weight:700;">${p.name}</div>
-                        <div style="color:var(--blue); font-weight:900;">${p.price}₽</div>
-                        <button class="add-plus" onclick="addToCart('${p.name}', ${p.price})">+</button>
+                    let d = doc.data();
+                    grid.innerHTML += `<div class="card">
+                        <img src="${d.img || 'https://cdn-icons-png.flaticon.com/512/708/708842.png'}">
+                        <div style="font-weight:700; font-size:12px; margin-top:5px;">${d.name}</div>
+                        <div style="color:var(--blue); font-weight:900;">${d.price}₽</div>
+                        <button class="add-btn" onclick="addToCart('${d.name}', ${d.price})">+</button>
                     </div>`;
                 });
             });
@@ -143,46 +162,62 @@
 
         function addToCart(n, p) {
             cart.push({name: n, price: p});
-            alert('Добавлено в корзину!');
+            alert("Товар в корзине!");
         }
 
-        function openCart() {
+        function showCart() {
             openPage('cart-page');
-            const cList = document.getElementById('cart-items');
-            if(cart.length === 0) {
-                cList.innerHTML = '<p style="text-align:center; color:#888;">Извините, в корзине ничего нет</p>';
-            } else {
-                cList.innerHTML = cart.map(i => `<div class="cart-item"><span>${i.name}</span><b>${i.price}₽</b></div>`).join('');
-            }
-            validateOrder();
+            const list = document.getElementById('cart-list');
+            list.innerHTML = cart.length === 0 ? '<p style="text-align:center;">Пусто</p>' : 
+                cart.map(i => `<div class="cart-item"><span>${i.name}</span><b>${i.price}₽</b></div>`).join('');
+            validate();
         }
 
-        function validateOrder() {
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            document.getElementById('total-sum').innerText = total;
+        function validate() {
+            const goodsSum = cart.reduce((s, i) => s + i.price, 0);
+            const street = document.getElementById('street').value;
+            const house = document.getElementById('house').value;
             
-            const street = document.getElementById('street-select').value;
-            const house = document.getElementById('house-input').value;
-            const payBtn = document.getElementById('pay-btn');
-            const minWarn = document.getElementById('min-warn');
+            document.getElementById('goods-total').innerText = goodsSum;
+            document.getElementById('final-total').innerText = goodsSum > 0 ? goodsSum + DELIVERY_PRICE : 0;
 
-            const isMinOk = total >= 200;
-            const isAddrOk = street !== "" && house.trim() !== "";
+            const isOk = goodsSum >= 200 && street !== "" && house.trim() !== "";
+            document.getElementById('pay-btn').disabled = !isOk;
+            document.getElementById('min-warn').style.display = goodsSum >= 200 ? 'none' : 'block';
+        }
 
-            minWarn.style.display = isMinOk ? 'none' : 'block';
-            payBtn.disabled = !(isMinOk && isAddrOk);
+        // ОПЛАТА UNITPAY
+        function payUnitPay() {
+            const goodsSum = cart.reduce((s, i) => s + i.price, 0);
+            const totalToPay = goodsSum + DELIVERY_PRICE;
+            const account = auth.currentUser.email;
+            const publicKey = "445371-7555a"; // ТВОЙ КЛЮЧ
+            const desc = `Заказ Реттиховка (Еда: ${goodsSum}р + Доставка: 50р)`;
+            
+            const url = `https://unitpay.money/pay/${publicKey}?sum=${totalToPay}&account=${account}&desc=${encodeURIComponent(desc)}&currency=RUB`;
+            
+            db.collection('orders').add({
+                uid: auth.currentUser.uid,
+                email: account,
+                items: cart,
+                total: totalToPay,
+                address: document.getElementById('street').value + ", дом " + document.getElementById('house').value,
+                status: "ожидает оплаты",
+                date: new Date()
+            }).then(() => {
+                window.location.href = url;
+            });
         }
 
         auth.onAuthStateChanged(u => {
             if(u) {
-                document.getElementById('u-email-display').innerText = u.email;
-                db.collection('users').doc(u.uid).get().then(doc => {
-                    if(doc.exists) document.getElementById('u-phone-display').innerText = doc.data().phone || "Номер не указан";
-                });
+                openPage('main-page');
+                document.getElementById('user-info').innerText = u.email;
+                loadProducts();
+            } else {
+                openPage('auth-page');
             }
         });
-
-        loadProducts();
     </script>
 </body>
 </html>
