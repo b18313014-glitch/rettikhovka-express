@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX-EXPRESS | FULL VERCEL</title>
+    <title>RX-EXPRESS | Реттиховка</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
@@ -11,125 +11,99 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
     <style>
-        :root { --blue: #005bff; --bg: #f6f6f9; --card: #ffffff; --black: #111111; }
-        body { background: var(--bg); font-family: 'Montserrat', sans-serif; margin: 0; overflow-x: hidden; }
+        :root { --blue: #005bff; --bg: #0f0f12; --card: #1c1c21; --text: #ffffff; --accent: #ffcc00; }
+        body { background: var(--bg); font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text); transition: 0.3s; }
         
-        /* Анимации */
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate { animation: fadeInUp 0.5s ease forwards; }
+        /* Внутренние уведомления (Вместо алертов) */
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--card); border: 2px solid var(--blue); padding: 15px 25px; border-radius: 20px; z-index: 11000; transition: 0.5s; font-weight: 700; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #toast.active { transform: translateX(-50%) translateY(0); }
 
-        /* Онбординг */
-        #onboarding { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; transition: 0.5s; }
+        /* Экраны */
+        .screen { display: none; min-height: 100vh; padding: 20px; box-sizing: border-box; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Регистрация (Стильный темный вид) */
+        #scr-auth { background: linear-gradient(180deg, #000 0%, var(--bg) 100%); flex-direction: column; align-items: center; justify-content: center; display: none; }
+        .auth-box { width: 100%; max-width: 350px; text-align: center; }
+
+        /* Элементы */
+        .btn { width: 100%; padding: 20px; border-radius: 24px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 15px; text-transform: uppercase; }
+        .btn-blue { background: var(--blue); color: white; }
+        .btn-white { background: white; color: black; }
+        input { width: 100%; padding: 20px; border-radius: 20px; border: 1px solid #333; background: #25252b; color: white; margin: 10px 0; box-sizing: border-box; font-family: inherit; }
+
+        /* Яндекс.Go Стиль */
+        .header { display: flex; justify-content: space-between; padding: 10px 0; align-items: center; }
+        .icon-btn { background: var(--card); width: 50px; height: 50px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .go-card { background: var(--card); padding: 20px; border-radius: 30px; height: 160px; position: relative; display: flex; flex-direction: column; justify-content: flex-start; }
+        .ozon-card { background: var(--blue); }
+
+        /* Слайдер обучения */
+        #onboarding { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
         .step { display: none; }
-        .step.active { display: block; animation: fadeInUp 0.5s ease; }
-        .nav-dots { display: flex; gap: 8px; margin: 30px 0; }
-        .dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; transition: 0.3s; }
-        .dot.active { background: var(--blue); width: 20px; border-radius: 10px; }
-        
-        /* Главный экран */
-        .header { display: flex; justify-content: space-between; padding: 20px; align-items: center; }
-        .top-icons { display: flex; gap: 12px; }
-        .icon-btn { background: #fff; width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; }
-
-        .status-widget { background: var(--blue); color: #fff; margin: 10px 20px; padding: 20px; border-radius: 24px; font-weight: 700; display: none; box-shadow: 0 8px 20px rgba(0,91,255,0.2); }
-
-        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
-        .go-card { background: var(--card); padding: 20px; border-radius: 28px; height: 150px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; cursor: pointer; }
-        .go-card:active { transform: scale(0.95); }
-        .ozon-card { background: var(--blue); color: #fff; }
-
-        /* Кнопки и инпуты */
-        .btn { width: 100%; padding: 20px; border-radius: 20px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .btn-black { background: var(--black); color: #fff; }
-        input { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; box-sizing: border-box; font-family: inherit; }
-
-        /* Модалки */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-        .modal-box { background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 30px; text-align: center; box-sizing: border-box; }
+        .step.active { display: block; }
     </style>
 </head>
 <body>
 
+<div id="toast">Сообщение</div>
+
 <div id="onboarding">
-    <div class="step active" id="step1">
-        <h1 style="font-size: 45px; margin-bottom: 10px;">👋 Хэй!</h1>
-        <p>Добро пожаловать в RX-Express. Доставка в Реттиховке стала проще.</p>
-    </div>
-    <div class="step" id="step2">
-        <h1 style="font-size: 35px; color: var(--blue);">📦 OZON</h1>
-        <p>Загрузи QR-код (PNG/JPG до 3МБ), и мы сами заберем твою посылку.</p>
-    </div>
-    <div class="step" id="step3">
-        <h1 style="font-size: 35px; color: #ffcc00;">⭐️ УРОВНИ</h1>
-        <p>Качай рейтинг до 26 и получай бесплатную доставку еды!</p>
-    </div>
-
-    <div class="nav-dots">
-        <div class="dot active" id="dot1"></div>
-        <div class="dot" id="dot2"></div>
-        <div class="dot" id="dot3"></div>
-    </div>
-
-    <div style="display: flex; gap: 10px; width: 100%; max-width: 300px;">
-        <button id="btn-back" class="btn" style="background:#eee; display:none;" onclick="prevStep()">Назад</button>
-        <button id="btn-next" class="btn btn-black" onclick="nextStep()">Вперёд</button>
+    <div class="step active" id="st1"><h1>RX EXPRESS</h1><p>Доставка в Реттиховке</p></div>
+    <div class="step" id="st2"><h1>OZON</h1><p>Загрузи QR до 3МБ и жди курьера</p></div>
+    <div class="step" id="st3"><h1>РЕЙТИНГ</h1><p>Закажи больше - плати за доставку 0₽</p></div>
+    <div style="display:flex; gap:10px; margin-top:30px;">
+        <button class="btn btn-white" id="bBack" style="display:none;" onclick="move(-1)">Назад</button>
+        <button class="btn btn-blue" id="bNext" onclick="move(1)">Вперёд</button>
     </div>
 </div>
 
-<div id="main-app" style="display:none;">
+<div id="scr-auth" class="screen">
+    <div class="auth-box">
+        <h2 style="font-size:35px;">ВХОД</h2>
+        <input type="email" id="inEmail" placeholder="Почта">
+        <input type="password" id="inPass" placeholder="Пароль">
+        <button class="btn btn-blue" onclick="emailLogin()">ВОЙТИ</button>
+        <button class="btn btn-white" onclick="googleLogin()">GOOGLE LOGIN</button>
+    </div>
+</div>
+
+<div id="scr-home" class="screen">
     <div class="header">
-        <div style="font-weight: 900; font-size: 22px;">📍 Реттиховка</div>
-        <div class="top-icons">
-            <div class="icon-btn" onclick="openCart()">🛒</div>
-            <div class="icon-btn" onclick="openProfile()">👤</div>
+        <div style="font-weight:900; font-size:24px;">📍 РЕТТИХОВКА</div>
+        <div style="display:flex; gap:10px;">
+            <div class="icon-btn" onclick="showScreen('cart')">🛒</div>
+            <div class="icon-btn" onclick="showScreen('profile')">👤</div>
         </div>
     </div>
-
-    <div id="status-box" class="status-widget animate">Заказ №124: Курьер в пути! 🛵</div>
-
     <div class="main-grid">
-        <div class="go-card" onclick="alert('Магазины: Дежурный, Березка, Алина')">
-            <h3 style="margin:0;">Еда</h3>
-            <p style="opacity:0.6; font-size:12px;">Из магазинов</p>
+        <div class="go-card" onclick="showMsg('Выбирай магазин в Firebase!')">
+            <h3>ЕДА</h3>
+            <span style="opacity:0.5;">Магазины</span>
         </div>
-        <div class="go-card ozon-card" onclick="openOzonUpload()">
-            <h3 style="margin:0;">Ozon</h3>
-            <p style="opacity:0.8; font-size:12px;">Выдача по QR</p>
+        <div class="go-card ozon-card" onclick="ozonUpload()">
+            <h3>OZON</h3>
+            <span style="opacity:0.8;">Загрузить QR</span>
         </div>
-    </div>
-
-    <div style="padding: 20px;">
-        <p style="font-weight: 900; opacity: 0.3;">МОЖЕТ ПОНРАВИТЬСЯ</p>
-        <div style="background:#fff; padding:20px; border-radius:24px;">Тут будут твои товары...</div>
-    </div>
-
-    <div style="margin: 20px; padding: 20px; background: #ffebeb; color: #ff4757; border-radius: 20px; text-align: center; font-weight: 900;" onclick="window.location.href='tel:+79140000000'">
-        📞 СВЯЗЬ С БОГДАНОМ
     </div>
 </div>
 
-<div id="scr-auth" class="modal" style="display: none; background: #fff;">
-    <div class="modal-box" style="box-shadow: none;">
-        <h2 style="font-size: 30px;">Вход</h2>
-        <input type="email" id="auth-email" placeholder="Почта">
-        <input type="password" id="auth-pass" placeholder="Пароль">
-        <button class="btn btn-black" onclick="emailAuth()">ПРОДОЛЖИТЬ</button>
-        <p style="margin: 20px 0; opacity: 0.4;">ИЛИ</p>
-        <button class="btn" style="background: #4285F4; color: #fff;" onclick="googleAuth()">GOOGLE</button>
+<div id="scr-profile" class="screen">
+    <div class="header">
+        <div class="icon-btn" onclick="showScreen('home')">←</div>
+        <div style="font-weight:900;">МОЙ АККАУНТ</div>
     </div>
-</div>
-
-<div id="modal-phone" class="modal">
-    <div class="modal-box">
-        <h3>Внимание!</h3>
-        <p style="font-size: 14px; opacity: 0.7;">Нам нужен ваш номер, чтобы вернуть деньги в случае ошибки.</p>
-        <input type="tel" id="reg-phone" placeholder="+7 (900) 000-00-00">
-        <button class="btn btn-black" onclick="saveUserPhone()">ПОДТВЕРДИТЬ</button>
+    <div style="background:var(--card); padding:20px; border-radius:25px; margin-top:20px;">
+        <p id="pEmail">Email: ...</p>
+        <p id="pRating">Рейтинг: 0</p>
     </div>
+    <button class="btn btn-blue" onclick="window.location.href='tel:+79140000000'">СВЯЗАТЬСЯ С ПОДДЕРЖКОЙ</button>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
         authDomain: "deliverygov11.firebaseapp.com",
@@ -141,104 +115,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    const SMS_KEY = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019";
     const DBX_TOKEN = "sl.u.AGdcbHvrpxpjxCndaUZYDVX-WF-GLXYDT5c7gTXb6vBkm6lHnU8n6V5l8sOiINQXI";
 
-    // --- ОНБОРДИНГ ЛОГИКА ---
-    let currentStep = 1;
-    function nextStep() {
-        if (currentStep < 3) {
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            document.getElementById(`dot${currentStep}`).classList.remove('active');
-            currentStep++;
-            document.getElementById(`step${currentStep}`).classList.add('active');
-            document.getElementById(`dot${currentStep}`).classList.add('active');
-        } else {
-            showAuth();
-        }
-        updateOnboardingBtns();
-    }
-    function prevStep() {
-        if (currentStep > 1) {
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            document.getElementById(`dot${currentStep}`).classList.remove('active');
-            currentStep--;
-            document.getElementById(`step${currentStep}`).classList.add('active');
-            document.getElementById(`dot${currentStep}`).classList.add('active');
-        }
-        updateOnboardingBtns();
-    }
-    function updateOnboardingBtns() {
-        document.getElementById('btn-back').style.display = currentStep === 1 ? 'none' : 'block';
-        document.getElementById('btn-next').innerText = currentStep === 3 ? 'ПОГНАЛИ' : 'Вперёд';
+    // UI LOGIC
+    function showMsg(text) {
+        const t = document.getElementById('toast');
+        t.innerText = text;
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 3000);
     }
 
-    // --- АВТОРИЗАЦИЯ ---
-    function showAuth() {
-        document.getElementById('onboarding').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('onboarding').style.display = 'none';
-            document.getElementById('scr-auth').style.display = 'flex';
-        }, 500);
-    }
-
-    async function googleAuth() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const res = await auth.signInWithPopup(provider);
-        checkUserInDB(res.user);
-    }
-
-    async function checkUserInDB(user) {
-        const doc = await db.collection('users').doc(user.uid).get();
-        if (doc.exists && doc.data().phone) {
-            enterApp();
-        } else {
-            document.getElementById('modal-phone').style.display = 'flex';
+    let curS = 1;
+    function move(d) {
+        document.getElementById('st'+curS).classList.remove('active');
+        curS += d;
+        if(curS > 3) { document.getElementById('onboarding').style.display='none'; showScreen('auth'); }
+        else {
+            document.getElementById('st'+curS).classList.add('active');
+            document.getElementById('bBack').style.display = curS === 1 ? 'none' : 'block';
+            document.getElementById('bNext').innerText = curS === 3 ? 'ГОТОВО' : 'Далее';
         }
     }
 
-    async function saveUserPhone() {
-        const phone = document.getElementById('reg-phone').value;
-        if(phone.length < 10) return alert("Введите корректный номер!");
-        const user = auth.currentUser;
-        await db.collection('users').doc(user.uid).set({ 
-            phone, 
-            email: user.email, 
-            rating: 0 
-        }, {merge: true});
-        enterApp();
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-'+id).style.display = 'flex';
+        document.getElementById('scr-'+id).classList.add('active');
     }
 
-    function enterApp() {
-        document.getElementById('scr-auth').style.display = 'none';
-        document.getElementById('modal-phone').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        document.getElementById('main-app').classList.add('animate');
-    }
-
-    // --- OZON / DROPBOX ---
-    async function openOzonUpload() {
+    // OZON DROPBOX
+    async function ozonUpload() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/png, image/jpeg';
+        input.accept = 'image/*';
         input.onchange = async (e) => {
             const file = e.target.files[0];
-            if (file.size > 3 * 1024 * 1024) return alert("Файл слишком большой (>3МБ)");
+            if(file.size > 3*1024*1024) return showMsg("ФАЙЛ СЛИШКОМ БОЛЬШОЙ!");
             
-            // Загрузка в Dropbox
+            showMsg("ЗАГРУЗКА...");
             const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${DBX_TOKEN}`,
                     'Content-Type': 'application/octet-stream',
-                    'Dropbox-API-Arg': JSON.stringify({ path: `/qrcodes/${Date.now()}_${file.name}` })
+                    'Dropbox-API-Arg': JSON.stringify({ path: `/orders/${Date.now()}_${file.name}`, mode: 'add' })
                 },
                 body: file
             });
-            if(res.ok) alert("QR-код успешно отправлен!");
+            if(res.ok) showMsg("QR-КОД ПРИНЯТ! КУРЬЕР СКОРО БУДЕТ.");
+            else showMsg("ОШИБКА DROPBOX!");
         };
         input.click();
+    }
+
+    // AUTH
+    async function googleLogin() {
+        const p = new firebase.auth.GoogleAuthProvider();
+        const r = await auth.signInWithPopup(p);
+        showScreen('home');
+        document.getElementById('pEmail').innerText = "Email: " + r.user.email;
     }
 </script>
 </body>
