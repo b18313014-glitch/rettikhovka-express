@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #007bff; --bg: #f4f7f6; --green: #2ed573; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); }
+        :root { --blue: #007bff; --bg: #f4f7f6; --green: #2ed573; --yellow: #ffc107; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); color: #333; }
         .page { position: fixed; inset: 0; display: none; flex-direction: column; background: var(--bg); }
         .page.active { display: flex; }
         
@@ -21,74 +21,69 @@
         header { display: flex; justify-content: space-between; padding: 15px 20px; background: white; align-items: center; }
         .container { padding: 20px; overflow-y: auto; flex: 1; }
 
-        /* КНОПКИ ГЛАВНОЙ */
-        .main-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { background: var(--blue); color: white; border: none; padding: 20px 10px; border-radius: 15px; font-weight: 900; cursor: pointer; font-size: 14px; }
+        /* ПРИВЕТСТВИЕ */
+        .welcome-card { background: var(--blue); color: white; padding: 20px; border-radius: 25px; margin-bottom: 20px; }
+        .welcome-card h2 { margin: 0; font-weight: 900; }
+        .welcome-card p { font-size: 13px; opacity: 0.9; margin: 10px 0 0 0; line-height: 1.4; }
 
-        /* МОДАЛКА OZON */
-        #ozon-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; padding: 30px; border-radius: 25px; width: 80%; text-align: center; }
-        
-        .upload-area { border: 2px dashed #ccc; padding: 20px; border-radius: 15px; margin: 15px 0; cursor: pointer; }
-        .go-btn { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: 900; margin-top: 10px; }
-        .go-btn:disabled { opacity: 0.4; }
+        .main-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { background: white; color: #333; border: none; padding: 20px 10px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .go-btn { background: var(--blue); color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-weight: 900; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="auth-page" class="page active" style="justify-content: center; align-items: center;">
-        <div style="text-align: center; width: 80%;">
-            <h1 style="font-weight: 900; color: var(--blue);">RX HUB</h1>
-            <button class="go-btn" onclick="loginGoogle()" style="background: white; color: #333; border: 1px solid #ddd;">
-                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="18" style="vertical-align: middle;"> Войти через Google
+        <div style="text-align: center; width: 85%;">
+            <h1 style="font-weight: 900; color: var(--blue); font-size: 40px; margin: 0;">RX HUB</h1>
+            <p style="margin-bottom: 30px; font-weight: bold;">Реттиховка на связи</p>
+            <button class="go-btn" onclick="loginGoogle()" style="background: white; color: #333; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="20"> Войти через Google
             </button>
         </div>
     </div>
 
     <div id="home-page" class="page">
         <header>
-            <div style="font-weight: 900; font-size: 20px;">RX <span style="color: var(--blue);">HUB</span></div>
-            <i class="fa-solid fa-user-circle" style="font-size: 28px;" onclick="openPage('profile-page')"></i>
+            <div style="font-weight: 900; font-size: 20px;">RX HUB</div>
+            <i class="fa-solid fa-circle-user" style="font-size: 30px; color: var(--blue);" onclick="openPage('profile-page')"></i>
         </header>
 
-        <div class="courier-widget">
-            <i class="fa-solid fa-person-biking" style="font-size: 24px; color: var(--green);"></i>
-            <div>
-                <div style="font-size: 12px; color: #888;">Ваш курьер:</div>
-                <div style="font-weight: 900;" id="courier-name">Богдан (Реттиховка)</div>
-            </div>
-        </div>
-
         <div class="container">
-            <div class="main-nav">
-                <button class="nav-btn" style="background: #ffc107; color: #333;" onclick="openPage('shop-page')">ЗАКАЗАТЬ ЕДУ</button>
-                <button class="nav-btn" onclick="openOzon()">ДОСТАВКА OZON</button>
+            <div class="welcome-card">
+                <h2 id="user-name">Привет!</h2>
+                <p>Добро пожаловать в RX HUB! Мы доставляем еду из магазинов, забираем ваши заказы с OZON и помогаем с перевозками по Реттиховке.</p>
             </div>
-            <div id="home-products" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+            <div class="courier-widget">
+                <i class="fa-solid fa-person-biking" style="font-size: 24px; color: var(--green);"></i>
+                <div>
+                    <div style="font-size: 11px; color: #888;">Статус доставки:</div>
+                    <div style="font-weight: 900;" id="status-text">Курьер Богдан готов к работе</div>
+                </div>
+            </div>
+
+            <div class="main-nav" style="margin-top: 20px;">
+                <button class="nav-btn" style="border-bottom: 4px solid var(--yellow);" onclick="openShop()">
+                    <i class="fa-solid fa-burger"></i><br>ЕДА
+                </button>
+                <button class="nav-btn" style="border-bottom: 4px solid var(--blue);" onclick="openOzon()">
+                    <i class="fa-solid fa-box-open"></i><br>OZON
+                </button>
+            </div>
+
+            <h3 style="font-weight: 900; margin-top: 30px;">Популярное сегодня</h3>
+            <div id="quick-products" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 </div>
         </div>
-        
-        <div style="padding: 20px;">
+
+        <div style="padding: 15px; background: white;">
             <button class="go-btn" onclick="openCart()"><i class="fa-solid fa-cart-shopping"></i> КОРЗИНА</button>
         </div>
     </div>
 
-    <div id="ozon-modal">
-        <div class="modal-content">
-            <h2 style="font-weight: 900;">ЗАГРУЗКА СКРИНШОТА</h2>
-            <p style="font-size: 12px; color: #666;">Только PNG, до 3 МБ</p>
-            <div class="upload-area" onclick="document.getElementById('file-input').click()">
-                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 30px; color: #ccc;"></i>
-                <div id="file-name" style="margin-top: 10px; font-size: 12px;">Нажмите или перетащите файл</div>
-            </div>
-            <input type="file" id="file-input" hidden accept="image/png" onchange="handleFile(this)">
-            <button class="go-btn" id="send-ozon" disabled onclick="sendOzonOrder()">ОТПРАВИТЬ</button>
-            <button onclick="closeOzon()" style="background:none; border:none; margin-top:15px; color:#888;">Отмена</button>
-        </div>
-    </div>
-
     <script>
-        // ТВОЙ КОНФИГ FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
@@ -106,45 +101,28 @@
             document.getElementById(id).classList.add('active');
         }
 
-        // РЕГИСТРАЦИЯ GOOGLE
+        // Вход через Google
         function loginGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(() => openPage('home-page')).catch(err => alert(err.message));
+            auth.signInWithPopup(provider).catch(err => alert("Ошибка: " + err.message));
         }
 
-        // OZON ЛОГИКА
-        function openOzon() { document.getElementById('ozon-modal').style.display = 'flex'; }
-        function closeOzon() { document.getElementById('ozon-modal').style.display = 'none'; }
-
-        function handleFile(input) {
-            const file = input.files[0];
-            const nameLabel = document.getElementById('file-name');
-            const btn = document.getElementById('send-ozon');
-
-            if (file) {
-                if (file.type !== 'image/png') {
-                    alert('Ошибка: только PNG!');
-                    return;
-                }
-                if (file.size > 3 * 1024 * 1024) {
-                    alert('Ошибка: файл больше 3 МБ!');
-                    return;
-                }
-                nameLabel.innerText = file.name;
-                btn.disabled = false;
-            }
-        }
-
-        // UNITPAY (ТВОЙ КЛЮЧ)
-        function payUnitPay(total) {
-            const publicKey = "445371-7555a";
-            const account = auth.currentUser.email;
-            window.location.href = `https://unitpay.money/pay/${publicKey}?sum=${total}&account=${account}&currency=RUB`;
-        }
-
+        // ПРОВЕРКА ПОЛЬЗОВАТЕЛЯ (СИСТЕМА ПОМНИТ ЕГО)
         auth.onAuthStateChanged(user => {
-            if (user) openPage('home-page');
+            if (user) {
+                // Если зашел — сразу на главную
+                openPage('home-page');
+                document.getElementById('user-name').innerText = `Привет, ${user.displayName.split(' ')[0]}!`;
+            } else {
+                // Если нет — на экран входа
+                openPage('auth-page');
+            }
         });
+
+        // Заглушки для функций (чтобы не было ошибок)
+        function openShop() { alert("Открываем магазин..."); }
+        function openOzon() { alert("Открываем окно OZON..."); }
+        function openCart() { alert("Переход в корзину..."); }
     </script>
 </body>
 </html>
