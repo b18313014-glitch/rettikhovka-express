@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Official</title>
+    <title>RX HUB - Final Auth</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --green: #2ecc71; --red: #e74c3c; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { background: #000; display: flex; justify-content: center; min-height: 100vh; overflow: hidden; }
-
         #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; display: flex; flex-direction: column; }
 
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); z-index: 100; display: none; flex-direction: column; }
@@ -21,43 +20,50 @@
         .btn-action { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.4s; text-transform: uppercase; }
 
         /* КОД ПОДТВЕРЖДЕНИЯ */
-        .code-container { display: flex; gap: 10px; justify-content: center; margin: 30px 0; }
+        .code-container { display: flex; gap: 10px; justify-content: center; margin: 25px 0; }
         .code-input { 
             width: 50px; height: 65px; text-align: center; font-size: 26px; font-weight: bold;
             border: 2px solid #ddd; border-radius: 12px; background: #fff; outline: none; transition: 0.3s;
         }
 
-        /* Анимация ошибки */
         .code-input.error { border-color: var(--red); color: var(--red); animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* Успех (поочередно) */
         .code-input.success { border-color: var(--green); color: var(--green); transform: scale(1.05); }
 
-        /* Плавная кнопка */
         #btn-continue { 
             opacity: 0; transform: translateY(15px); pointer-events: none; 
-            background: var(--green); color: #fff; margin-top: 20px;
+            background: var(--green); color: #fff; margin-top: 10px;
         }
         #btn-continue.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        .store-btn { background: #fff; padding: 20px; margin: 10px; border-radius: 15px; border: none; cursor: pointer; font-weight: bold; }
+        .separator { margin: 20px 0; display: flex; align-items: center; color: #ccc; font-size: 12px; }
+        .separator::before, .separator::after { content: ""; flex: 1; height: 1px; background: #eee; margin: 0 10px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="auth-screen" class="page active" style="background: #fff; justify-content: center; align-items: center; padding: 30px; z-index: 1000;">
+    <div id="auth-screen" class="page active" style="background: #fff; justify-content: center; padding: 30px; z-index: 1000;">
         <div id="step-1" style="width: 100%; text-align: center;">
-            <h2 style="margin-bottom: 25px; font-weight: 900;">RX HUB</h2>
-            <input type="email" id="reg-email" class="btn-action" style="background: #f9f9f9; border: 1px solid #eee; margin-bottom: 10px; text-transform: none;" placeholder="Ваша почта">
+            <h2 style="margin-bottom: 30px; font-weight: 900; letter-spacing: -1px;">RX DELIVERY</h2>
+            
+            <button id="google-login-btn" class="btn-action" style="background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; color: #555;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" style="width: 18px;">
+                Войти через Google
+            </button>
+
+            <div class="separator">ИЛИ ПОЧТА</div>
+
+            <input type="email" id="reg-email" class="btn-action" style="background: #f9f9f9; border: 1px solid #eee; margin-bottom: 10px; text-transform: none;" placeholder="E-mail">
             <input type="password" id="reg-pass" class="btn-action" style="background: #f9f9f9; border: 1px solid #eee; margin-bottom: 20px; text-transform: none;" placeholder="Пароль">
-            <button class="btn-action" style="background: var(--main);" onclick="goToStep2()">ПОЛУЧИТЬ КОД</button>
+            
+            <button class="btn-action" style="background: var(--main);" onclick="goToStep2()">ДАЛЕЕ</button>
         </div>
 
         <div id="step-2" style="display: none; width: 100%; text-align: center;">
-            <h2>ВВЕДИТЕ КОД</h2>
-            <p style="color: #888; font-size: 14px;">Мы отправили код на вашу почту</p>
+            <h2>КОД ИЗ ПИСЬМА</h2>
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">Введите 4 цифры для подтверждения</p>
             <div class="code-container">
                 <input type="number" class="code-input" id="c1" oninput="moveNext(this, 'c2')">
                 <input type="number" class="code-input" id="c2" oninput="moveNext(this, 'c3')">
@@ -71,33 +77,28 @@
     <div id="main-page" class="page">
         <header>
             <b>RX HUB</b>
-            <i class="fa-solid fa-circle-user" onclick="openPage('profile-page')"></i>
+            <i class="fa-solid fa-circle-user" style="font-size: 24px;" onclick="openPage('profile-page')"></i>
         </header>
-        <div style="padding: 15px;">
-            <button class="btn-action" style="background: var(--main); height: 120px;" onclick="openPage('store-select')">ЗАКАЗАТЬ ЕДУ</button>
+        <div style="padding: 20px;">
+            <div style="background: var(--main); padding: 30px; border-radius: 25px; text-align: center;" onclick="alert('Выбор магазина...')">
+                <i class="fa-solid fa-pizza-slice fa-3x"></i>
+                <h3 style="margin-top: 15px;">ЗАКАЗАТЬ ЕДУ</h3>
+            </div>
         </div>
-    </div>
-
-    <div id="store-select" class="page">
-        <header><i class="fa-solid fa-chevron-left" onclick="closePage('store-select')"></i><b>МАГАЗИНЫ</b><div></div></header>
-        <button class="store-btn" onclick="setStore('Алина')">🏪 Магазин "Алина"</button>
-        <button class="store-btn" onclick="setStore('Дежурный')">🏪 Магазин "Дежурный"</button>
     </div>
 
     <div id="profile-page" class="page">
         <header><i class="fa-solid fa-xmark" onclick="closePage('profile-page')"></i><b>ПРОФИЛЬ</b><div></div></header>
-        <div style="padding: 20px;">
-            <div style="background:#fff; padding:20px; border-radius:20px; text-align:center; margin-bottom:20px;">
-                <h3 id="user-display-name">Богдан</h3>
-                <p id="user-display-email" style="color:#888; font-size:14px;">rx@mail.ru</p>
-            </div>
-            <button class="btn-action" style="background:#ff4444; color:#fff;" onclick="location.reload()">ВЫЙТИ</button>
+        <div style="padding: 20px; text-align: center;">
+            <div style="width:100px; height:100px; background:#fff; border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">👦</div>
+            <h2>Богдан</h2>
+            <button class="btn-action" style="background:#ff4444; color:#fff; margin-top: 30px;" onclick="location.reload()">ВЫЙТИ</button>
         </div>
     </div>
 </div>
 
 <script>
-    const VALID_CODE = "7777"; // Код для теста
+    const VALID_CODE = "7777"; 
 
     function openPage(id) { document.getElementById(id).classList.add('active'); }
     function closePage(id) { document.getElementById(id).classList.remove('active'); }
@@ -109,9 +110,7 @@
     }
 
     function moveNext(current, nextId) {
-        if(current.value.length > 0) {
-            document.getElementById(nextId).focus();
-        }
+        if(current.value.length > 0) document.getElementById(nextId).focus();
     }
 
     function checkFinalCode() {
@@ -119,25 +118,20 @@
                      document.getElementById('c2').value + 
                      document.getElementById('c3').value + 
                      document.getElementById('c4').value;
-
         const inputs = document.querySelectorAll('.code-input');
 
         if(code.length === 4) {
             if(code === VALID_CODE) {
-                // АНИМАЦИЯ УСПЕХА: Зеленеют по очереди
                 inputs.forEach((inp, i) => {
                     setTimeout(() => {
                         inp.classList.remove('error');
                         inp.classList.add('success');
                     }, i * 150);
                 });
-                
-                // Плавное появление кнопки через 0.6 сек
                 setTimeout(() => {
                     document.getElementById('btn-continue').classList.add('show');
                 }, 600);
             } else {
-                // ОШИБКА: Краснеют
                 inputs.forEach(inp => {
                     inp.classList.add('error');
                     setTimeout(() => inp.classList.remove('error'), 400);
@@ -149,11 +143,6 @@
     function finishAuth() {
         document.getElementById('auth-screen').style.display = 'none';
         openPage('main-page');
-    }
-
-    function setStore(name) {
-        alert("Теперь заказываем из: " + name);
-        closePage('store-select');
     }
 </script>
 
