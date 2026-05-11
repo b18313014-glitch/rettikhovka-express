@@ -2,194 +2,142 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Admin — Панель Управления</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
+    <title>RX ADMIN - ПАНЕЛЬ УПРАВЛЕНИЯ</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #000; 
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-        /* АНИМАЦИИ */
-        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
-        .slide-up { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(40px) scale(0.95); } 
-            to { opacity: 1; transform: translateY(0) scale(1); } 
-        }
-
-        .order-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
-        }
-        .order-card:hover {
-            border-color: #f97316;
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .glass-btn {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2);
-            transition: all 0.3s ease;
-        }
-        .glass-btn:active { transform: scale(0.95); }
-
-        /* Кастомный скролл */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: #1a1a1a; color: white; display: flex; }
+        .sidebar { width: 250px; background: #111; height: 100vh; padding: 20px; box-sizing: border-box; }
+        .content { flex: 1; padding: 30px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+        .card { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-family: inherit; }
+        input, select { background: #333; color: white; }
+        button { background: #007bff; color: white; font-weight: 900; cursor: pointer; }
+        .nav-link { padding: 10px; cursor: pointer; display: block; color: #888; text-decoration: none; }
+        .nav-link.active { color: #007bff; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
+        .badge { padding: 5px 10px; border-radius: 5px; font-size: 10px; }
+        .badge-new { background: #ffc107; color: #000; }
     </style>
 </head>
-<body class="p-6">
+<body>
 
-    <div id="auth-section" class="flex flex-col items-center justify-center min-h-[90vh] fade-in">
-        <div class="relative mb-8">
-            <div class="absolute -inset-4 bg-orange-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-            <div class="relative w-24 h-24 bg-orange-500 rounded-[30px] flex items-center justify-center text-5xl shadow-2xl">🏠</div>
-        </div>
-        <h1 class="text-4xl font-black italic tracking-tighter mb-2">RX ADMIN</h1>
-        <p class="text-[10px] font-bold opacity-30 uppercase tracking-[0.4em] mb-12 text-center">Система управления Реттиховкой</p>
-        
-        <button onclick="login()" class="glass-btn px-12 py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest">
-            Войти как Богдан
-        </button>
+    <div class="sidebar">
+        <h2 style="color: #007bff;">RX ADMIN</h2>
+        <div class="nav-link active" onclick="showTab('orders')">Заказы</div>
+        <div class="nav-link" onclick="showTab('products')">Товары</div>
+        <div class="nav-link" onclick="showTab('users')">Пользователи</div>
     </div>
 
-    <div id="admin-panel" class="hidden max-w-2xl mx-auto">
-        <header class="flex justify-between items-center mb-12 slide-up" style="animation-delay: 0.1s">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl overflow-hidden border-2 border-orange-500 shadow-lg shadow-orange-500/20">
-                    <img id="user-avatar" src="" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">Штаб</h2>
-                    <p class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Администратор Онлайн</p>
-                </div>
-            </div>
-            <button onclick="logout()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-xl opacity-40 hover:opacity-100 transition-all">✕</button>
-        </header>
-
-        <div class="grid grid-cols-2 gap-4 mb-12 slide-up" style="animation-delay: 0.2s">
-            <div class="bg-zinc-900/50 p-6 rounded-[35px] border border-white/5">
-                <p class="text-[9px] font-black opacity-30 uppercase mb-2 tracking-widest">Заказы</p>
-                <p id="stat-count" class="text-5xl font-black italic tracking-tighter">0</p>
-            </div>
-            <div class="bg-zinc-900/50 p-6 rounded-[35px] border border-white/5">
-                <p class="text-[9px] font-black opacity-30 uppercase mb-2 tracking-widest">Касса (₽)</p>
-                <p id="stat-money" class="text-5xl font-black italic tracking-tighter text-orange-500">0</p>
-            </div>
+    <div class="content">
+        <div id="tab-orders" class="tab-content">
+            <h1>Активные заказы</h1>
+            <div id="orders-list"></div>
         </div>
 
-        <div class="slide-up" style="animation-delay: 0.3s">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-xs font-black uppercase tracking-widest opacity-50 italic">Активные задания</h3>
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                    <span class="text-[9px] font-bold opacity-30 uppercase">Live</span>
-                </div>
+        <div id="tab-products" class="tab-content" style="display:none;">
+            <h1>Добавить товар</h1>
+            <div class="card">
+                <input type="text" id="p-name" placeholder="Название товара">
+                <input type="number" id="p-price" placeholder="Цена (₽)">
+                <input type="text" id="p-shop" placeholder="ID Магазина (Напр: berizka)">
+                <input type="text" id="p-img" placeholder="Ссылка на фото (Dropbox/URL)">
+                <button onclick="addProduct()">ДОБАВИТЬ В БАЗУ</button>
             </div>
-            
-            <div id="orders-container" class="space-y-4">
-                <div class="py-20 text-center opacity-10 italic font-black text-xl uppercase tracking-widest">Пусто</div>
-            </div>
+            <div id="products-list"></div>
+        </div>
+
+        <div id="tab-users" class="tab-content" style="display:none;">
+            <h1>Пользователи системы</h1>
+            <div id="users-list"></div>
         </div>
     </div>
 
     <script>
-        // ТВОИ ЛИЧНЫЕ КЛЮЧИ ИЗ СООБЩЕНИЯ
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
-            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
             projectId: "deliverygov11",
             storageBucket: "deliverygov11.firebasestorage.app",
             messagingSenderId: "562994407235",
-            appId: "1:562994407235:web:dde4e7438511fa1bc871f6",
-            measurementId: "G-0KDKG67YQL"
+            appId: "1:562994407235:web:27765b2d4916e82ec871f6"
         };
-
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ПРОВЕРКА ВХОДА
-        auth.onAuthStateChanged((user) => {
-            if (user && user.email === "b18313014@gmail.com") {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('user-avatar').src = user.photoURL;
-                startListeningOrders();
-            } else if (user) {
-                alert("Доступ закрыт! Только для Богдана.");
-                auth.signOut();
-            }
-        });
-
-        function login() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider);
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById('tab-' + id).style.display = 'block';
+            if(id === 'orders') loadOrders();
+            if(id === 'products') loadProducts();
+            if(id === 'users') loadUsers();
         }
 
-        function logout() { auth.signOut(); location.reload(); }
+        // ДОБАВИТЬ ТОВАР
+        function addProduct() {
+            const name = document.getElementById('p-name').value;
+            const price = Number(document.getElementById('p-price').value);
+            const shopId = document.getElementById('p-shop').value;
+            const img = document.getElementById('p-img').value;
 
-        // СЛУШАЕМ БАЗУ Firestore (С анимацией новых карточек)
-        function startListeningOrders() {
-            db.collection("orders").orderBy("createdAt", "desc")
-            .onSnapshot((snapshot) => {
-                const container = document.getElementById('orders-container');
-                const statCount = document.getElementById('stat-count');
-                const statMoney = document.getElementById('stat-money');
-                
-                let html = "";
-                let totalCash = 0;
-                
-                snapshot.forEach((doc) => {
-                    const order = doc.data();
-                    totalCash += Number(order.price) || 0;
-                    
-                    html += `
-                        <div class="order-card p-8 rounded-[40px] slide-up">
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="bg-white/5 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest border border-white/5">Order ${doc.id.slice(0,4)}</span>
-                                <span class="text-orange-500 font-black italic text-2xl">${order.price} ₽</span>
-                            </div>
-                            <h4 class="text-2xl font-black italic uppercase mb-2 tracking-tighter">${order.item || order.items}</h4>
-                            <p class="text-zinc-500 text-xs font-bold uppercase mb-8">📍 ${order.address}</p>
-                            
-                            <div class="flex gap-3">
-                                <button onclick="deleteOrder('${doc.id}')" class="flex-grow py-4 bg-white/5 hover:bg-red-500/10 hover:text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Удалить</button>
-                                <button onclick="alert('Курьер вызван!')" class="flex-grow py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all">Выполнить</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html || `<div class="py-20 text-center opacity-10 italic font-black text-xl uppercase tracking-widest">Пусто</div>`;
-                statCount.innerText = snapshot.size;
-                statMoney.innerText = totalCash;
+            db.collection('products').add({
+                name, price, shopId, img, date: new Date()
+            }).then(() => {
+                alert("Товар добавлен!");
+                loadProducts();
             });
         }
 
-        function deleteOrder(id) {
-            if(confirm("Заказ выполнен или отменен?")) {
-                db.collection("orders").doc(id).delete();
-            }
+        // ЗАГРУЗКА ЗАКАЗОВ
+        function loadOrders() {
+            db.collection('orders').orderBy('date', 'desc').onSnapshot(snap => {
+                const list = document.getElementById('orders-list');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const o = doc.data();
+                    list.innerHTML += `<div class="card">
+                        <b>Заказ от ${o.email}</b><br>
+                        Адрес: ${o.address}<br>
+                        Сумма: ${o.total}₽<br>
+                        Статус: <span class="badge badge-new">${o.status}</span>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button style="background: #28a745; font-size:10px;" onclick="updateStatus('${doc.id}', 'В пути')">В ПУТИ</button>
+                            <button style="background: #dc3545; font-size:10px;" onclick="updateStatus('${doc.id}', 'Доставлено')">ДОСТАВЛЕНО</button>
+                        </div>
+                    </div>`;
+                });
+            });
         }
+
+        function updateStatus(id, status) {
+            db.collection('orders').doc(id).update({ status: status });
+        }
+
+        // ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ
+        function loadUsers() {
+            db.collection('users').get().then(snap => {
+                const list = document.getElementById('users-list');
+                list.innerHTML = '<table><tr><th>Email</th><th>Телефон</th><th>Действие</th></tr>';
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    list.innerHTML += `<tr>
+                        <td>${doc.id}</td>
+                        <td>${u.phone || 'Нет'}</td>
+                        <td><button style="background:red; width: auto; padding: 5px;" onclick="deleteUser('${doc.id}')">УДАЛИТЬ</button></td>
+                    </tr>`;
+                });
+                list.innerHTML += '</table>';
+            });
+        }
+
+        function deleteUser(id) {
+            if(confirm("Удалить пользователя?")) db.collection('users').doc(id).delete();
+        }
+
+        loadOrders(); // По умолчанию при входе
     </script>
 </body>
 </html>
