@@ -3,89 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - ОФИЦИАЛЬНЫЙ ВХОД</title>
+    <title>RX HUB - FIX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --gray: #f4f4f4; --dark: #1a1a1a; --red: #e74c3c; }
+        :root { --main: #ffcc00; --gray: #f4f4f4; --dark: #1a1a1a; --red: #e74c3c; --green: #2ecc71; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; }
-        body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; }
+        body { background: #000; height: 100vh; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow: hidden; }
 
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
         .page.active { display: flex; }
 
-        .btn-action { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #fff; font-size: 16px; transition: transform 0.2s; }
-        .btn-action:active { transform: scale(0.95); }
+        .btn-action { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #fff; font-size: 16px; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.98); opacity: 0.8; }
         .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 16px; outline: none; }
 
-        /* --- АНИМАЦИИ ПРИВЕТСТВИЯ --- */
+        /* АНИМАЦИИ */
         #welcome-screen { background: var(--main); justify-content: center; align-items: center; text-align: center; padding: 30px; }
-        
-        .anim-logo { animation: slideDown 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; transform: translateY(-50px); opacity: 0; }
-        .anim-text { animation: fadeIn 1s ease 0.5s forwards; opacity: 0; }
-        .anim-btn { animation: slideUp 1s ease 1s forwards; opacity: 0; transform: translateY(50px); }
-
+        .anim-logo { animation: slideDown 0.8s forwards; opacity: 0; transform: translateY(-30px); }
         @keyframes slideDown { to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
 
-        /* Окно ошибки */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; }
-        .modal-box { background: #fff; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; animation: slideDown 0.4s; }
+        /* СЕТКА КОДА */
+        .code-grid { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
+        .code-input { width: 45px; height: 55px; text-align: center; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div id="welcome-screen" class="page active">
-        <i class="fa-solid fa-motorcycle fa-5x anim-logo" style="margin-bottom: 20px; color: var(--dark);"></i>
-        <h1 class="anim-logo" style="font-size: 45px; font-weight: 900; margin-bottom: 10px;">RX HUB</h1>
-        <p class="anim-text" style="font-size: 18px; line-height: 1.5; margin-bottom: 40px;">Еда из любимых магазинов и доставка Ozon.<br>Быстро. Надежно. Твое.</p>
-        <button id="btn-start" class="btn-action anim-btn" style="background: var(--dark);">НАЧАТЬ РАБОТУ</button>
+        <h1 class="anim-logo" style="font-size: 50px; font-weight: 900;">RX HUB</h1>
+        <p style="margin-bottom: 30px;">Твой сервис быстрой доставки</p>
+        <button id="start-btn" class="btn-action" style="background: #000; width: 80%;">ВОЙТИ</button>
     </div>
 
     <div id="auth-screen" class="page" style="padding: 30px; justify-content: center; background: #fff;">
-        <h2 style="text-align: center; margin-bottom: 30px; font-weight: 900;">РЕГИСТРАЦИЯ / ВХОД</h2>
+        <h2 style="text-align: center; margin-bottom: 25px;">ВХОД</h2>
+        <input type="tel" id="user-phone" class="input-field" placeholder="89641234567">
+        <button id="send-sms-btn" class="btn-action" style="background: var(--dark);">ПОЛУЧИТЬ КОД</button>
         
-        <input type="tel" id="input-phone" class="input-field" placeholder="Номер телефона (8964...)">
-        <button id="btn-phone" class="btn-action" style="background: var(--dark);">ПРОДОЛЖИТЬ ПО СМС</button>
+        <div style="text-align: center; margin: 15px 0; color: #ccc;">ИЛИ</div>
         
-        <div style="text-align: center; margin: 20px 0; color: #ccc;">ИЛИ</div>
-        
-        <input type="email" id="input-email" class="input-field" placeholder="Электронная почта">
-        <button id="btn-email" class="btn-action" style="background: #3498db;">ПРОДОЛЖИТЬ ПО ПОЧТЕ</button>
-        
-        <button id="btn-google" class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_Logo.svg" width="20">
-            ПРОДОЛЖИТЬ С GOOGLE
+        <button id="google-btn" class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_Logo.svg" width="18"> Google
         </button>
     </div>
 
-    <div id="link-phone-screen" class="page" style="padding: 30px; justify-content: center; background: #fff;">
-        <h2 style="text-align: center; color: var(--red); margin-bottom: 20px;">ПРИВЯЗКА НОМЕРА</h2>
-        <p style="text-align: center; margin-bottom: 30px; color: gray;">Введите номер, чтобы мы могли отправить вам СМС с кодом.</p>
-        <input type="tel" id="input-link-phone" class="input-field" placeholder="Ваш номер телефона">
-        <button id="btn-link-phone" class="btn-action" style="background: var(--dark);">ОТПРАВИТЬ СМС</button>
+    <div id="code-screen" class="page" style="padding: 30px; justify-content: center; background: #fff; text-align: center;">
+        <h2>КОД ИЗ СМС</h2>
+        <p id="phone-display" style="color: gray; margin: 10px 0;"></p>
+        <div class="code-grid">
+            <input type="number" class="code-box" id="c1" maxlength="1">
+            <input type="number" class="code-box" id="c2" maxlength="1">
+            <input type="number" class="code-box" id="c3" maxlength="1">
+            <input type="number" class="code-box" id="c4" maxlength="1">
+            <input type="number" class="code-box" id="c5" maxlength="1">
+            <input type="number" class="code-box" id="c6" maxlength="1">
+        </div>
+        <button id="verify-btn" class="btn-action" style="background: var(--green);">ПОДТВЕРДИТЬ</button>
     </div>
 
     <div id="main-hub" class="page" style="justify-content: center; align-items: center;">
-        <h1>РАБОЧИЙ СТОЛ</h1>
-        <p>Добро пожаловать!</p>
-    </div>
-
-    <div id="no-phone-modal" class="modal-overlay">
-        <div class="modal-box">
-            <i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--main); margin-bottom: 15px;"></i>
-            <h3>Ой, извините!</h3>
-            <p style="margin: 15px 0; color: #555;">На вашем аккаунте нет номера телефона. Без него мы не сможем возвращать вам деньги в случае проблем.</p>
-            <p style="margin-bottom: 20px; font-weight: bold;">Пожалуйста, введите номер и подтвердите его по SMS.</p>
-            <button id="btn-close-modal" class="btn-action" style="background: var(--dark);">ХОРОШО</button>
-        </div>
+        <i class="fa-solid fa-circle-check fa-5x" style="color: var(--green);"></i>
+        <h1 style="margin-top: 20px;">ВЫ ВОШЛИ!</h1>
     </div>
 </div>
 
 <script type="module">
-    // ИМПОРТЫ FIREBASE (Готово для Vercel)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -98,50 +82,68 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    let sentCode = "";
 
-    // НАВИГАЦИЯ
     function openPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    // ДОЖИДАЕМСЯ ЗАГРУЗКИ HTML (Чтобы кнопки 100% работали)
+    // СЛУШАТЕЛИ КНОПОК (Чтобы 100% работали на Vercel)
     document.addEventListener("DOMContentLoaded", () => {
         
-        // Кнопка на стартовом экране
-        document.getElementById('btn-start').addEventListener('click', () => {
-            openPage('auth-screen');
+        // Переход с приветствия
+        document.getElementById('start-btn').addEventListener('click', () => openPage('auth-screen'));
+
+        // ВХОД ПО СМС
+        document.getElementById('send-sms-btn').addEventListener('click', () => {
+            const phone = document.getElementById('user-phone').value.replace(/\D/g, '');
+            if(phone.length < 10) return alert("Введите правильный номер!");
+            
+            let cleanPhone = phone.startsWith('8') ? '7' + phone.slice(1) : phone;
+            sentCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            fetch(`https://sms.ru/sms/send?api_id=BF89352B-A09E-FEA7-5E8D-6038D5FB0019&to=${cleanPhone}&msg=Ваш+код+RX+HUB:+${sentCode}&json=1`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "OK") {
+                    document.getElementById('phone-display').innerText = "+" + cleanPhone;
+                    openPage('code-screen');
+                } else {
+                    alert("Ошибка SMS.RU: " + data.status_text);
+                }
+            }).catch(e => alert("Ошибка сети: " + e));
         });
 
-        // Кнопка Вход с Google
-        document.getElementById('btn-google').addEventListener('click', () => {
-            signInWithPopup(auth, provider).then((result) => {
-                const user = result.user;
-                // ПРОВЕРКА: ЕСЛИ У GOOGLE НЕТ НОМЕРА
-                if (!user.phoneNumber) {
-                    document.getElementById('no-phone-modal').style.display = 'flex';
+        // ПРОВЕРКА КОДА
+        document.getElementById('verify-btn').addEventListener('click', () => {
+            const entered = Array.from(document.querySelectorAll('.code-box')).map(i => i.value).join('');
+            if(entered === sentCode) {
+                openPage('main-hub');
+            } else {
+                alert("Неверный код!");
+                document.querySelectorAll('.code-box').forEach(i => i.value = "");
+            }
+        });
+
+        // GOOGLE ВХОД
+        document.getElementById('google-btn').addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).then((res) => {
+                if(!res.user.phoneNumber) {
+                    alert("Ой, извините! На аккаунте нет номера. Нужно привязать.");
+                    openPage('auth-screen'); // Перекидываем на ввод номера
                 } else {
                     openPage('main-hub');
                 }
-            }).catch((error) => {
-                console.error("Ошибка входа:", error);
+            }).catch(e => alert("Ошибка Google: " + e.message));
+        });
+
+        // Авто-переход фокуса в цифрах
+        document.querySelectorAll('.code-box').forEach((box, idx, arr) => {
+            box.addEventListener('input', (e) => {
+                if(e.target.value.length === 1 && idx < arr.length - 1) arr[idx+1].focus();
             });
-        });
-
-        // Кнопка "ХОРОШО" в модалке без номера
-        document.getElementById('btn-close-modal').addEventListener('click', () => {
-            document.getElementById('no-phone-modal').style.display = 'none';
-            openPage('link-phone-screen');
-        });
-
-        // Кнопка Отправки СМС
-        document.getElementById('btn-phone').addEventListener('click', () => {
-            alert("Тут будет отправка SMS через твой API");
-        });
-
-        document.getElementById('btn-email').addEventListener('click', () => {
-            alert("Тут будет вход по почте");
         });
     });
 </script>
