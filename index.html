@@ -3,164 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - РЕТТИХОВКА</title>
+    <title>RETTIKHOVKA EXPRESS</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #4facfe; --green: #2ecc71; --red: #ff4757; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: #f8f9fa; color: #333; }
-        .page { position: fixed; inset: 0; display: none; flex-direction: column; background: #f8f9fa; overflow-y: auto; }
-        .page.active { display: flex; }
+        :root { --main: #007bff; --bg: #ffffff; --text: #000000; --card: #f5f5f5; }
+        /* ТЕМЫ */
+        body.dark-theme { --bg: #0a0a0a; --text: #ffffff; --card: #1a1a1a; }
+        body.rx-theme { --bg: #000510; --text: #ffffff; --card: #001530; --main: #00d4ff; }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; transition: 0.3s; }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
         
-        header { display: flex; justify-content: space-between; padding: 15px 20px; background: white; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .container { padding: 20px; }
-
-        /* Кнопки и Карточки */
-        .btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 18px; font-weight: 900; width: 100%; cursor: pointer; transition: 0.3s; }
-        .shop-card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        .p-card { background: var(--card); border-radius: 20px; padding: 10px; text-align: center; position: relative; overflow: hidden; }
+        .p-img { width: 100%; height: 120px; object-fit: contain; border-radius: 15px; background: #fff; }
         
-        /* Виджет курьера */
-        .delivery-widget { background: white; margin: 15px; padding: 15px; border-radius: 20px; display: flex; align-items: center; gap: 15px; border-left: 5px solid var(--green); }
+        .add-btn { background: var(--main); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; font-weight: 900; cursor: pointer; position: absolute; bottom: 10px; right: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        /* КОРЗИНА */
+        .cart-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--main); color: white; padding: 15px; border-radius: 20px; display: none; justify-content: space-between; font-weight: 900; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
-        /* Сетка товаров */
-        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .item-card { background: white; padding: 15px; border-radius: 20px; text-align: center; position: relative; border: 1px solid #eee; }
-        .add-plus { position: absolute; bottom: 10px; right: 10px; background: var(--main); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; }
-
-        /* Кастомное уведомление (вместо alert) */
-        #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 10px; display: none; z-index: 2000; }
+        .settings-btn { cursor: pointer; font-size: 20px; }
     </style>
 </head>
-<body>
+<body id="app-body">
 
-    <div id="toast">Товар добавлен!</div>
+<div class="header">
+    <h1 style="font-weight: 900; margin:0;">RX</h1>
+    <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+</div>
 
-    <div id="auth-page" class="page active" style="justify-content: center; align-items: center;">
-        <h1 style="font-weight: 900; color: var(--main);">RX HUB</h1>
-        <button class="btn" style="width: 80%;" onclick="loginGoogle()">Войти через Google</button>
+<div id="settings-menu" style="display:none; padding: 20px; background: var(--card); margin: 15px; border-radius: 15px;">
+    <h3>Сменить тему:</h3>
+    <button onclick="setTheme('light')">Светлая</button>
+    <button onclick="setTheme('dark')">Темная</button>
+    <button onclick="setTheme('rx')">RX Neon</button>
+</div>
+
+<div class="product-grid" id="catalog">
     </div>
 
-    <div id="home-page" class="page">
-        <header>
-            <div style="font-weight: 900;">RX HUB</div>
-            <i class="fa-solid fa-cart-shopping" style="font-size: 24px;" onclick="openPage('cart-page')"></i>
-        </header>
-        <div class="container">
-            <div class="delivery-widget">
-                <i class="fa-solid fa-truck" style="color: var(--green);"></i>
-                <div id="courier-info">Нет активных заказов</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                <button class="btn" style="background: #ffc107; color: #333;" onclick="loadShops()">ЗАКАЗАТЬ ЕДУ</button>
-                <button class="btn" onclick="openPage('ozon-page')">OZON</button>
-            </div>
-        </div>
-    </div>
+<div class="cart-bar" id="cart-view" onclick="goToCheckout()">
+    <span>КОРЗИНА: <span id="cart-count">0</span></span>
+    <span>ИТОГО: <span id="cart-total">0</span> ₽</span>
+</div>
 
-    <div id="shops-page" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i> <div style="font-weight:900;">МАГАЗИНЫ</div> <div></div></header>
-        <div class="container" id="shops-list">
-            </div>
-    </div>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+        authDomain: "deliverygov11.firebaseapp.com",
+        projectId: "deliverygov11"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    <div id="items-page" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('shops-page')"></i> <div id="shop-title" style="font-weight:900;">ТОВАРЫ</div> <div></div></header>
-        <div class="container products-grid" id="products-list"></div>
-    </div>
+    let cart = [];
 
-    <div id="cart-page" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i> <div style="font-weight:900;">КОРЗИНА</div> <div></div></header>
-        <div class="container">
-            <div id="cart-items"></div>
-            <div style="margin-top: 20px; font-weight: 900; font-size: 20px;">Итого: <span id="total-sum">0</span>₽</div>
-            <div style="font-size: 12px; color: #888;">+50₽ доставка</div>
-            <button class="btn" id="pay-btn" style="background: var(--green); margin-top: 20px;" onclick="startPayment()">ОПЛАТИТЬ 200+ ₽</button>
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ", authDomain: "deliverygov11.firebaseapp.com", projectId: "deliverygov11", storageBucket: "deliverygov11.firebasestorage.app", messagingSenderId: "562994407235", appId: "1:562994407235:web:27765b2d4916e82ec871f6" };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        let cart = [];
-
-        function openPage(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function showToast(text) {
-            const t = document.getElementById('toast');
-            t.innerText = text;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
-        }
-
-        // Загрузка магазинов (Дежурный, Березка и т.д.)
-        function loadShops() {
-            openPage('shops-page');
-            const list = document.getElementById('shops-list');
-            list.innerHTML = 'Загрузка...';
-            db.collection('shops').get().then(snap => {
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    const s = doc.data();
-                    list.innerHTML += `<div class="shop-card" onclick="loadItems('${doc.id}', '${s.name}')">
-                        <span style="font-weight:900;">${s.name}</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>`;
-                });
+    // 1. ЗАГРУЗКА ТОВАРОВ ИЗ АДМИНКИ
+    function loadProducts() {
+        db.collection('products').orderBy('date', 'desc').onSnapshot(snap => {
+            const catalog = document.getElementById('catalog');
+            catalog.innerHTML = '';
+            snap.forEach(doc => {
+                const p = doc.data();
+                const image = p.img || 'https://via.placeholder.com/150';
+                catalog.innerHTML += `
+                    <div class="p-card">
+                        <img src="${image}" class="p-img">
+                        <div style="font-weight:900; margin-top:10px; font-size:14px;">${p.name}</div>
+                        <div style="color:var(--main); font-weight:700;">${p.price} ₽</div>
+                        <button class="add-btn" onclick="addToCart('${doc.id}', '${p.name}', ${p.price})">+</button>
+                    </div>
+                `;
             });
-        }
-
-        // Загрузка товаров конкретного магазина
-        function loadItems(shopId, shopName) {
-            openPage('items-page');
-            document.getElementById('shop-title').innerText = shopName;
-            const list = document.getElementById('products-list');
-            list.innerHTML = 'Загрузка...';
-            db.collection('products').where('shopId', '==', shopId).get().then(snap => {
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    list.innerHTML += `<div class="item-card">
-                        <div style="font-weight:700;">${p.name}</div>
-                        <div style="color:var(--main); font-weight:900;">${p.price}₽</div>
-                        <button class="add-plus" onclick="addToCart('${p.name}', ${p.price})">+</button>
-                    </div>`;
-                });
-            });
-        }
-
-        function addToCart(name, price) {
-            cart.push({name, price});
-            showToast(`${name} добавлен!`);
-        }
-
-        function startPayment() {
-            const goodsSum = cart.reduce((s, i) => s + i.price, 0);
-            if(goodsSum < 200) {
-                showToast("Минимум 200₽ товаров!");
-                return;
-            }
-            const final = goodsSum + 50;
-            const publicKey = "445371-7555a";
-            window.location.href = `https://unitpay.money/pay/${publicKey}?sum=${final}&account=${auth.currentUser.email}&currency=RUB`;
-        }
-
-        function loginGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider);
-        }
-
-        auth.onAuthStateChanged(user => {
-            if(user) openPage('home-page');
         });
-    </script>
+    }
+
+    // 2. ЛОГИКА ПЛЮСИКА (КОРЗИНА)
+    function addToCart(id, name, price) {
+        cart.push({ id, name, price });
+        updateCartUI();
+        
+        // Маленький эффект вибрации или анимации
+        navigator.vibrate(50); 
+    }
+
+    function updateCartUI() {
+        const cartView = document.getElementById('cart-view');
+        const cartCount = document.getElementById('cart-count');
+        const cartTotal = document.getElementById('cart-total');
+
+        if(cart.length > 0) {
+            cartView.style.display = 'flex';
+            cartCount.innerText = cart.length;
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            cartTotal.innerText = total;
+        } else {
+            cartView.style.display = 'none';
+        }
+    }
+
+    // 3. НАСТРОЙКИ ТЕМ
+    function toggleSettings() {
+        const menu = document.getElementById('settings-menu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function setTheme(theme) {
+        const body = document.getElementById('app-body');
+        body.className = '';
+        if(theme === 'dark') body.classList.add('dark-theme');
+        if(theme === 'rx') body.classList.add('rx-theme');
+        localStorage.setItem('rx-theme', theme);
+    }
+
+    // Сохраняем тему при перезагрузке
+    const savedTheme = localStorage.getItem('rx-theme');
+    if(savedTheme) setTheme(savedTheme);
+
+    loadProducts();
+</script>
 </body>
 </html>
