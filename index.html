@@ -3,115 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - PRE-ORDER</title>
+    <title>RX HUB - FULL VERSION</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --gray: #f5f5f5; --dark: #111; --blue: #005bff; --red: #ff3b30; }
+        :root { --main: #ffcc00; --gray: #f5f5f5; --dark: #111; --blue: #005bff; --red: #ff3b30; --green: #34c759; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; }
 
         /* --- АНИМАЦИИ --- */
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
-        .page.active { display: flex; animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .page.active { display: flex; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- ЭКРАН 1: ПРИВЕТСТВИЕ --- */
-        #welcome-screen { background: var(--main); justify-content: center; align-items: center; text-align: center; }
-        .logo-big { font-size: 60px; font-weight: 900; letter-spacing: -3px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        /* --- ЭКРАН 2: ОБУЧЕНИЕ (ИНФО) --- */
+        /* --- ЭКРАНЫ ПРИВЕТСТВИЯ И ИНФО --- */
+        #page-welcome { background: var(--main); justify-content: center; align-items: center; text-align: center; }
         .info-slide { padding: 40px; text-align: center; justify-content: center; display: flex; flex-direction: column; height: 100%; }
-        .info-icon { font-size: 80px; color: var(--main); margin-bottom: 30px; text-shadow: 2px 2px 0 #000; }
-        .info-title { font-size: 28px; font-weight: 900; margin-bottom: 15px; }
+        .info-icon { font-size: 70px; color: var(--main); margin-bottom: 20px; text-shadow: 2px 2px 0 #000; }
 
-        /* --- UI ЭЛЕМЕНТЫ --- */
-        .btn-main { width: 100%; padding: 20px; border-radius: 20px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.95); }
-        .rx-input { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 16px; outline: none; }
-        
+        /* --- ОШИБКИ ВХОДА --- */
+        .rx-input { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #ddd; margin-bottom: 10px; font-size: 18px; outline: none; transition: 0.2s; }
+        .rx-input.error { border-color: var(--red) !important; color: var(--red) !important; animation: shake 0.4s; }
+        .error-label { color: var(--red); font-size: 14px; font-weight: bold; display: none; margin-bottom: 15px; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        /* --- КНОПКИ --- */
+        .btn-ui { width: 100%; padding: 18px; border-radius: 20px; border: none; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-ui:active { transform: scale(0.96); }
+        .btn-black { background: var(--dark); color: #fff; }
+
+        /* --- ГЛАВНОЕ МЕНЮ И КАРТОЧКИ --- */
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .shop-card { background: #fff; padding: 25px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .item-box { background: #fff; border-radius: 22px; padding: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+
         /* МОДАЛКА */
-        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { background: #fff; padding: 30px; border-radius: 30px; text-align: center; animation: bounceIn 0.4s; }
-        @keyframes bounceIn { 0% { transform: scale(0.7); } 100% { transform: scale(1); } }
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: #fff; padding: 30px; border-radius: 25px; text-align: center; width: 100%; max-width: 350px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="page-1" class="page active" style="background: var(--main);">
-        <div class="logo-big">RX HUB</div>
-        <p style="font-weight: bold; letter-spacing: 2px;">DELIVERY SYSTEM</p>
+    <div id="page-welcome" class="page active">
+        <h1 style="font-size: 55px; font-weight: 900;">RX HUB</h1>
+        <p style="font-weight: bold; margin-top: 10px;">DELIVERY</p>
     </div>
 
-    <div id="page-2" class="page">
+    <div id="page-info1" class="page">
         <div class="info-slide">
             <i class="fa-solid fa-truck-fast info-icon"></i>
-            <h2 class="info-title">МОЛНИЕНОСНО</h2>
-            <p>Доставляем продукты из магазинов Дежурный, Алина и Берёзка быстрее, чем ты успеешь проголодаться.</p>
-            <button class="btn-main" style="background: var(--dark); color: #fff; margin-top: 50px;" onclick="openPage('page-3')">ДАЛЕЕ</button>
+            <h2>БЫСТРАЯ ЕДА</h2>
+            <p style="margin-top: 15px; color: #555;">Любимые продукты из местных магазинов за 20 минут.</p>
+            <button class="btn-ui btn-black" style="margin-top: 40px;" onclick="openPage('page-info2')">ДАЛЕЕ</button>
         </div>
     </div>
 
-    <div id="page-3" class="page">
+    <div id="page-info2" class="page">
         <div class="info-slide">
             <i class="fa-solid fa-box-open info-icon" style="color: var(--blue);"></i>
-            <h2 class="info-title">OZON ДОСТАВКА</h2>
-            <p>Заберем твой заказ из ПВЗ Ozon. Просто пришли штрих-код, и курьер привезет посылку к двери.</p>
-            <button class="btn-main" style="background: var(--dark); color: #fff; margin-top: 50px;" onclick="openPage('page-auth')">ПОНЯТНО</button>
+            <h2>OZON ДОСТАВКА</h2>
+            <p style="margin-top: 15px; color: #555;">Пришли штрих-код, и мы заберем твою посылку из ПВЗ.</p>
+            <button class="btn-ui btn-black" style="margin-top: 40px;" onclick="openPage('page-auth')">ПОЕХАЛИ</button>
         </div>
     </div>
 
-    <div id="page-auth" class="page" style="background: #fff;">
-        <div style="padding: 40px; margin-top: 50px;">
-            <h1 style="font-size: 35px; font-weight: 900; margin-bottom: 10px;">Вход</h1>
-            <p style="color: #888; margin-bottom: 40px;">Введите ваш номер для получения доступа к RX HUB</p>
-            
-            <input type="tel" id="phone-field" class="rx-input" placeholder="8 9XX XXX XX XX">
-            <button class="btn-main" style="background: var(--main); color: #000;" onclick="sendSms()">ОТПРАВИТЬ КОД</button>
-            
-            <div style="text-align: center; margin: 25px 0; color: #ccc;">ИЛИ</div>
-            
-            <button class="btn-main" style="background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="googleSignIn()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Продолжить через Google
-            </button>
-        </div>
+    <div id="page-auth" class="page" style="padding: 30px; justify-content: center;">
+        <h1 style="margin-bottom: 25px;">Вход</h1>
+        <input type="tel" id="phone-field" class="rx-input" placeholder="8 9XX XXX XX XX">
+        <button class="btn-ui btn-black" onclick="sendSms()">ПОЛУЧИТЬ КОД</button>
+        <div style="text-align: center; margin: 20px 0; color: #ccc;">ИЛИ</div>
+        <button class="btn-ui" style="background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="googleAuth()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+        </button>
     </div>
 
-    <div id="page-code" class="page">
-        <div style="padding: 40px; text-align: center; margin-top: 60px;">
-            <h2>Введите код</h2>
-            <p id="target-ph" style="margin-bottom: 30px; color: #666;"></p>
-            <input type="number" id="code-field" class="rx-input" style="text-align: center; font-size: 28px; letter-spacing: 15px;" placeholder="000000">
-            <button class="btn-main" style="background: #000; color: #fff; margin-top: 20px;" onclick="confirmCode()">ПОДТВЕРДИТЬ</button>
-        </div>
+    <div id="page-code" class="page" style="padding: 30px; justify-content: center; text-align: center;">
+        <h2>Введите код</h2>
+        <p id="code-dest" style="margin-bottom: 20px; color: #666;"></p>
+        <input type="number" id="code-field" class="rx-input" style="text-align: center; font-size: 28px; letter-spacing: 12px;" placeholder="000000">
+        <div id="code-err" class="error-label">Код введен неверно!</div>
+        <button class="btn-ui" style="background: var(--green); color: #fff;" onclick="checkSms()">ВОЙТИ</button>
     </div>
 
     <div id="page-main" class="page">
-        <header style="background:#fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
-            <b style="font-size: 24px;">RX HUB</b>
-            <i class="fa-solid fa-user-circle" style="font-size: 28px;" onclick="openPage('page-profile')"></i>
-        </header>
-        <div style="padding: 25px;">
-            <div style="background: var(--main); height: 160px; border-radius: 30px; margin-bottom: 20px; padding: 30px; position: relative; overflow: hidden;" onclick="alert('Магазины в разработке')">
-                <h2 style="font-size: 30px;">МАГАЗИНЫ</h2>
-                <i class="fa-solid fa-shop" style="position: absolute; right: -10px; bottom: -10px; font-size: 100px; opacity: 0.2;"></i>
+        <header>
+            <b style="font-size: 22px;">RX HUB</b>
+            <div style="display: flex; gap: 18px;">
+                <i class="fa-solid fa-basket-shopping" onclick="renderCart()"></i>
+                <i class="fa-solid fa-user-circle" onclick="openPage('page-profile')"></i>
             </div>
-            <div style="background: var(--blue); height: 160px; border-radius: 30px; padding: 30px; position: relative; color: #fff; overflow: hidden;" onclick="openPage('page-3')">
-                <h2 style="font-size: 30px;">OZON</h2>
-                <i class="fa-solid fa-box" style="position: absolute; right: -10px; bottom: -10px; font-size: 100px; opacity: 0.2;"></i>
+        </header>
+        <div style="padding: 20px;">
+            <div style="background: var(--main); height: 150px; border-radius: 25px; margin-bottom: 15px; padding: 25px;" onclick="openPage('page-shops')">
+                <h2 style="font-size: 28px;">МАГАЗИНЫ</h2>
+            </div>
+            <div style="background: var(--blue); height: 150px; border-radius: 25px; padding: 25px; color: #fff;" onclick="openPage('page-ozon')">
+                <h2 style="font-size: 28px;">OZON</h2>
             </div>
         </div>
     </div>
 
-    <div id="error-modal" class="modal">
+    <div id="page-shops" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>ВЫБОР МАГАЗИНА</b><div></div></header>
+        <div style="padding: 20px;">
+            <div class="shop-card" onclick="loadProducts('Дежурный')"><b>ДЕЖУРНЫЙ</b><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="shop-card" onclick="loadProducts('Алина')"><b>АЛИНА</b><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="shop-card" onclick="loadProducts('Берёзка')"><b>БЕРЁЗКА</b><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <div id="page-items" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-shops')"></i><b id="shop-title">ТОВАРЫ</b><div></div></header>
+        <div class="product-grid" id="items-list"></div>
+    </div>
+
+    <div id="page-cart" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>КОРЗИНА</b><div></div></header>
+        <div id="cart-content" style="padding: 20px; flex-grow: 1;"></div>
+        <div style="padding: 20px; background: #fff; border-top: 1px solid #ddd;">
+            <input type="text" id="cart-addr" class="rx-input" placeholder="Адрес доставки">
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <input type="checkbox" id="door-check" onchange="payLock()"> Оставить у двери
+            </label>
+            <select id="pay-type" class="rx-input">
+                <option value="СБП">Перевод по СБП</option>
+                <option value="Наличные" id="cash-opt">Наличные</option>
+            </select>
+            <button class="btn-ui" style="background: var(--green); color: #fff;" onclick="finishOrder()">ЗАКАЗАТЬ</button>
+        </div>
+    </div>
+
+    <div id="page-ozon" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>OZON</b><div></div></header>
+        <div style="padding: 25px;">
+            <input type="file" id="ozon-bar" class="rx-input">
+            <input type="text" id="ozon-addr" class="rx-input" placeholder="Адрес ПВЗ">
+            <button class="btn-ui btn-black" onclick="alert('Ozon заказ принят!')">ОФОРМИТЬ (150₽)</button>
+        </div>
+    </div>
+
+    <div id="page-profile" class="page">
+        <header><i class="fa-solid fa-xmark" onclick="openPage('page-main')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div style="padding: 40px; text-align: center;">
+            <div style="width: 80px; height: 80px; background: var(--main); border-radius: 50%; margin: 0 auto 20px;"></div>
+            <h2 id="prof-ph">Богдан</h2>
+            <button class="btn-ui" style="margin-top: 60px; color: var(--red); border: 2px solid var(--red); background: none;" onclick="deleteMe()">УДАЛИТЬ АККАУНТ</button>
+        </div>
+    </div>
+
+    <div id="g-modal" class="modal">
         <div class="modal-box">
-            <i class="fa-solid fa-circle-exclamation fa-4x" style="color: var(--main); margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 15px;">Ой, извините!</h2>
-            <p style="color: #444; margin-bottom: 10px;">На вашем аккаунте нет номера телефона.</p>
-            <p style="font-weight: bold; margin-bottom: 25px;">Без него мы не сможем возвращать вам деньги в случае проблем.</p>
-            <button class="btn-main" style="background: #000; color: #fff;" onclick="hideModal()">ВВЕСТИ НОМЕР</button>
+            <i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--main); margin-bottom: 15px;"></i>
+            <h3>Ой, извините!</h3>
+            <p style="margin: 15px 0; color: #444;">На вашем аккаунте нет номера телефона. Пожалуйста, введите его вручную.</p>
+            <button class="btn-ui btn-black" onclick="closeG()">ХОРОШО</button>
         </div>
     </div>
 </div>
@@ -129,68 +176,103 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    const gProv = new GoogleAuthProvider();
 
-    let generatedCode = "";
-    const apiSms = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019";
+    let smsCode = "";
+    let myPhone = "";
+    let myCart = [];
 
-    // ПЕРЕХОДЫ
+    // НАВИГАЦИЯ
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    // АВТО-ПЕРЕХОД С ПРИВЕТСТВИЯ ЧЕРЕЗ 2 СЕКУНДЫ
+    // СТАРТ: ПРИВЕТСТВИЕ -> ОБУЧЕНИЕ
     setTimeout(() => {
-        if(!localStorage.getItem('user_rx')) {
-            window.openPage('page-2');
-        } else {
-            window.openPage('page-main');
-        }
-    }, 2500);
+        if(localStorage.getItem('rx_user')) window.openPage('page-main');
+        else window.openPage('page-info1');
+    }, 2000);
 
-    // SMS LOGIC
+    // ВХОД СМС
     window.sendSms = () => {
-        const ph = document.getElementById('phone-field').value.replace(/\D/g, '');
-        if(ph.length < 10) return alert("Введите правильный номер!");
+        const num = document.getElementById('phone-field').value.replace(/\D/g, '');
+        if(num.length < 10) return alert("Номер!");
         
-        generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const cleanPh = ph.startsWith('8') ? '7' + ph.slice(1) : ph;
-        
-        // Используем прокси для обхода CORS
-        fetch(`https://corsproxy.io/?` + encodeURIComponent(`https://sms.ru/sms/send?api_id=${apiSms}&to=${cleanPh}&msg=Kod+RX-HUB:+${generatedCode}&json=1`))
+        smsCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const finalNum = num.startsWith('8') ? '7' + num.slice(1) : num;
+        myPhone = "+" + finalNum;
+
+        fetch(`https://corsproxy.io/?` + encodeURIComponent(`https://sms.ru/sms/send?api_id=BF89352B-A09E-FEA7-5E8D-6038D5FB0019&to=${finalNum}&msg=Kod+RX:+${smsCode}&json=1`))
         .then(() => {
-            document.getElementById('target-ph').innerText = "Отправлено на +" + cleanPh;
+            document.getElementById('code-dest').innerText = "Отправлено на " + myPhone;
             window.openPage('page-code');
         }).catch(() => {
-            alert("Ошибка сети! Твой код (тест): " + generatedCode);
+            alert("Код (тест): " + smsCode);
             window.openPage('page-code');
         });
     };
 
-    window.confirmCode = () => {
-        if(document.getElementById('code-field').value === generatedCode) {
-            localStorage.setItem('user_rx', 'true');
+    window.checkSms = () => {
+        const f = document.getElementById('code-field');
+        const e = document.getElementById('code-err');
+        if(f.value === smsCode) {
+            localStorage.setItem('rx_user', myPhone);
             window.openPage('page-main');
-        } else { alert("Неверный код!"); }
+        } else {
+            f.classList.add('error');
+            e.style.display = 'block';
+            f.value = "";
+        }
     };
 
-    // GOOGLE LOGIC
-    window.googleSignIn = () => {
-        signInWithPopup(auth, provider).then((res) => {
-            if(!res.user.phoneNumber) {
-                document.getElementById('error-modal').style.display = 'flex';
-            } else {
-                localStorage.setItem('user_rx', 'true');
-                window.openPage('page-main');
-            }
+    // GOOGLE
+    window.googleAuth = () => {
+        signInWithPopup(auth, gProv).then((r) => {
+            if(!r.user.phoneNumber) document.getElementById('g-modal').style.display = 'flex';
+            else { localStorage.setItem('rx_user', 'true'); window.openPage('page-main'); }
         });
     };
+    window.closeG = () => { document.getElementById('g-modal').style.display='none'; window.openPage('page-auth'); };
 
-    window.hideModal = () => {
-        document.getElementById('error-modal').style.display = 'none';
-        window.openPage('page-auth');
+    // МАГАЗИНЫ И ТОВАРЫ
+    const db = {
+        "Дежурный": [{n:"Хлеб", p:50}, {n:"Сыр", p:190}],
+        "Алина": [{n:"Бургер", p:320}, {n:"Картошка", p:120}],
+        "Берёзка": [{n:"Сок", p:110}, {n:"Вода", p:40}]
     };
+
+    window.loadProducts = (s) => {
+        document.getElementById('shop-title').innerText = s;
+        const c = document.getElementById('items-list');
+        c.innerHTML = "";
+        db[s].forEach(i => {
+            c.innerHTML += `<div class="item-box"><div style="height:100px; background:#eee; border-radius:15px; margin-bottom:10px;"></div><b>${i.n}</b><br>${i.p}₽<br><button class="btn-ui btn-black" style="padding:8px; margin-top:10px;" onclick="addCart('${i.n}', ${i.p})">В КОРЗИНУ</button></div>`;
+        });
+        window.openPage('page-items');
+    };
+
+    window.addCart = (n, p) => { myCart.push({n,p}); alert("Добавлено!"); };
+
+    window.renderCart = () => {
+        const l = document.getElementById('cart-content');
+        if(myCart.length === 0) l.innerHTML = "Пусто";
+        else {
+            l.innerHTML = myCart.map(i => `<div style="padding:10px; border-bottom:1px solid #ddd;">${i.n} - ${i.p}₽</div>`).join('');
+            l.innerHTML += `<h3>Всего: ${myCart.reduce((a,b)=>a+b.p, 0)}₽</h3>`;
+        }
+        window.openPage('page-cart');
+    };
+
+    window.payLock = () => {
+        const check = document.getElementById('door-check').checked;
+        document.getElementById('cash-opt').style.display = check ? "none" : "block";
+        if(check) document.getElementById('pay-type').value = "СБП";
+    };
+
+    window.finishOrder = () => { alert("Заказ принят!"); myCart = []; window.openPage('page-main'); };
+
+    window.deleteMe = () => { if(confirm("Удалить?")) { localStorage.clear(); location.reload(); } };
 </script>
 </body>
 </html>
