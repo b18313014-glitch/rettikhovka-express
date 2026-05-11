@@ -3,128 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Billing System</title>
+    <title>RX HUB - Official</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --ozon: #005bff; }
+        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --green: #2ecc71; --red: #e74c3c; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        body { background: #000; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        body { background: #000; display: flex; justify-content: center; min-height: 100vh; overflow: hidden; }
 
-        #app { 
-            width: 100%; max-width: 500px; background: var(--gray); 
-            position: relative; min-height: 100vh; display: flex; flex-direction: column;
-            box-shadow: 0 0 40px rgba(0,0,0,0.6);
-        }
-        @media (min-width: 800px) { #app { max-width: 600px; } }
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; display: flex; flex-direction: column; }
 
-        .page { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--gray); z-index: 100; display: none; flex-direction: column; 
-        }
-        .page.active { display: flex; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); z-index: 100; display: none; flex-direction: column; }
+        .page.active { display: flex; }
 
         header { background: #fff; padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         
-        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; }
-        .btn-action:active { transform: scale(0.98); }
+        .btn-action { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.4s; text-transform: uppercase; }
 
-        /* Окно СБП Кода */
-        #sbp-modal { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 50000; 
-            display: none; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 30px; color: #fff; text-align: center; 
+        /* КОД ПОДТВЕРЖДЕНИЯ */
+        .code-container { display: flex; gap: 10px; justify-content: center; margin: 30px 0; }
+        .code-input { 
+            width: 50px; height: 65px; text-align: center; font-size: 26px; font-weight: bold;
+            border: 2px solid #ddd; border-radius: 12px; background: #fff; outline: none; transition: 0.3s;
         }
-        .order-id-box { 
-            background: #fff; color: #000; padding: 20px; border-radius: 15px; 
-            font-size: 32px; font-weight: 900; letter-spacing: 2px; margin: 20px 0;
-            border: 4px dashed var(--main);
+
+        /* Анимация ошибки */
+        .code-input.error { border-color: var(--red); color: var(--red); animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Успех (поочередно) */
+        .code-input.success { border-color: var(--green); color: var(--green); transform: scale(1.05); }
+
+        /* Плавная кнопка */
+        #btn-continue { 
+            opacity: 0; transform: translateY(15px); pointer-events: none; 
+            background: var(--green); color: #fff; margin-top: 20px;
         }
+        #btn-continue.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        .store-btn { background: #fff; padding: 20px; margin: 10px; border-radius: 15px; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <header>
-        <b style="font-size: 20px;">RX HUB</b>
-        <div style="display:flex; gap:18px; font-size: 20px;"><i class="fa-solid fa-cart-shopping" onclick="openPage('cart-page')"></i></div>
-    </header>
-
-    <div style="padding: 15px;">
-        <div style="background:#fff; padding:15px; border-radius:18px; margin-bottom:15px; border-left:6px solid var(--main);">
-            <small style="color:#888">Статус:</small><br><b id="widget-status">Ожидание заказа</b>
+    <div id="auth-screen" class="page active" style="background: #fff; justify-content: center; align-items: center; padding: 30px; z-index: 1000;">
+        <div id="step-1" style="width: 100%; text-align: center;">
+            <h2 style="margin-bottom: 25px; font-weight: 900;">RX HUB</h2>
+            <input type="email" id="reg-email" class="btn-action" style="background: #f9f9f9; border: 1px solid #eee; margin-bottom: 10px; text-transform: none;" placeholder="Ваша почта">
+            <input type="password" id="reg-pass" class="btn-action" style="background: #f9f9f9; border: 1px solid #eee; margin-bottom: 20px; text-transform: none;" placeholder="Пароль">
+            <button class="btn-action" style="background: var(--main);" onclick="goToStep2()">ПОЛУЧИТЬ КОД</button>
         </div>
-        <button class="btn-action" style="background:var(--main);" onclick="openPage('cart-page')">ОФОРМИТЬ ТЕСТОВЫЙ ЗАКАЗ</button>
+
+        <div id="step-2" style="display: none; width: 100%; text-align: center;">
+            <h2>ВВЕДИТЕ КОД</h2>
+            <p style="color: #888; font-size: 14px;">Мы отправили код на вашу почту</p>
+            <div class="code-container">
+                <input type="number" class="code-input" id="c1" oninput="moveNext(this, 'c2')">
+                <input type="number" class="code-input" id="c2" oninput="moveNext(this, 'c3')">
+                <input type="number" class="code-input" id="c3" oninput="moveNext(this, 'c4')">
+                <input type="number" class="code-input" id="c4" oninput="checkFinalCode()">
+            </div>
+            <button id="btn-continue" class="btn-action" onclick="finishAuth()">ПРОДОЛЖИТЬ</button>
+        </div>
     </div>
 
-    <div id="cart-page" class="page">
-        <header><i class="fa-solid fa-chevron-left" onclick="closePage('cart-page')"></i><b>ОПЛАТА</b><div></div></header>
-        <div style="padding:20px;">
-            <h3>К оплате: 540 ₽</h3>
-            <p style="margin: 10px 0; color: #666;">Выберите способ оплаты:</p>
-            <button class="btn-action" style="background:#000; color:#fff; margin-bottom: 10px;" onclick="showSbpInfo()">СБП (ПЕРЕВОД)</button>
-            <button class="btn-action" style="background:#ddd;">НАЛИЧНЫЕ</button>
+    <div id="main-page" class="page">
+        <header>
+            <b>RX HUB</b>
+            <i class="fa-solid fa-circle-user" onclick="openPage('profile-page')"></i>
+        </header>
+        <div style="padding: 15px;">
+            <button class="btn-action" style="background: var(--main); height: 120px;" onclick="openPage('store-select')">ЗАКАЗАТЬ ЕДУ</button>
         </div>
     </div>
 
-    <div id="sbp-modal">
-        <i class="fa-solid fa-circle-info fa-3x" style="color:var(--main)"></i>
-        <h2 style="margin-top:20px;">ЗАПОМНИТЕ КОД!</h2>
-        <p style="margin-top:10px; opacity: 0.8;">Введите этот код в поле <b>"Сообщение получателю"</b> при переводе в банке. Это обязательно для подтверждения заказа!</p>
-        
-        <div class="order-id-box" id="display-order-id">RX-777</div>
-        
-        <button class="btn-action" style="background:var(--main); color:#000;" onclick="copyAndPay()">КОПИРОВАТЬ И ПЕРЕЙТИ В БАНК</button>
-        <button onclick="document.getElementById('sbp-modal').style.display='none'" style="background:none; color:#aaa; border:none; margin-top:20px; cursor:pointer;">Отмена</button>
+    <div id="store-select" class="page">
+        <header><i class="fa-solid fa-chevron-left" onclick="closePage('store-select')"></i><b>МАГАЗИНЫ</b><div></div></header>
+        <button class="store-btn" onclick="setStore('Алина')">🏪 Магазин "Алина"</button>
+        <button class="store-btn" onclick="setStore('Дежурный')">🏪 Магазин "Дежурный"</button>
+    </div>
+
+    <div id="profile-page" class="page">
+        <header><i class="fa-solid fa-xmark" onclick="closePage('profile-page')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div style="padding: 20px;">
+            <div style="background:#fff; padding:20px; border-radius:20px; text-align:center; margin-bottom:20px;">
+                <h3 id="user-display-name">Богдан</h3>
+                <p id="user-display-email" style="color:#888; font-size:14px;">rx@mail.ru</p>
+            </div>
+            <button class="btn-action" style="background:#ff4444; color:#fff;" onclick="location.reload()">ВЫЙТИ</button>
+        </div>
     </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-    authDomain: "deliverygov11.firebaseapp.com",
-    databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
-    projectId: "deliverygov11",
-    storageBucket: "deliverygov11.firebasestorage.app",
-    messagingSenderId: "562994407235",
-    appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // Генерация ID
-  window.showSbpInfo = () => {
-    const orderId = "RX-" + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('display-order-id').innerText = orderId;
-    document.getElementById('sbp-modal').style.display = 'flex';
-    
-    // Сразу записываем в базу, что мы ждем оплату по этому коду
-    set(ref(db, 'orders/' + orderId), {
-        status: "waiting_payment",
-        amount: 540,
-        time: new Date().toISOString()
-    });
-  };
-
-  window.copyAndPay = () => {
-    const code = document.getElementById('display-order-id').innerText;
-    navigator.clipboard.writeText(code).then(() => {
-        alert("Код скопирован! Вставьте его в сообщение в банке.");
-        // Ссылка на СБП (твоя)
-        window.location.href = "https://c2c.cbrpay.ru/AS1I003EI3T7RIPG9018PF66SR2FTN0V";
-    });
-  };
-</script>
-
 <script>
+    const VALID_CODE = "7777"; // Код для теста
+
     function openPage(id) { document.getElementById(id).classList.add('active'); }
     function closePage(id) { document.getElementById(id).classList.remove('active'); }
+
+    function goToStep2() {
+        if(!document.getElementById('reg-email').value) return alert("Введите почту!");
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+    }
+
+    function moveNext(current, nextId) {
+        if(current.value.length > 0) {
+            document.getElementById(nextId).focus();
+        }
+    }
+
+    function checkFinalCode() {
+        const code = document.getElementById('c1').value + 
+                     document.getElementById('c2').value + 
+                     document.getElementById('c3').value + 
+                     document.getElementById('c4').value;
+
+        const inputs = document.querySelectorAll('.code-input');
+
+        if(code.length === 4) {
+            if(code === VALID_CODE) {
+                // АНИМАЦИЯ УСПЕХА: Зеленеют по очереди
+                inputs.forEach((inp, i) => {
+                    setTimeout(() => {
+                        inp.classList.remove('error');
+                        inp.classList.add('success');
+                    }, i * 150);
+                });
+                
+                // Плавное появление кнопки через 0.6 сек
+                setTimeout(() => {
+                    document.getElementById('btn-continue').classList.add('show');
+                }, 600);
+            } else {
+                // ОШИБКА: Краснеют
+                inputs.forEach(inp => {
+                    inp.classList.add('error');
+                    setTimeout(() => inp.classList.remove('error'), 400);
+                });
+            }
+        }
+    }
+
+    function finishAuth() {
+        document.getElementById('auth-screen').style.display = 'none';
+        openPage('main-page');
+    }
+
+    function setStore(name) {
+        alert("Теперь заказываем из: " + name);
+        closePage('store-select');
+    }
 </script>
 
 </body>
