@@ -3,128 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Главная</title>
+    <title>RX HUB - PRO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --gray: #f4f4f4; --ozon: #005bff; --red: #e74c3c; --green: #2ecc71; }
-        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; }
+        :root { --main: #ffcc00; --gray: #f4f4f4; --ozon: #005bff; --red: #e74c3c; --green: #2ecc71; --dark: #1a1a1a; }
+        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        
-        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; }
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; }
 
-        /* ПРИВЕТСТВИЕ */
-        #welcome-screen { z-index: 1000; background: var(--main); display: none; text-align: center; padding: 50px 20px; }
-        #welcome-screen.active { display: flex; flex-direction: column; justify-content: center; }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; overflow-y: auto;}
+        .page.active { display: flex; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ГЛАВНЫЙ ЭКРАН */
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
-        .page.active { display: flex; }
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-action { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #fff; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 16px; }
 
-        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
-        .header-icons { display: flex; gap: 20px; color: #333; }
+        /* Карточки */
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        .product-card { background: #fff; border-radius: 20px; padding: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .product-card img { width: 100%; aspect-ratio: 1/1; border-radius: 15px; object-fit: cover; background: #eee; }
+        .add-btn { background: var(--dark); color: #fff; width: 35px; height: 35px; border-radius: 10px; font-weight: 900; border: none; font-size: 18px; }
 
-        .main-menu { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .menu-btn { width: 100%; height: 120px; border-radius: 25px; border: none; font-size: 18px; font-weight: 900; cursor: pointer; color: #fff; transition: 0.3s; position: relative; overflow: hidden; }
-        .food-btn { background: var(--main); color: #000; }
-        .ozon-btn { background: var(--ozon); }
-
-        /* ПРОФИЛЬ НА ВЕСЬ ЭКРАН */
-        #profile-page { z-index: 100; }
-        .profile-content { padding: 30px; text-align: center; }
-
-        /* МАГАЗИНЫ И КАРТОЧКИ */
-        .shop-grid { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; }
-        .product-card { background: #fff; border-radius: 20px; padding: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; background: #eee; }
-        .product-info { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; padding: 0 5px; }
-        .add-btn { background: var(--dark); color: #000; width: 35px; height: 35px; border-radius: 10px; border: 2px solid #000; font-weight: bold; cursor: pointer; }
-
-        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* Код SMS */
+        .code-cont { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
+        .code-input { width: 45px; height: 55px; text-align: center; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; }
+        .success { border-color: var(--green); color: var(--green); background: #e8f5e9; }
+        .error { border-color: var(--red); color: var(--red); animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="welcome-screen" class="page">
-        <h1 style="font-size: 40px; font-weight: 900;">ПРИВЕТ!</h1>
-        <p style="margin: 20px 0;">Добро пожаловать в RX HUB. Мы доставим всё быстро.</p>
-        <button class="btn-action" style="background: #000; color: #fff;" onclick="openPage('auth-screen')">ПОЕХАЛИ</button>
+    <div id="auth-screen" class="page active" style="padding: 30px; justify-content: center; text-align: center; background: #fff;">
+        <h1 style="font-size: 40px; margin-bottom: 30px;">RX HUB</h1>
+        <input type="tel" id="user-phone" class="input-field" placeholder="8964...">
+        <button class="btn-action" style="background: var(--dark);" onclick="window.sendSms()">ВХОД ПО SMS</button>
     </div>
 
-    <div id="auth-screen" class="page" style="background: #fff; padding: 20px; justify-content: center;">
-        <h2 style="text-align: center; margin-bottom: 30px;">ВХОД</h2>
-        <input type="tel" id="user-phone" class="input-field" placeholder="8964..." style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;">
-        <button class="btn-action" style="background: #000; color: #fff;" onclick="sendSmsReal()">ПОЛУЧИТЬ SMS</button>
+    <div id="code-screen" class="page" style="padding: 30px; justify-content: center; text-align: center; background: #fff;">
+        <h2>ПРОВЕРКА КОДА</h2>
+        <p id="sms-info" style="color: gray; margin-bottom: 15px;"></p>
+        <div class="code-cont">
+            <input type="number" class="code-input" id="c1" oninput="window.step(this, 'c2')">
+            <input type="number" class="code-input" id="c2" oninput="window.step(this, 'c3')">
+            <input type="number" class="code-input" id="c3" oninput="window.step(this, 'c4')">
+            <input type="number" class="code-input" id="c4" oninput="window.step(this, 'c5')">
+            <input type="number" class="code-input" id="c5" oninput="window.step(this, 'c6')">
+            <input type="number" class="code-input" id="c6" oninput="window.checkCode()">
+        </div>
     </div>
 
     <div id="main-hub" class="page">
         <header>
             <b>RX HUB</b>
-            <div class="header-icons">
-                <i class="fa-solid fa-basket-shopping fa-lg" onclick="showCart()"></i>
-                <i class="fa-solid fa-circle-user fa-lg" onclick="openPage('profile-page')"></i>
+            <div style="display: flex; gap: 20px;">
+                <i class="fa-solid fa-basket-shopping fa-lg" onclick="window.openPage('cart-page')"></i>
+                <i class="fa-solid fa-circle-user fa-lg" onclick="window.openPage('profile-page')"></i>
             </div>
         </header>
-        <div class="main-menu">
-            <button class="menu-btn food-btn" onclick="openShops()">ЗАКАЗАТЬ ЕДУ</button>
-            <button class="menu-btn ozon-btn" onclick="openOzon()">ДОСТАВКА С OZON</button>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px; margin-top: 30px;">
+            <button class="btn-action" style="background: var(--main); color: #000; height: 120px; font-size: 18px;" onclick="window.openPage('shops-page')">ЗАКАЗАТЬ ЕДУ</button>
+            <button class="btn-action" style="background: var(--ozon); height: 120px; font-size: 18px;" onclick="window.openPage('ozon-page')">ДОСТАВКА С OZON</button>
+        </div>
+    </div>
+
+    <div id="shops-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="window.openPage('main-hub')"></i><b>ВЫБОР МАГАЗИНА</b><div></div></header>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd;" onclick="window.loadShop('dezhur')">ДЕЖУРНЫЙ</button>
+            <button class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd;" onclick="window.loadShop('alina')">АЛИНА</button>
+            <button class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd;" onclick="window.loadShop('berezka')">БЕРЁЗКА</button>
+        </div>
+    </div>
+
+    <div id="products-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="window.openPage('shops-page')"></i><b id="shop-title">ВИТРИНА</b><div></div></header>
+        <div class="shop-grid" id="product-list"></div>
+    </div>
+
+    <div id="cart-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="window.openPage('main-hub')"></i><b>КОРЗИНА</b><div></div></header>
+        <div id="cart-items" style="padding: 15px; flex-grow: 1;">В корзине ничего нет</div>
+        
+        <div id="checkout-block" style="display: none; padding: 20px; background: #fff; border-top: 1px solid #ddd;">
+            <input type="text" id="order-address" class="input-field" placeholder="Адрес доставки">
+            <input type="text" id="promo" class="input-field" placeholder="Промокод">
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-weight: bold;">
+                <input type="checkbox" id="leave-door" onchange="window.togglePayment()" style="width: 20px; height: 20px;">
+                Оставить у двери (не звонить)
+            </label>
+
+            <select id="pay-method" class="input-field">
+                <option value="СБП">СБП (Перевод)</option>
+                <option value="Наличные" id="cash-opt">Наличные курьеру</option>
+            </select>
+
+            <button class="btn-action" style="background: var(--green);" onclick="window.placeOrder()">ОФОРМИТЬ ЗАКАЗ</button>
+        </div>
+    </div>
+
+    <div id="ozon-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="window.openPage('main-hub')"></i><b>OZON</b><div></div></header>
+        <div style="padding: 20px; text-align: center;">
+            <p style="margin-bottom: 20px;">Загрузите штрих-код заказа (PNG/JPG, до 3 МБ)</p>
+            <input type="file" id="ozon-file" accept="image/png, image/jpeg" class="input-field" onchange="window.checkFile(this)">
+            <input type="text" id="ozon-address" class="input-field" placeholder="Пункт выдачи (Ленина, 5)">
+            <button class="btn-action" style="background: var(--ozon);" onclick="window.orderOzon()">ЗАКАЗАТЬ ДОСТАВКУ</button>
         </div>
     </div>
 
     <div id="profile-page" class="page">
-        <header><i class="fa-solid fa-xmark fa-lg" onclick="openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
-        <div class="profile-content">
+        <header><i class="fa-solid fa-xmark" onclick="window.openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div style="padding: 30px; text-align: center;">
             <div style="width: 100px; height: 100px; background: var(--main); border-radius: 50%; margin: 0 auto 20px;"></div>
-            <h2 id="u-name">Богдан</h2>
-            <p id="u-status">Активен</p>
-            
-            <div style="margin-top: 50px; text-align: left;">
-                <p style="color: gray; font-size: 14px;">Мои заказы</p>
-                <div id="order-list" style="margin-top: 10px;">Заказов пока нет</div>
-            </div>
-
-            <button class="btn-action" style="background: var(--red); color: #fff; margin-top: 100px;" onclick="deleteAcc()">УДАЛИТЬ АККАУНТ</button>
+            <h2 id="profile-phone">Пользователь</h2>
+            <div id="orders-history" style="margin-top: 30px; text-align: left; color: gray;">Мои заказы:</div>
+            <button class="btn-action" style="background: var(--red); margin-top: 50px;" onclick="window.deleteAcc()">УДАЛИТЬ АККАУНТ</button>
         </div>
     </div>
 </div>
 
 <script type="module">
-    // ТУТ БУДЕТ FIREBASE ЛОГИКА
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = { /* Твои данные */ };
+    // ТВОИ ДАННЫЕ FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+        authDomain: "deliverygov11.firebaseapp.com",
+        projectId: "deliverygov11",
+        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
+    };
+
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const dbFirestore = getFirestore(app);
 
-    // --- ПРОВЕРКА UID (Silent Login) ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Если залогинен - сразу на рабочий стол
-            openPage('main-hub');
-        } else {
-            // Если нет - показываем приветствие
-            openPage('welcome-screen');
-        }
-    });
+    // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+    let cart = [];
+    let targetCode = "";
+    let currentUserPhone = localStorage.getItem('rx_phone');
+    let userStatus = localStorage.getItem('rx_status');
 
+    // БАЗА ТОВАРОВ
+    const db = {
+        dezhur: [{id: 1, name: "Хлеб", price: 50}, {id: 2, name: "Молоко", price: 90}],
+        alina: [{id: 3, name: "Пицца", price: 450}, {id: 4, name: "Кола", price: 120}],
+        berezka: [{id: 5, name: "Чипсы", price: 160}]
+    };
+
+    // ПРИВЯЗКА ФУНКЦИЙ К WINDOW (ЧТОБЫ РАБОТАЛИ КНОПКИ)
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        if(id === 'cart-page') window.renderCart();
     };
 
-    window.deleteAcc = () => {
-        const q1 = confirm("Ты точно хочешь удалить аккаунт?");
-        if(q1) {
-            const q2 = confirm("Восстановить его будет НЕВОЗМОЖНО. Удаляем?");
-            if(q2) {
-                // Тут меняем статус в Firebase на 'deleted'
+    window.step = (curr, next) => { if(curr.value) document.getElementById(next).focus(); };
+
+    // --- ТИХИЙ ВХОД И ПРОВЕРКА УДАЛЕНИЯ ---
+    if(currentUserPhone && userStatus !== 'deleted') {
+        window.openPage('main-hub');
+        document.getElementById('profile-phone').innerText = currentUserPhone;
+    } else if (userStatus === 'deleted') {
+        alert("Этот аккаунт удален без возможности восстановления.");
+        document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px;'>АККАУНТ УДАЛЕН</h1>";
+    }
+
+    // --- SMS.RU АВТОРИЗАЦИЯ ---
+    window.sendSms = () => {
+        const phone = document.getElementById('user-phone').value.replace(/\D/g, '');
+        if(phone.length < 10) return alert("Неверный номер!");
+        
+        let formatPhone = phone.startsWith('8') ? '7' + phone.slice(1) : phone;
+        const api_id = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019";
+        targetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        fetch(`https://sms.ru/sms/send?api_id=${api_id}&to=${formatPhone}&msg=RX+HUB+Код:+${targetCode}&json=1`)
+        .then(r => r.json()).then(data => {
+            if(data.status === "OK") {
+                document.getElementById('sms-info').innerText = "Отправлено на " + formatPhone;
+                currentUserPhone = formatPhone;
+                window.openPage('code-screen');
+            } else alert("Ошибка: " + data.status_text);
+        });
+    };
+
+    window.checkCode = () => {
+        const inputs = Array.from(document.querySelectorAll('.code-input'));
+        const code = inputs.map(i => i.value).join('');
+        if(code.length < 6) return;
+
+        if(code === targetCode) {
+            inputs.forEach(i => i.classList.add('success'));
+            localStorage.setItem('rx_phone', currentUserPhone);
+            localStorage.setItem('rx_status', 'active');
+            setTimeout(() => {
+                document.getElementById('profile-phone').innerText = currentUserPhone;
+                window.openPage('main-hub');
+            }, 800);
+        } else {
+            inputs.forEach(i => {
+                i.classList.add('error');
+                setTimeout(() => { i.classList.remove('error'); i.value = ''; }, 800);
+            });
+            document.getElementById('c1').focus();
+        }
+    };
+
+    // --- МАГАЗИНЫ И КОРЗИНА ---
+    window.loadShop = (key) => {
+        const list = document.getElementById('product-list');
+        list.innerHTML = "";
+        db[key].forEach(item => {
+            list.innerHTML += `
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/150" alt="img">
+                    <p style="margin: 10px 0; font-weight: bold;">${item.name}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>${item.price} ₽</span>
+                        <button class="add-btn" onclick="window.addCart('${item.name}', ${item.price})">+</button>
+                    </div>
+                </div>`;
+        });
+        window.openPage('products-page');
+    };
+
+    window.addCart = (name, price) => {
+        cart.push({name, price});
+        alert("В корзине: " + name);
+    };
+
+    window.renderCart = () => {
+        const cont = document.getElementById('cart-items');
+        const block = document.getElementById('checkout-block');
+        if(cart.length === 0) {
+            cont.innerHTML = "<h3 style='text-align:center; margin-top:30px;'>В корзине ничего нет</h3>";
+            block.style.display = 'none';
+        } else {
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            cont.innerHTML = cart.map(i => `<div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:10px; display:flex; justify-content:space-between;"><span>${i.name}</span><b>${i.price}₽</b></div>`).join('');
+            cont.innerHTML += `<div style="text-align:right; margin-top:10px; font-size:18px;"><b>Итого: ${total} ₽</b></div>`;
+            block.style.display = 'block';
+        }
+    };
+
+    window.togglePayment = () => {
+        const isChecked = document.getElementById('leave-door').checked;
+        const cashOpt = document.getElementById('cash-opt');
+        if(isChecked) {
+            cashOpt.style.display = 'none';
+            document.getElementById('pay-method').value = "СБП";
+        } else {
+            cashOpt.style.display = 'block';
+        }
+    };
+
+    // --- ОФОРМЛЕНИЕ В FIREBASE ---
+    window.placeOrder = async () => {
+        const address = document.getElementById('order-address').value;
+        if(!address) return alert("Укажи адрес!");
+        
+        const rxCode = "RX-" + Math.floor(100 + Math.random() * 900);
+        const orderData = {
+            id: rxCode,
+            phone: currentUserPhone,
+            items: cart,
+            address: address,
+            leaveAtDoor: document.getElementById('leave-door').checked,
+            payment: document.getElementById('pay-method').value,
+            status: "В обработке",
+            time: new Date().toISOString()
+        };
+
+        try {
+            alert(`Генерируем заказ ${rxCode}...`);
+            await addDoc(collection(dbFirestore, "orders"), orderData);
+            alert(`Заказ ${rxCode} отправлен! Ожидайте курьера.`);
+            cart = [];
+            document.getElementById('orders-history').innerHTML += `<p>🍕 ${rxCode} - В обработке</p>`;
+            window.openPage('main-hub');
+        } catch (e) {
+            alert("Ошибка Firebase: " + e.message);
+        }
+    };
+
+    // --- ОЗОН ---
+    window.checkFile = (input) => {
+        const file = input.files[0];
+        if(file && file.size > 3 * 1024 * 1024) {
+            alert("Файл слишком большой! Максимум 3 МБ.");
+            input.value = "";
+        }
+    };
+
+    window.orderOzon = async () => {
+        const file = document.getElementById('ozon-file').files[0];
+        const address = document.getElementById('ozon-address').value;
+        if(!file || !address) return alert("Загрузи фото и укажи адрес ПВЗ!");
+
+        const rxCode = "OZN-" + Math.floor(100 + Math.random() * 900);
+        try {
+            await addDoc(collection(dbFirestore, "ozon_orders"), { id: rxCode, address, phone: currentUserPhone });
+            alert(`Доставка ${rxCode} создана! СБП к оплате: 150₽`);
+            document.getElementById('orders-history').innerHTML += `<p>📦 ${rxCode} - Озон доставка</p>`;
+            window.openPage('main-hub');
+        } catch(e) { alert("Ошибка: " + e.message); }
+    };
+
+    // --- УДАЛЕНИЕ АККАУНТА ---
+    window.deleteAcc = async () => {
+        if(confirm("Удалить аккаунт?")) {
+            if(confirm("Без восстановления. Точно удаляем?")) {
+                localStorage.setItem('rx_status', 'deleted');
+                try {
+                    await addDoc(collection(dbFirestore, "deleted_users"), { phone: currentUserPhone });
+                } catch(e) {}
                 alert("Аккаунт удален.");
                 location.reload();
             }
         }
-    }
+    };
 </script>
-
 </body>
 </html>
