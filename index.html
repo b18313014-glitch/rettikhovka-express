@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - DATABASE SYNC</title>
+    <title>RX HUB - Final Architecture</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main: #ffcc00; --gray: #f5f5f5; --dark: #111; --blue: #005bff; --green: #34c759; }
@@ -11,29 +11,34 @@
         body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; }
 
-        /* ЭКРАНЫ */
+        /* HEADER */
+        header { background: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); sticky; top: 0; z-index: 100; }
+        .header-right { display: flex; gap: 15px; align-items: center; }
+
+        /* СТРАНИЦЫ */
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
         .page.active { display: flex; }
 
-        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
-        /* МАГАЗИНЫ */
-        .shop-card { background: #fff; padding: 20px; border-radius: 20px; margin: 10px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #eee; }
-        
+        /* ВИДЖЕТ ЗАКАЗОВ ДЛЯ БОГДАНА */
+        .order-tracker { background: #fff; border-radius: 20px; padding: 15px; margin: 15px; border: 1px solid #ddd; }
+        .order-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--green); font-weight: bold; margin-top: 5px; }
+
+        /* МАЛЕНЬКИЕ КНОПКИ СЕРВИСОВ */
+        .service-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; }
+        .service-card { height: 90px; border-radius: 22px; padding: 15px; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .service-card h2 { font-size: 16px; font-weight: 900; z-index: 2; }
+        .service-card i { position: absolute; right: 15px; bottom: 15px; opacity: 0.2; font-size: 30px; }
+
         /* КАТЕГОРИИ */
-        .cat-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px; background: #fff; }
-        .cat-btn { padding: 8px 15px; border-radius: 12px; border: none; background: #eee; font-weight: bold; font-size: 12px; }
+        .cat-bar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 15px; background: #fff; scrollbar-width: none; }
+        .cat-btn { padding: 8px 15px; border-radius: 12px; border: none; background: #eee; font-weight: bold; font-size: 12px; white-space: nowrap; }
         .cat-btn.active { background: var(--main); }
 
-        /* СЕТКА ТОВАРОВ */
-        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .item-box { background: #fff; border-radius: 20px; padding: 15px; text-align: center; }
-        
-        .btn-ui { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-black { background: var(--dark); color: #fff; }
+        /* КОРЗИНА */
+        .cart-footer { padding: 20px; background: #fff; border-top: 1px solid #eee; }
+        .promo-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; }
 
-        /* ИНДИКАТОР ЗАГРУЗКИ */
-        .loader { text-align: center; padding: 50px; color: #888; font-weight: bold; }
+        .loader { text-align: center; padding: 40px; color: #999; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -41,45 +46,54 @@
 <div id="app">
     <div id="page-main" class="page active">
         <header>
-            <b style="font-size: 22px;">RX HUB</b>
-            <div style="display:flex; gap:15px;">
+            <b style="font-size: 20px; font-weight: 900;">RX HUB</b>
+            <div class="header-right">
                 <i class="fa-solid fa-basket-shopping" onclick="openPage('page-cart')"></i>
                 <i class="fa-solid fa-user-circle" onclick="openPage('page-profile')"></i>
             </div>
         </header>
-        
-        <div style="padding: 20px;">
-            <div style="background: var(--main); height: 120px; border-radius: 25px; margin-bottom: 15px; padding: 20px; display: flex; align-items: center;" onclick="loadShops()">
-                <h2 style="font-size: 24px; font-weight: 900;">МАГАЗИНЫ</h2>
+
+        <div class="order-tracker">
+            <b style="font-size: 15px;">Активный заказ</b>
+            <div id="main-tracker-content">
+                <div class="order-status"><i class="fa-solid fa-circle-dot"></i> Проверка базы Firebase...</div>
             </div>
-            <div style="background: var(--blue); height: 120px; border-radius: 25px; padding: 20px; color: #fff; display: flex; align-items: center;">
-                <h2 style="font-size: 24px; font-weight: 900;">OZON</h2>
+        </div>
+
+        <div class="service-row">
+            <div class="service-card" style="background: var(--main);" onclick="loadShopsFromFB()">
+                <h2>МАГАЗИНЫ</h2>
+                <i class="fa-solid fa-store"></i>
             </div>
+            <div class="service-card" style="background: var(--blue); color: #fff;" onclick="alert('Ozon в разработке')">
+                <h2>OZON</h2>
+                <i class="fa-solid fa-box"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-cart" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>КОРЗИНА</b><div></div></header>
+        <div style="flex-grow:1; padding:20px;" id="cart-list">
+            <p style="text-align:center; color:#999;">Корзина пуста</p>
+        </div>
+        <div class="cart-footer">
+            <input type="text" class="promo-input" placeholder="Промокод">
+            <button class="btn-ui" style="width:100%; padding:15px; background:var(--dark); color:#fff; border-radius:15px; font-weight:bold;">ЗАКАЗАТЬ</button>
         </div>
     </div>
 
     <div id="page-shops" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>ВЫБОР МАГАЗИНА</b><div></div></header>
-        <div id="shops-list-container">
-            <div class="loader">Синхронизация с Firebase...</div>
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>МАГАЗИНЫ</b><div></div></header>
+        <div id="shops-list-fb">
+            <div class="loader">Стучимся в Firebase...</div>
         </div>
-        <button onclick="seedDatabase()" style="margin: 20px; font-size: 10px; opacity: 0.3;">Создать папки в Firebase</button>
-    </div>
-
-    <div id="page-items" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-shops')"></i><b id="active-shop-title">ТОВАРЫ</b><div></div></header>
-        <div class="cat-bar">
-            <button class="cat-btn active">Все</button>
-            <button class="cat-btn">Напитки</button>
-            <button class="cat-btn">Снеки</button>
-        </div>
-        <div class="product-grid" id="items-container"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
@@ -96,75 +110,53 @@
         document.getElementById(id).classList.add('active');
     };
 
-    // ФУНКЦИЯ 1: ЗАГРУЗКА МАГАЗИНОВ ИЗ FIREBASE
-    window.loadShops = async () => {
+    // 1. СИНХРОНИЗАЦИЯ МАГАЗИНОВ
+    window.loadShopsFromFB = async () => {
         openPage('page-shops');
-        const container = document.getElementById('shops-list-container');
+        const list = document.getElementById('shops-list-fb');
         
         try {
-            const querySnapshot = await getDocs(collection(db, "shops"));
-            if (querySnapshot.empty) {
-                container.innerHTML = "<div class='loader'>В базе пусто. Нажми кнопку внизу для создания структуры.</div>";
+            const snap = await getDocs(collection(db, "shops"));
+            if(snap.empty) {
+                list.innerHTML = "<div class='loader'>Папок в Firebase нет. <br>Создай коллекцию 'shops' в консоли!</div>";
                 return;
             }
-            
-            container.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const shop = doc.data();
-                container.innerHTML += `
-                    <div class="shop-card" onclick="loadItems('${doc.id}')">
-                        <b>${doc.id}</b>
-                        <i class="fa-solid fa-chevron-right"></i>
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                list.innerHTML += `<div class="shop-card" style="background:#fff; margin:10px 20px; padding:20px; border-radius:15px;" onclick="alert('Загрузка товаров...')"><b>${doc.id}</b></div>`;
+            });
+        } catch(e) {
+            list.innerHTML = "<div class='loader' style='color:red'>Ошибка доступа! Проверь правила Firebase.</div>";
+        }
+    };
+
+    // 2. ЖИВОЙ ТРЕКЕР ЗАКАЗА (ДЛЯ ТВОЕЙ ПОЧТЫ)
+    function startRealtimeTracker() {
+        const userEmail = "твой_email@gmail.com"; // Замени на свою
+        const q = query(collection(db, "orders"), where("userEmail", "==", userEmail));
+        
+        onSnapshot(q, (snapshot) => {
+            const widget = document.getElementById('main-tracker-content');
+            if(snapshot.empty) {
+                widget.innerHTML = "<div style='font-size:12px; color:#999;'>Нет активных заказов</div>";
+                return;
+            }
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                widget.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <div>
+                            <div style="font-weight:bold;">${data.type || 'Заказ'}</div>
+                            <div class="order-status"><i class="fa-solid fa-truck-fast"></i> ${data.status}</div>
+                        </div>
+                        <button style="background:var(--dark); color:#fff; border:none; padding:8px 12px; border-radius:10px; font-size:11px;">ГДЕ ОН?</button>
                     </div>
                 `;
             });
-        } catch (e) {
-            container.innerHTML = "<div class='loader' style='color:red'>Ошибка связи с базой!</div>";
-        }
-    };
+        });
+    }
 
-    // ФУНКЦИЯ 2: ЗАГРУЗКА ТОВАРОВ КОНКРЕТНОГО МАГАЗИНА
-    window.loadItems = async (shopId) => {
-        document.getElementById('active-shop-title').innerText = shopId;
-        openPage('page-items');
-        const grid = document.getElementById('items-container');
-        grid.innerHTML = "<div class='loader'>Загрузка...</div>";
-
-        try {
-            const querySnapshot = await getDocs(collection(db, "shops", shopId, "products"));
-            grid.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const item = doc.data();
-                grid.innerHTML += `
-                    <div class="item-box">
-                        <b>${item.name}</b><br>
-                        <span style="color:var(--green)">${item.price}₽</span>
-                        <button class="btn-ui btn-black" style="margin-top:10px; padding:8px;">В КОРЗИНУ</button>
-                    </div>
-                `;
-            });
-        } catch (e) {
-            grid.innerHTML = "Ошибка загрузки товаров";
-        }
-    };
-
-    // ФУНКЦИЯ 3 (СПЕЦИАЛЬНО ДЛЯ ТЕБЯ): СОЗДАНИЕ СТРУКТУРЫ
-    // Эта функция принудительно создает папки в Firebase, если их нет
-    window.seedDatabase = async () => {
-        const shops = ["Дежурный", "Алина", "Берёзка"];
-        for (const shopName of shops) {
-            // Создаем магазин
-            await setDoc(doc(db, "shops", shopName), { active: true });
-            // Создаем тестовый товар внутри
-            await setDoc(doc(db, "shops", shopName, "products", "test_item"), {
-                name: "Товар из " + shopName,
-                price: 100,
-                category: "Все"
-            });
-        }
-        alert("Структура создана! Перезагрузи страницу.");
-    };
-
+    startRealtimeTracker();
 </script>
 </body>
 </html>
