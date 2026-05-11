@@ -10,107 +10,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #4facfe; --second: #00f2fe; --dark: #1e272e; --green: #2ecc71; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: #f0f2f5; overflow: hidden; }
+        :root { --main: #4facfe; --green: #2ecc71; --red: #ff4757; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: #f8f9fa; color: #333; }
+        .page { position: fixed; inset: 0; display: none; flex-direction: column; background: #f8f9fa; overflow-y: auto; }
+        .page.active { display: flex; }
         
-        .page { position: fixed; inset: 0; display: none; flex-direction: column; background: #f0f2f5; transition: 0.5s ease; }
-        .page.active { display: flex; animation: fadeIn 0.5s ease; }
+        header { display: flex; justify-content: space-between; padding: 15px 20px; background: white; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { padding: 20px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Кнопки и Карточки */
+        .btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 18px; font-weight: 900; width: 100%; cursor: pointer; transition: 0.3s; }
+        .shop-card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        /* Виджет курьера */
+        .delivery-widget { background: white; margin: 15px; padding: 15px; border-radius: 20px; display: flex; align-items: center; gap: 15px; border-left: 5px solid var(--green); }
 
-        /* ОБУЧАЮЩИЕ СЛАЙДЫ */
-        .slide-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; background: linear-gradient(135deg, var(--main), var(--second)); color: white; }
-        .slide-img { font-size: 80px; margin-bottom: 20px; text-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .dots { display: flex; gap: 8px; margin-bottom: 20px; }
-        .dot { width: 10px; height: 10px; background: rgba(255,255,255,0.3); border-radius: 50%; }
-        .dot.active { background: white; width: 25px; border-radius: 10px; }
+        /* Сетка товаров */
+        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .item-card { background: white; padding: 15px; border-radius: 20px; text-align: center; position: relative; border: 1px solid #eee; }
+        .add-plus { position: absolute; bottom: 10px; right: 10px; background: var(--main); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; }
 
-        /* КНОПКИ И ФОРМЫ */
-        .btn-main { background: white; color: var(--main); border: none; padding: 18px; border-radius: 20px; width: 100%; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; }
-        .btn-main:active { transform: scale(0.95); }
-        .input-field { width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px; border: 1px solid #ddd; box-sizing: border-box; font-weight: bold; }
-
-        /* ВИДЖЕТ ДОСТАВКИ */
-        .delivery-widget { background: white; margin: 15px; padding: 20px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; border: 1px solid rgba(0,0,0,0.05); }
-
-        /* OZON MODAL */
-        #ozon-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal-box { background: white; width: 85%; padding: 30px; border-radius: 30px; text-align: center; position: relative; }
-        .drop-zone { border: 3px dashed #4facfe; padding: 40px 20px; border-radius: 20px; margin: 20px 0; color: #4facfe; font-weight: bold; }
+        /* Кастомное уведомление (вместо alert) */
+        #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 10px; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
 
-    <div id="intro-page" class="page active">
-        <div class="slide-container" id="slide-box">
-            <div class="slide-img" id="s-icon"><i class="fa-solid fa-burger"></i></div>
-            <h1 id="s-title" style="font-weight: 900;">ЗАКАЗЫВАЙ ЕДУ</h1>
-            <p id="s-desc">Все магазины Реттиховки в твоем телефоне. Быстро и вкусно!</p>
-            <div class="dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="btn-main" onclick="nextSlide()" id="next-btn">ДАЛЕЕ</button>
-        </div>
-    </div>
+    <div id="toast">Товар добавлен!</div>
 
-    <div id="auth-page" class="page">
-        <div class="container" style="padding: 40px; text-align: center;">
-            <h1 style="font-weight: 900; color: var(--main); font-size: 35px;">RX HUB</h1>
-            <p style="color: #888; margin-bottom: 30px;">Твой пропуск в комфорт</p>
-            
-            <button class="btn-main" style="background: white; border: 1px solid #ddd; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginGoogle()">
-                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="20"> Google
-            </button>
-            
-            <div style="margin: 20px 0; color: #ccc;">ИЛИ</div>
-            
-            <input type="email" id="email" class="input-field" placeholder="Электронная почта">
-            <input type="password" id="pass" class="input-field" placeholder="Пароль">
-            <button class="btn-main" style="background: var(--main); color: white;" onclick="loginEmail()">ВОЙТИ / СОЗДАТЬ</button>
-        </div>
-    </div>
-
-    <div id="phone-page" class="page" style="justify-content: center; align-items: center;">
-        <div style="width: 80%; text-align: center;">
-            <i class="fa-solid fa-phone-shield" style="font-size: 50px; color: var(--main);"></i>
-            <h2 style="font-weight: 900; margin-top: 20px;">Нужен номер!</h2>
-            <p style="font-size: 13px; color: #666;">В случае отмены заказа мы сможем вернуть вам деньги на этот номер.</p>
-            <input type="tel" id="user-phone" class="input-field" placeholder="+7 (___) ___-__-__">
-            <button class="btn-main" style="background: var(--green); color: white;" onclick="savePhone()">СОХРАНИТЬ И ПОГНАТЬ</button>
-        </div>
+    <div id="auth-page" class="page active" style="justify-content: center; align-items: center;">
+        <h1 style="font-weight: 900; color: var(--main);">RX HUB</h1>
+        <button class="btn" style="width: 80%;" onclick="loginGoogle()">Войти через Google</button>
     </div>
 
     <div id="home-page" class="page">
         <header>
-            <div style="font-weight: 900; font-size: 22px;">RX HUB</div>
-            <i class="fa-solid fa-user-circle" style="font-size: 32px; color: var(--main);" onclick="openPage('profile-page')"></i>
+            <div style="font-weight: 900;">RX HUB</div>
+            <i class="fa-solid fa-cart-shopping" style="font-size: 24px;" onclick="openPage('cart-page')"></i>
         </header>
-        
-        <div class="delivery-widget" id="delivery-status">
-            <i class="fa-solid fa-truck-fast" style="font-size: 25px; color: var(--main);"></i>
-            <div>
-                <div style="font-size: 11px; color: #888;">ВАШ ЗАКАЗ:</div>
-                <div id="status-info" style="font-weight: 900;">Нет активных заказов</div>
+        <div class="container">
+            <div class="delivery-widget">
+                <i class="fa-solid fa-truck" style="color: var(--green);"></i>
+                <div id="courier-info">Нет активных заказов</div>
             </div>
-        </div>
-
-        <div class="container" style="padding: 15px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <button class="btn-main" style="background: #ffc107; color: #333;" onclick="alert('Магазин')">ЕДА</button>
-                <button class="btn-main" onclick="openOzon()">OZON</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                <button class="btn" style="background: #ffc107; color: #333;" onclick="loadShops()">ЗАКАЗАТЬ ЕДУ</button>
+                <button class="btn" onclick="openPage('ozon-page')">OZON</button>
             </div>
         </div>
     </div>
 
-    <div id="ozon-modal">
-        <div class="modal-box">
-            <h2 style="font-weight: 900;">ЗАБРАТЬ OZON</h2>
-            <p style="font-size: 12px; color: #666;">Положите сюда ваш QR-код (PNG/JPG до 3МБ)</p>
-            <div class="drop-zone" onclick="document.getElementById('ozon-file').click()">
-                <i class="fa-solid fa-qrcode" style="font-size: 40px;"></i>
-                <div id="ozon-status">Нажмите для выбора</div>
+    <div id="shops-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i> <div style="font-weight:900;">МАГАЗИНЫ</div> <div></div></header>
+        <div class="container" id="shops-list">
             </div>
-            <input type="file" id="ozon-file" hidden accept="image/png, image/jpeg" onchange="checkOzonFile(this)">
-            <button class="btn-main" id="ozon-send" style="background: var(--main); color: white;" disabled onclick="sendOzon()">ОТПРАВИТЬ КУРЬЕРУ</button>
-            <button onclick="closeOzon()" style="margin-top: 15px; border: none; background: none; color: #888;">ЗАКРЫТЬ</button>
+    </div>
+
+    <div id="items-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('shops-page')"></i> <div id="shop-title" style="font-weight:900;">ТОВАРЫ</div> <div></div></header>
+        <div class="container products-grid" id="products-list"></div>
+    </div>
+
+    <div id="cart-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i> <div style="font-weight:900;">КОРЗИНА</div> <div></div></header>
+        <div class="container">
+            <div id="cart-items"></div>
+            <div style="margin-top: 20px; font-weight: 900; font-size: 20px;">Итого: <span id="total-sum">0</span>₽</div>
+            <div style="font-size: 12px; color: #888;">+50₽ доставка</div>
+            <button class="btn" id="pay-btn" style="background: var(--green); margin-top: 20px;" onclick="startPayment()">ОПЛАТИТЬ 200+ ₽</button>
         </div>
     </div>
 
@@ -120,94 +87,80 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let currentStep = 0;
-        const slides = [
-            { icon: '<i class="fa-solid fa-burger"></i>', title: "ЗАКАЗЫВАЙ ЕДУ", desc: "Все магазины Реттиховки в твоем телефоне." },
-            { icon: '<i class="fa-solid fa-box-open"></i>', title: "ЗАБИРАЙ OZON", desc: "Просто кидай QR-код, и курьер заберет твой заказ." },
-            { icon: '<i class="fa-solid fa-truck-ramp-box"></i>', title: "ПЕРЕВОЗКИ", desc: "Нужно перевезти тяжелые вещи? Мы поможем!" }
-        ];
-
-        function nextSlide() {
-            currentStep++;
-            if(currentStep < slides.length) {
-                document.getElementById('s-icon').innerHTML = slides[currentStep].icon;
-                document.getElementById('s-title').innerText = slides[currentStep].title;
-                document.getElementById('s-desc').innerText = slides[currentStep].desc;
-                const dots = document.querySelectorAll('.dot');
-                dots.forEach((d, i) => d.classList.toggle('active', i === currentStep));
-                if(currentStep === slides.length - 1) document.getElementById('next-btn').innerText = "ПОГНАЛИ!";
-            } else {
-                openPage('auth-page');
-            }
-        }
+        let cart = [];
 
         function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // РЕГИСТРАЦИЯ
-        function loginGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(e => alert(e.message));
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.innerText = text;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
         }
 
-        function loginEmail() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p));
+        // Загрузка магазинов (Дежурный, Березка и т.д.)
+        function loadShops() {
+            openPage('shops-page');
+            const list = document.getElementById('shops-list');
+            list.innerHTML = 'Загрузка...';
+            db.collection('shops').get().then(snap => {
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const s = doc.data();
+                    list.innerHTML += `<div class="shop-card" onclick="loadItems('${doc.id}', '${s.name}')">
+                        <span style="font-weight:900;">${s.name}</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>`;
+                });
+            });
+        }
+
+        // Загрузка товаров конкретного магазина
+        function loadItems(shopId, shopName) {
+            openPage('items-page');
+            document.getElementById('shop-title').innerText = shopName;
+            const list = document.getElementById('products-list');
+            list.innerHTML = 'Загрузка...';
+            db.collection('products').where('shopId', '==', shopId).get().then(snap => {
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    list.innerHTML += `<div class="item-card">
+                        <div style="font-weight:700;">${p.name}</div>
+                        <div style="color:var(--main); font-weight:900;">${p.price}₽</div>
+                        <button class="add-plus" onclick="addToCart('${p.name}', ${p.price})">+</button>
+                    </div>`;
+                });
+            });
+        }
+
+        function addToCart(name, price) {
+            cart.push({name, price});
+            showToast(`${name} добавлен!`);
+        }
+
+        function startPayment() {
+            const goodsSum = cart.reduce((s, i) => s + i.price, 0);
+            if(goodsSum < 200) {
+                showToast("Минимум 200₽ товаров!");
+                return;
+            }
+            const final = goodsSum + 50;
+            const publicKey = "445371-7555a";
+            window.location.href = `https://unitpay.money/pay/${publicKey}?sum=${final}&account=${auth.currentUser.email}&currency=RUB`;
+        }
+
+        function loginGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider);
         }
 
         auth.onAuthStateChanged(user => {
-            if(user) {
-                db.collection('users').doc(user.uid).get().then(doc => {
-                    if(doc.exists && doc.data().phone) {
-                        openPage('home-page');
-                        checkOrders(user.uid);
-                    } else {
-                        openPage('phone-page');
-                    }
-                });
-            }
+            if(user) openPage('home-page');
         });
-
-        function savePhone() {
-            const phone = document.getElementById('user-phone').value;
-            if(phone.length < 10) return alert("Введите нормальный номер!");
-            db.collection('users').doc(auth.currentUser.uid).set({ phone: phone }, { merge: true }).then(() => {
-                openPage('home-page');
-            });
-        }
-
-        // ПРОВЕРКА ЗАКАЗОВ (ВИДЖЕТ)
-        function checkOrders(uid) {
-            db.collection('orders').where('uid', '==', uid).where('status', '!=', 'completed').limit(1).onSnapshot(snap => {
-                const info = document.getElementById('status-info');
-                if(!snap.empty) {
-                    const order = snap.docs[0].data();
-                    info.innerText = `Курьер: ${order.courier || 'Ищем...'} (${order.status})`;
-                } else {
-                    info.innerText = "Нет активных заказов";
-                }
-            });
-        }
-
-        // OZON
-        function openOzon() { document.getElementById('ozon-modal').style.display = 'flex'; }
-        function closeOzon() { document.getElementById('ozon-modal').style.display = 'none'; }
-        
-        function checkOzonFile(input) {
-            const file = input.files[0];
-            const btn = document.getElementById('ozon-send');
-            if(file && (file.type === 'image/png' || file.type === 'image/jpeg') && file.size <= 3 * 1024 * 1024) {
-                document.getElementById('ozon-status').innerText = "Файл: " + file.name;
-                btn.disabled = false;
-            } else {
-                alert("Файл не подходит (нужен PNG/JPG до 3МБ)");
-                input.value = "";
-                btn.disabled = true;
-            }
-        }
     </script>
 </body>
 </html>
