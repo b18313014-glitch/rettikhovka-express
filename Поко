@@ -1,0 +1,12 @@
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    // Пользователь найден!
+    console.log("Пользователь уже в системе:", user.uid);
+    
+    // Сразу перекидываем на главный экран
+    window.location.href = "main.html"; 
+  } else {
+    // Пользователя нет, оставляем на странице регистрации
+    console.log("Нужно зарегистрироваться");
+  }
+});
