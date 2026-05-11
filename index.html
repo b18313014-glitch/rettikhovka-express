@@ -3,135 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX-Express | Доставка Реттиховка</title>
+    <title>RX-Express | Приложение</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --main-blue: #007bff; --dark-blue: #0056b3; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f4f7f9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        :root { --blue: #007bff; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* Экран загрузки */
-        #loader { text-align: center; transition: opacity 0.5s; }
-        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--main-blue); animation: spin 1s linear infinite; margin: 10px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .app-container { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        
+        /* Скрываем все секции по умолчанию */
+        .section { display: none; flex-direction: column; gap: 15px; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Контейнер авторизации */
-        #auth-ui { display: none; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; flex-direction: column; animation: slideUp 0.6s ease-out; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        h1 { color: var(--main-blue); margin-bottom: 10px; }
-        p { color: #666; margin-bottom: 25px; }
-
-        .btn { border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; transition: 0.3s; margin-bottom: 10px; }
+        .btn { border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; transition: 0.3s; width: 100%; }
         .btn-google { background: #4285F4; color: white; }
-        .btn-google:hover { background: #357ae8; }
-        .btn-main { background: var(--main-blue); color: white; }
-        .btn-main:hover { background: var(--dark-blue); }
-
-        /* Окно ввода телефона */
-        #phone-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 350px; text-align: center; }
-        input { width: 90%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-main { background: var(--blue); color: white; }
+        
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        .loader-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--blue); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p>Проверка доступа...</p>
+<div class="app-container">
+    
+    <div id="sec-loader" class="section" style="display: flex;">
+        <div class="loader-spinner"></div>
+        <p>Загрузка системы...</p>
     </div>
 
-    <div id="auth-ui">
+    <div id="sec-auth" class="section">
         <h1>RX-Express</h1>
-        <p>Доставка заказов в Реттиховке.<br>Быстро. Надежно. Свои.</p>
-        <button class="btn btn-google" onclick="loginWithGoogle()">Продолжить с Google</button>
-        <button class="btn btn-main" onclick="showEmailReg()">Регистрация по почте</button>
+        <p>Добро пожаловать в доставку пос. Реттиховка</p>
+        <button class="btn btn-google" onclick="login()">Войти через Google</button>
     </div>
 
-    <div id="phone-modal">
-        <div class="modal-content">
-            <h3>Нужен номер телефона</h3>
-            <p>Чтобы мы могли вернуть деньги или уточнить детали заказа, введите ваш номер:</p>
-            <input type="tel" id="user-phone" placeholder="+7 (900) 000-00-00">
-            <button class="btn btn-main" onclick="savePhoneAndGo()">Завершить регистрацию</button>
+    <div id="sec-phone" class="section">
+        <h3>Нужен номер</h3>
+        <p>Введите номер телефона для завершения:</p>
+        <input type="tel" id="user-phone" placeholder="+7 (___) ___-__-__">
+        <button class="btn btn-main" onclick="saveUserData()">Завершить</button>
+    </div>
+
+    <div id="sec-main" class="section">
+        <h2 id="welcome-user">Привет!</h2>
+        <div style="background: #e9ecef; padding: 20px; border-radius: 15px; border: 2px dashed #adb5bd;">
+            Здесь будет твой основной интерфейс заказов
         </div>
+        <button class="btn" style="background: #dc3545; color: white; margin-top: 20px;" onclick="logout()">Выйти</button>
     </div>
 
-    <script>
-        // Твой актуальный конфиг
-        const firebaseConfig = {
-            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-            authDomain: "deliverygov11.firebaseapp.com",
-            databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
-            projectId: "deliverygov11",
-            storageBucket: "deliverygov11.firebasestorage.app",
-            messagingSenderId: "562994407235",
-            appId: "1:562994407235:web:27765b2d4916e82ec871f6",
-            measurementId: "G-BKX872N1M7"
-        };
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+<script>
+    // Твой актуальный конфиг
+    const firebaseConfig = {
+        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+        authDomain: "deliverygov11.firebaseapp.com",
+        projectId: "deliverygov11",
+        storageBucket: "deliverygov11.firebasestorage.app",
+        messagingSenderId: "562994407235",
+        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
+    };
 
-        // СЛУШАТЕЛЬ СОСТОЯНИЯ
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                checkUserPhone(user);
-            } else {
-                showAuthUI();
-            }
-        });
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        function showAuthUI() {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('auth-ui').style.display = 'flex';
-        }
+    // Функция переключения экранов
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+        document.getElementById(id).style.display = 'flex';
+    }
 
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(err => alert(err.message));
-        }
-
-        // Проверка: есть ли у пользователя телефон в базе
-        async function checkUserPhone(user) {
+    // ЛОГИКА ПРОВЕРКИ
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
             
             if (userDoc.exists && userDoc.data().phone) {
-                // Все ок, телефон есть — идем на главную
-                window.location.href = "main.html";
+                // Если всё есть — открываем главный экран
+                document.getElementById('welcome-user').innerText = `Привет, ${user.displayName}!`;
+                showSection('sec-main');
             } else {
-                // Телефона нет — просим ввести
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('phone-modal').style.display = 'flex';
+                // Если нет телефона — на регистрацию
+                showSection('sec-phone');
             }
+        } else {
+            // Если не вошел — на экран входа
+            showSection('sec-auth');
         }
+    });
 
-        // Сохранение телефона в Firestore
-        async function savePhoneAndGo() {
-            const phone = document.getElementById('user-phone').value;
-            if (phone.length < 10) {
-                alert("Введите корректный номер!");
-                return;
-            }
+    async function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider).catch(e => alert(e.message));
+    }
 
-            const user = auth.currentUser;
-            await db.collection('users').doc(user.uid).set({
-                name: user.displayName,
-                email: user.email,
-                phone: phone,
-                createdAt: new Date()
-            }, { merge: true });
+    async function saveUserData() {
+        const phone = document.getElementById('user-phone').value;
+        if (phone.length < 10) return alert("Введите номер!");
 
-            window.location.href = "main.html";
-        }
+        const user = auth.currentUser;
+        await db.collection('users').doc(user.uid).set({
+            name: user.displayName,
+            email: user.email,
+            phone: phone,
+            uid: user.uid
+        }, { merge: true });
+        
+        // После сохранения Firestore сам обновит состояние через onAuthStateChanged
+    }
 
-        function showEmailReg() {
-            window.location.href = "register_email.html";
-        }
-    </script>
+    function logout() {
+        auth.signOut();
+    }
+</script>
+
 </body>
 </html>
