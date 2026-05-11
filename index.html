@@ -4,125 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RX HUB - РЕТТИХОВКА</title>
-    
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <style>
-        :root { --blue: #007bff; --yellow: #ffc107; --bg: #f8f9fa; --white: #ffffff; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); color: #333; overflow-x: hidden; }
-
-        /* ОБУЧЕНИЕ (ОНБОРДИНГ) */
-        .onboarding { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; background: var(--bg); display: flex; }
-        .slide {
-            position: absolute; width: 100%; height: 100%; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; box-sizing: border-box; text-align: center;
-            transition: all 0.5s ease; opacity: 0; transform: scale(0.9);
-        }
-        .slide.active { display: flex; opacity: 1; transform: scale(1); }
-        .slide img { width: 200px; height: 200px; margin-bottom: 20px; }
-        .go-btn { background: var(--blue); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 900; cursor: pointer; margin-top: 20px; }
-
-        .nav-arrows { position: absolute; bottom: 40px; width: 100%; display: none; justify-content: center; gap: 50px; z-index: 5100; }
-        .arrow { font-size: 40px; color: var(--blue); cursor: pointer; opacity: 0.6; transition: 0.3s; }
-        .arrow:hover { opacity: 1; transform: scale(1.2); }
-
-        /* ГЛАВНЫЙ ИНТЕРФЕЙС */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .brand { font-weight: 900; font-size: 22px; color: var(--blue); }
-        .head-icons i { font-size: 22px; margin-left: 20px; cursor: pointer; color: #444; }
-
-        .container { padding: 20px; padding-bottom: 100px; }
-        .center-menu { display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 40px 0; }
-        .small-btn { width: 100%; max-width: 280px; height: 65px; border-radius: 20px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        .btn-y { background: var(--yellow); }
-        .btn-b { background: var(--blue); color: white; }
-
-        /* СЕТКА ТОВАРОВ */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .product-card { background: white; border-radius: 20px; padding: 15px; text-align: center; border: 1px solid #eee; position: relative; }
-        .product-card img { width: 100%; height: 100px; object-fit: contain; }
-        .p-price { font-weight: 900; color: var(--blue); margin-top: 10px; font-size: 18px; }
-        .add-btn { background: var(--blue); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; position: absolute; bottom: 10px; right: 10px; font-weight: 900; cursor: pointer; }
-
-        /* МОДАЛКА ТЕЛЕФОНА */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 6000; }
-        .m-box { background: white; padding: 30px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; }
+        :root { --blue: #007bff; --yellow: #ffc107; --bg: #f8f9fa; --red: #ff4757; --green: #2ed573; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); overflow-x: hidden; }
         
-        .section-title { font-weight: 900; font-size: 20px; margin: 20px 0; display: block; }
+        /* ЭКРАНЫ */
+        .page { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; z-index: 10; }
+        .page.active { display: flex; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        .go-btn { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* КОРЗИНА И ОПЛАТА */
+        .cart-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .address-box { background: white; padding: 20px; border-radius: 20px; margin-top: 20px; border: 2px solid #eee; }
+        select, input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
+
+        /* ТОВАРЫ */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 0; }
+        .card { background: white; border-radius: 15px; padding: 15px; text-align: center; position: relative; border: 1px solid #eee; }
+        .card img { width: 70px; height: 70px; object-fit: contain; }
+        .add-plus { position: absolute; bottom: 10px; right: 10px; background: var(--blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; cursor: pointer; }
+
+        /* ПРОФИЛЬ */
+        .profile-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
+        .tech-support { margin-top: auto; padding: 20px; text-align: center; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div id="onb" class="onboarding">
-        <div id="s1" class="slide active" onclick="nextS(1)">
-            <img src="https://cdn-icons-png.flaticon.com/512/3442/3442113.png">
-            <h1>Привет!</h1>
-            <p>Добро пожаловать в RX HUB. Нажми куда угодно, чтобы продолжить.</p>
-        </div>
-        <div id="s2" class="slide">
-            <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
-            <h1>Ozon и Еда</h1>
-            <p>Заказывай из Озона или выбирай продукты в местных магазинах.</p>
-        </div>
-        <div id="s3" class="slide">
-            <img src="https://cdn-icons-png.flaticon.com/512/4416/4416112.png">
-            <h1>Готовы?</h1>
-            <button class="go-btn" onclick="startAuth()">ПОЕХАЛИ</button>
-        </div>
-        <div class="nav-arrows" id="arrs">
-            <i class="fa-solid fa-circle-arrow-left arrow" onclick="nextS(-1)"></i>
-            <i class="fa-solid fa-circle-arrow-right arrow" onclick="nextS(1)"></i>
-        </div>
-    </div>
-
-    <div id="p-modal" class="modal">
-        <div class="m-box">
-            <h2>Твой номер</h2>
-            <input type="tel" id="u-phone" placeholder="+7..." style="width:100%; padding:15px; border-radius:10px; border:1px solid #ddd; font-size:18px;">
-            <p style="color:red; font-weight:bold; font-size:12px; margin:15px 0;">БЕЗ НОМЕРА МЫ НЕ СМОЖЕМ ВЕРНУТЬ ДЕНЬГИ!</p>
-            <button class="go-btn" style="width:100%" onclick="saveP()">СОХРАНИТЬ</button>
-        </div>
-    </div>
-
-    <div id="app" style="display:none">
+    <div id="home-page" class="page active">
         <header>
-            <div class="brand">RX HUB</div>
-            <div class="head-icons">
-                <i class="fa-solid fa-basket-shopping" onclick="alert('Корзина пуста')"></i>
-                <i class="fa-solid fa-user-gear" onclick="showProfile()"></i>
+            <div style="font-weight: 900; color: var(--blue);">RX HUB</div>
+            <div style="font-size: 22px;">
+                <i class="fa-solid fa-basket-shopping" onclick="openCart()"></i>
+                <i class="fa-solid fa-user-circle" onclick="openPage('profile-page')" style="margin-left: 15px;"></i>
             </div>
         </header>
-
         <div class="container">
-            <div id="prof-info"></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="go-btn" style="background: var(--yellow); color: #333;" onclick="loadProducts()">ЕДА</button>
+                <button class="go-btn">OZON</button>
+            </div>
+            <div id="product-list" class="grid"></div>
+        </div>
+    </div>
 
-            <div class="center-menu">
-                <button class="small-btn btn-y" onclick="showShops()"><i class="fa-solid fa-utensils"></i> ЗАКАЗАТЬ ЕДУ</button>
-                <button class="small-btn btn-b" onclick="alert('Загрузи штрих-код до 3МБ')"><i class="fa-solid fa-box"></i> ДОСТАВКА OZON</button>
+    <div id="cart-page" class="page">
+        <header>
+            <i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i>
+            <div style="font-weight: 900;">ОФОРМЛЕНИЕ</div>
+            <div></div>
+        </header>
+        <div class="container">
+            <div id="cart-items"></div>
+            <div style="font-weight: 900; font-size: 20px; margin: 20px 0;">Итого: <span id="total-sum">0</span> ₽</div>
+
+            <div class="address-box">
+                <label>Выберите улицу:</label>
+                <select id="street-select" onchange="validateOrder()">
+                    <option value="">-- Выберите улицу --</option>
+                    <option value="Октябрьская">Октябрьская</option>
+                    <option value="Нагорная">Нагорная</option>
+                    <option value="Центральная">Центральная</option>
+                    <option value="Лесная">Лесная</option>
+                    <option value="Пушкина">Пушкина</option>
+                </select>
+                <input type="text" id="house-input" placeholder="Номер дома" oninput="validateOrder()">
+                <p id="addr-err" style="color: red; font-size: 12px; display: none; margin-top: 5px;">Мы не доставляем на Первомайскую и другие улицы.</p>
             </div>
 
-            <div id="shops" style="display:none">
-                <span class="section-title">ВЫБЕРИ МАГАЗИН:</span>
-                <button class="small-btn btn-y" style="margin-bottom:10px" onclick="loadP('Дежурный')">ДЕЖУРНЫЙ</button>
-                <button class="small-btn btn-y" style="margin-bottom:10px" onclick="loadP('Березка')">БЕРЕЗКА</button>
-                <button class="small-btn btn-y" style="margin-bottom:10px" onclick="loadP('Алина')">АЛИНА</button>
-            </div>
+            <button id="pay-btn" class="go-btn" style="background: var(--green); margin-top: 30px;" disabled onclick="alert('Переход к OnePay...')">ОПЛАТИТЬ</button>
+            <p id="min-warn" style="text-align: center; color: red; font-size: 12px; margin-top: 10px;">Минимальный заказ 200₽</p>
+        </div>
+    </div>
 
-            <div id="items-list" class="grid"></div>
+    <div id="profile-page" class="page">
+        <header>
+            <i class="fa-solid fa-arrow-left" onclick="openPage('home-page')"></i>
+            <div style="font-weight: 900;">АККАУНТ</div>
+            <div></div>
+        </header>
+        <div class="container">
+            <div class="profile-item"><i class="fa-solid fa-phone color-blue"></i> <span id="u-phone-display">Загрузка...</span></div>
+            <div class="profile-item"><i class="fa-solid fa-envelope"></i> <span id="u-email-display">Почта...</span></div>
             
-            <span class="section-title">Вам может понравиться</span>
-            <div id="smart-feed" class="grid"></div>
+            <div class="tech-support">
+                <p>Возникли проблемы или нет вашей улицы?</p>
+                <button class="go-btn" style="background: #333;" onclick="window.location.href='tel:+79000000000'"><i class="fa-solid fa-headset"></i> ТЕХПОДДЕРЖКА (ПОЗВОНИТЬ)</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ТВОИ КЛЮЧИ
         const firebaseConfig = {
             apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
@@ -133,67 +115,74 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        let curS = 1;
-        function nextS(d) {
-            document.getElementById(`s${curS}`).classList.remove('active');
-            curS += d; if(curS<1)curS=1; if(curS>3)curS=3;
-            document.getElementById(`s${curS}`).classList.add('active');
-            document.getElementById('arrs').style.display = (curS === 2) ? 'flex' : 'none';
+        let cart = [];
+
+        function openPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
 
-        function startAuth() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).then(res => checkU(res.user));
-        }
-
-        async function checkU(user) {
-            const d = await db.collection('users').doc(user.uid).get();
-            if(!d.exists || !d.data().phone) {
-                document.getElementById('p-modal').style.display = 'flex';
-            } else {
-                goApp(d.data());
-            }
-        }
-
-        function saveP() {
-            const p = document.getElementById('u-phone').value;
-            const u = firebase.auth().currentUser;
-            db.collection('users').doc(u.uid).set({phone: p, name: u.displayName, email: u.email, address: "Реттиховка, ул. "}, {merge:true});
-            document.getElementById('p-modal').style.display = 'none';
-            goApp({phone: p, address: "Реттиховка"});
-        }
-
-        function goApp(data) {
-            document.getElementById('onb').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            document.getElementById('prof-info').innerHTML = `
-                <div style="background:#fff; padding:15px; border-radius:15px; border-left:5px solid #007bff; margin-bottom:20px;">
-                    <small>НОМЕР: ${data.phone || 'Не указан'}</small><br>
-                    <b>АДРЕС: ${data.address || 'Реттиховка'}</b>
-                </div>`;
-        }
-
-        function showShops() { document.getElementById('shops').style.display = 'block'; }
-
-        async function loadP(shop) {
-            const list = document.getElementById('items-list');
-            list.innerHTML = 'Загрузка...';
-            const snap = await db.collection('products').where('shop', '==', shop).get();
-            list.innerHTML = '';
-            snap.forEach(doc => {
-                const item = doc.data();
-                list.innerHTML += `
-                    <div class="product-card">
-                        <img src="${item.img || 'https://cdn-icons-png.flaticon.com/512/708/708842.png'}">
-                        <div>${item.name}</div>
-                        <div class="p-price">${item.price}₽</div>
-                        <button class="add-btn">+</button>
+        function loadProducts() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = 'Загрузка товаров...';
+            db.collection('products').get().then(snap => {
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    let p = doc.data();
+                    list.innerHTML += `<div class="card">
+                        <img src="${p.img || 'https://cdn-icons-png.flaticon.com/512/708/708842.png'}">
+                        <div style="font-size:13px; font-weight:700;">${p.name}</div>
+                        <div style="color:var(--blue); font-weight:900;">${p.price}₽</div>
+                        <button class="add-plus" onclick="addToCart('${p.name}', ${p.price})">+</button>
                     </div>`;
+                });
             });
         }
 
-        firebase.auth().onAuthStateChanged(u => { if(u) checkU(u); });
+        function addToCart(n, p) {
+            cart.push({name: n, price: p});
+            alert('Добавлено в корзину!');
+        }
+
+        function openCart() {
+            openPage('cart-page');
+            const cList = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                cList.innerHTML = '<p style="text-align:center; color:#888;">Извините, в корзине ничего нет</p>';
+            } else {
+                cList.innerHTML = cart.map(i => `<div class="cart-item"><span>${i.name}</span><b>${i.price}₽</b></div>`).join('');
+            }
+            validateOrder();
+        }
+
+        function validateOrder() {
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('total-sum').innerText = total;
+            
+            const street = document.getElementById('street-select').value;
+            const house = document.getElementById('house-input').value;
+            const payBtn = document.getElementById('pay-btn');
+            const minWarn = document.getElementById('min-warn');
+
+            const isMinOk = total >= 200;
+            const isAddrOk = street !== "" && house.trim() !== "";
+
+            minWarn.style.display = isMinOk ? 'none' : 'block';
+            payBtn.disabled = !(isMinOk && isAddrOk);
+        }
+
+        auth.onAuthStateChanged(u => {
+            if(u) {
+                document.getElementById('u-email-display').innerText = u.email;
+                db.collection('users').doc(u.uid).get().then(doc => {
+                    if(doc.exists) document.getElementById('u-phone-display').innerText = doc.data().phone || "Номер не указан";
+                });
+            }
+        });
+
+        loadProducts();
     </script>
 </body>
 </html>
