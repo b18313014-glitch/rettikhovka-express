@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Official</title>
+    <title>RX HUB - Billing System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --ozon: #005bff; }
@@ -27,78 +27,63 @@
 
         header { background: #fff; padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         
-        .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .big-btn { 
-            height: 130px; border-radius: 22px; border: none; font-weight: 900; 
-            cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
-        }
-
-        .input-box { width: 100%; padding: 16px; margin: 8px 0; border: 1px solid #ddd; border-radius: 14px; font-size: 16px; outline: none; }
         .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; }
         .btn-action:active { transform: scale(0.98); }
 
-        .upload-area { border: 3px dashed #bbb; margin: 20px; padding: 40px; border-radius: 25px; text-align: center; background: #fff; }
-        
-        /* Стили для SMS подтверждения */
-        #sms-section { display: none; text-align: center; margin-top: 20px; }
-        #recaptcha-container { margin: 10px 0; display: flex; justify-content: center; }
+        /* Окно СБП Кода */
+        #sbp-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); z-index: 50000; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 30px; color: #fff; text-align: center; 
+        }
+        .order-id-box { 
+            background: #fff; color: #000; padding: 20px; border-radius: 15px; 
+            font-size: 32px; font-weight: 900; letter-spacing: 2px; margin: 20px 0;
+            border: 4px dashed var(--main);
+        }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="auth-screen" class="page active" style="z-index: 1000; background: #fff; display: flex; align-items: center; justify-content: center; padding: 25px;">
-        <div style="width: 100%;">
-            <h2 style="text-align: center; margin-bottom: 25px; font-weight: 900;">RX DELIVERY</h2>
-            
-            <div id="login-methods">
-                <button id="google-login-btn" class="btn-action" style="background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" style="width: 18px;">
-                    ПРОДОЛЖИТЬ С GOOGLE
-                </button>
-                <div style="text-align: center; margin: 15px 0; color: #ccc;">ИЛИ</div>
-                <input type="text" id="phone-input" class="input-box" placeholder="+7 (___) ___-__-__">
-                <div id="recaptcha-container"></div>
-                <button class="btn-action" style="background: var(--main);" onclick="sendSmsCode()">ПОЛУЧИТЬ SMS</button>
-            </div>
-
-            <div id="sms-section">
-                <p>Введите код из SMS:</p>
-                <input type="number" id="sms-code" class="input-box" placeholder="000000" style="text-align: center; letter-spacing: 10px;">
-                <button class="btn-action" style="background: #000; color: #fff;" onclick="verifySmsCode()">ПОДТВЕРДИТЬ</button>
-            </div>
-        </div>
-    </div>
-
     <header>
         <b style="font-size: 20px;">RX HUB</b>
-        <div style="display:flex; gap:18px; font-size: 20px;"><i class="fa-solid fa-bars"></i></div>
+        <div style="display:flex; gap:18px; font-size: 20px;"><i class="fa-solid fa-cart-shopping" onclick="openPage('cart-page')"></i></div>
     </header>
 
-    <div id="main-content" style="padding: 15px;">
+    <div style="padding: 15px;">
         <div style="background:#fff; padding:15px; border-radius:18px; margin-bottom:15px; border-left:6px solid var(--main);">
-            <small style="color:#888">Статус:</small><br><b id="widget-status">Вход выполнен успешно</b>
+            <small style="color:#888">Статус:</small><br><b id="widget-status">Ожидание заказа</b>
         </div>
-        <div class="hub-grid">
-            <button class="big-btn" style="background:var(--main)"><i class="fa-solid fa-pizza-slice fa-2x"></i>ЕДА</button>
-            <button class="big-btn" style="background:var(--ozon); color:#fff" onclick="openPage('ozon-user-page')"><i class="fa-solid fa-barcode fa-2x"></i>OZON</button>
+        <button class="btn-action" style="background:var(--main);" onclick="openPage('cart-page')">ОФОРМИТЬ ТЕСТОВЫЙ ЗАКАЗ</button>
+    </div>
+
+    <div id="cart-page" class="page">
+        <header><i class="fa-solid fa-chevron-left" onclick="closePage('cart-page')"></i><b>ОПЛАТА</b><div></div></header>
+        <div style="padding:20px;">
+            <h3>К оплате: 540 ₽</h3>
+            <p style="margin: 10px 0; color: #666;">Выберите способ оплаты:</p>
+            <button class="btn-action" style="background:#000; color:#fff; margin-bottom: 10px;" onclick="showSbpInfo()">СБП (ПЕРЕВОД)</button>
+            <button class="btn-action" style="background:#ddd;">НАЛИЧНЫЕ</button>
         </div>
     </div>
 
-    <div id="ozon-user-page" class="page">
-        <header><i class="fa-solid fa-chevron-left" onclick="closePage('ozon-user-page')"></i><b>ЗАКАЗ ОЗОН</b><div></div></header>
-        <div class="upload-area" onclick="document.getElementById('ozon-file').click()">
-            <i class="fa-solid fa-cloud-arrow-up fa-3x" style="color:var(--ozon); margin-bottom:15px;"></i>
-            <p id="ozon-info">Штрих-код (от 3 МБ)</p>
-        </div>
-        <input type="file" id="ozon-file" hidden accept="image/png, image/jpeg" onchange="checkOzonFile(this)">
-        <button id="ozon-send-btn" class="btn-action" style="margin:20px; width:calc(100% - 40px); background:#ccc;" disabled>ОТПРАВИТЬ</button>
+    <div id="sbp-modal">
+        <i class="fa-solid fa-circle-info fa-3x" style="color:var(--main)"></i>
+        <h2 style="margin-top:20px;">ЗАПОМНИТЕ КОД!</h2>
+        <p style="margin-top:10px; opacity: 0.8;">Введите этот код в поле <b>"Сообщение получателю"</b> при переводе в банке. Это обязательно для подтверждения заказа!</p>
+        
+        <div class="order-id-box" id="display-order-id">RX-777</div>
+        
+        <button class="btn-action" style="background:var(--main); color:#000;" onclick="copyAndPay()">КОПИРОВАТЬ И ПЕРЕЙТИ В БАНК</button>
+        <button onclick="document.getElementById('sbp-modal').style.display='none'" style="background:none; color:#aaa; border:none; margin-top:20px; cursor:pointer;">Отмена</button>
     </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
@@ -111,56 +96,35 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+  const db = getDatabase(app);
 
-  // Настройка Recaptcha
-  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-    'size': 'normal'
-  });
-
-  // Логика Google
-  document.getElementById('google-login-btn').onclick = () => {
-    signInWithPopup(auth, provider).then((result) => {
-      if (!result.user.phoneNumber) {
-          alert("В аккаунте Google нет телефона. Пожалуйста, введите его для связи с курьером.");
-      } else {
-          enterApp();
-      }
+  // Генерация ID
+  window.showSbpInfo = () => {
+    const orderId = "RX-" + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('display-order-id').innerText = orderId;
+    document.getElementById('sbp-modal').style.display = 'flex';
+    
+    // Сразу записываем в базу, что мы ждем оплату по этому коду
+    set(ref(db, 'orders/' + orderId), {
+        status: "waiting_payment",
+        amount: 540,
+        time: new Date().toISOString()
     });
   };
 
-  // Логика SMS
-  window.sendSmsCode = () => {
-    const phone = document.getElementById('phone-input').value;
-    signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-      .then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-        document.getElementById('login-methods').style.display = 'none';
-        document.getElementById('sms-section').style.display = 'block';
-      }).catch(e => alert("Ошибка: " + e.message));
+  window.copyAndPay = () => {
+    const code = document.getElementById('display-order-id').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        alert("Код скопирован! Вставьте его в сообщение в банке.");
+        // Ссылка на СБП (твоя)
+        window.location.href = "https://c2c.cbrpay.ru/AS1I003EI3T7RIPG9018PF66SR2FTN0V";
+    });
   };
-
-  window.verifySmsCode = () => {
-    const code = document.getElementById('sms-code').value;
-    window.confirmationResult.confirm(code).then(() => enterApp());
-  };
-
-  function enterApp() {
-    document.getElementById('auth-screen').style.display = 'none';
-  }
 </script>
 
 <script>
     function openPage(id) { document.getElementById(id).classList.add('active'); }
     function closePage(id) { document.getElementById(id).classList.remove('active'); }
-    function checkOzonFile(input) {
-        const file = input.files[0];
-        if(file && file.size / (1024*1024) >= 3) {
-            const btn = document.getElementById('ozon-send-btn');
-            btn.disabled = false; btn.style.background = "#005bff"; btn.style.color = "#fff";
-        } else { alert("Файл слишком мал!"); }
-    }
 </script>
 
 </body>
