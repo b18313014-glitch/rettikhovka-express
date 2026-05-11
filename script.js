@@ -1,45 +1,47 @@
-// Твой ключ от Dropbox (тот самый со скриншота)
-const DROPBOX_TOKEN = 'sl.u.AGci_BtP6cp5Ms7_PsLG6OEdiHsMLN3ywqwwKARTWmmzh8tNdP-ILIzldqKwtOa...'; 
+// --- ЛОГИКА ПРОФИЛЯ ---
+function updateProfile(user) {
+    if (user) {
+        document.getElementById('userName').innerText = user.displayName;
+        document.getElementById('userEmail').innerText = user.email;
+        document.getElementById('userAvatar').src = user.photoURL;
+        console.log("Профиль обновлен для:", user.displayName);
+    }
+}
 
+// --- ЛОГИКА КОРЗИНЫ ---
+let cart = [];
+let deliveryFee = 0;
+
+function addToCart(itemName, price) {
+    cart.push({ name: itemName, price: price });
+    renderCart();
+}
+
+function renderCart() {
+    const cartContainer = document.getElementById('cartItems');
+    let total = 0;
+    cartContainer.innerHTML = ''; // Очищаем старое
+
+    cart.forEach((item, index) => {
+        total += item.price;
+        cartContainer.innerHTML += `<div>${item.name} - ${item.price}₽ <button onclick="removeFromCart(${index})">❌</button></div>`;
+    });
+
+    // Добавляем стоимость доставки, если есть Озон
+    const finalTotal = total + deliveryFee;
+    document.getElementById('totalPrice').innerText = finalTotal + " ₽";
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
+// --- СИНХРОНИЗАЦИЯ С ОЗОНОМ ---
 async function uploadOzonBarcode(file) {
-    // 1. Загружаем файл в Dropbox
-    const response = await fetch('https://content.dropboxapi.com/2/files/upload', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + DROPBOX_TOKEN,
-            'Dropbox-API-Arg': JSON.stringify({
-                path: '/barcodes/' + Date.now() + '_' + file.name,
-                mode: 'add'
-            }),
-            'Content-Type': 'application/octet-stream'
-        },
-        body: file
-    });
-
-    const data = await response.json();
+    deliveryFee = 100; // Сразу ставим 100 руб за габарит
+    renderCart(); // Обновляем сумму в корзине
     
-    // 2. Получаем ссылку на файл
-    const sharedLinkResponse = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + DROPBOX_TOKEN,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ path: data.path_lower })
-    });
-
-    const linkData = await sharedLinkResponse.json();
-    const finalUrl = linkData.url.replace('?dl=0', '?dl=1'); // Ссылка на скачивание
-
-    // 3. Автоматически создаем заказ в Firebase
-    db.collection("orders").add({
-        userEmail: "b18313014@gmail.com", // Потом заменим на автоматический ID
-        type: "Ozon",
-        status: "new",
-        price: 100,
-        barcodeUrl: finalUrl,
-        createdAt: new Date()
-    });
-
-    alert("Заказ принят! Ожидайте курьера.");
+    // Тут идет твой код загрузки в Dropbox, который мы делали
+    alert("Штрих-код принят! В корзину добавлена доставка 100₽");
 }
