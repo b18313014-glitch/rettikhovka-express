@@ -1,86 +1,137 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RX-ADMIN | ТЕРМИНАЛ</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; padding: 10px; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 25px; border: 1px solid #333; max-width: 450px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn { background: #007bff; color: white; border: none; padding: 15px; border-radius: 15px; cursor: pointer; font-weight: 900; width: 100%; margin-top: 10px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 12px; box-sizing: border-box; font-size: 16px; }
+        #preview-img { width: 100%; height: 250px; object-fit: contain; background: #000; border-radius: 15px; margin: 10px 0; display: none; border: 1px dashed #444; }
+        #interactive.viewport { width: 100%; height: 200px; border-radius: 20px; overflow: hidden; margin-bottom: 10px; border: 2px solid #007bff; }
+        video, canvas { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
 
-<div id="items-sec" style="display:none">
-    <h3>Управление товарами</h3>
-    
     <div class="card">
-        <button class="btn" onclick="startScanner()" style="background: #6c5ce7; margin-bottom: 15px;">
-            <i class="fa-solid fa-barcode"></i> ОТКРЫТЬ СКАНЕР
-        </button>
-        <div id="scanner-container" style="width: 100%; display:none; margin-bottom: 10px; border-radius: 15px; overflow: hidden;"></div>
+        <h2 style="text-align:center; color:#007bff; margin-bottom:20px;">RX ТЕРМИНАЛ</h2>
         
-        <input type="text" id="p-barcode" placeholder="Штрих-код (сам появится после скана)">
+        <div id="interactive" class="viewport"></div>
+        <button class="btn" style="background:#6c5ce7" onclick="initScanner()">📸 СКАН ШТРИХ-КОДА</button>
+
+        <hr style="margin:25px 0; border:0; border-top:1px solid #333;">
+
+        <img id="preview-img" src="" alt="Товар">
+        
+        <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+        <button class="btn" style="background:#28a745" onclick="document.getElementById('file-input').click()">🖼 СФОТАТЬ ТОВАР</button>
+
+        <input type="text" id="p-barcode" placeholder="Штрих-код">
         <input type="text" id="p-name" placeholder="Название товара">
         <input type="number" id="p-price" placeholder="Цена (₽)">
         
-        <label style="font-size: 12px; color: #888;">Выберите магазин:</label>
-        <select id="p-shop-select" style="background:#222; color:white; padding:10px; width:100%; border-radius:5px; margin-top:5px;"></select>
-        
-        <button class="btn" style="margin-top: 20px;" onclick="saveProduct()">СОХРАНИТЬ ТОВАР</button>
+        <label style="font-size:12px; color:#888; margin-left:5px;">МАГАЗИН:</label>
+        <select id="p-shop-select"></select>
+
+        <button class="btn" id="save-btn" onclick="saveProduct()">✅ СОХРАНИТЬ В БАЗУ</button>
     </div>
-    
-    <div id="list-items">
-        </div>
-</div>
 
-<script>
-// ЗАГРУЗКА МАГАЗИНОВ В СПИСОК
-function loadShopsToSelect() {
-    db.collection('shops').onSnapshot(snap => {
-        const select = document.getElementById('p-shop-select');
-        select.innerHTML = '';
-        snap.forEach(doc => {
-            select.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
-        });
-    });
-}
+    <script>
+        const config = {
+            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+            authDomain: "deliverygov11.firebaseapp.com",
+            projectId: "deliverygov11"
+        };
+        firebase.initializeApp(config);
+        const db = firebase.firestore();
 
-// ЛОГИКА СКАНЕРА
-function startScanner() {
-    document.getElementById('scanner-container').style.display = 'block';
-    Quagga.init({
-        inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#scanner-container') },
-        decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader"] }
-    }, function(err) {
-        if (err) { console.log(err); return; }
-        Quagga.start();
-    });
+        // 1. ПОИСК ИНФЫ ПО ШТРИХ-КОДУ (ИНТЕРНЕТ-БАЗА)
+        async function fetchInfo(code) {
+            document.getElementById('p-name').value = "Ищу название...";
+            try {
+                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+                const data = await res.json();
+                if (data.status === 1) {
+                    document.getElementById('p-name').value = data.product.product_name || "";
+                    if (data.product.image_url) {
+                        const img = document.getElementById('preview-img');
+                        img.src = data.product.image_url;
+                        img.style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('p-name').value = "Не найдено, введи имя";
+                }
+            } catch (e) { document.getElementById('p-name').value = "Ошибка сети"; }
+        }
 
-    Quagga.onDetected(function(data) {
-        const code = data.codeResult.code;
-        document.getElementById('p-barcode').value = code;
-        
-        // Поиск товара в базе по штрих-коду
-        db.collection('products').where('barcode', '==', code).get().then(snap => {
-            if(!snap.empty) {
-                const p = snap.docs[0].data();
-                document.getElementById('p-name').value = p.name;
-                document.getElementById('p-price').value = p.price;
+        // 2. ОБРАБОТКА СВОЕГО ФОТО
+        function handleFile(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
+        }
+
+        // 3. СКАНЕР
+        function initScanner() {
+            Quagga.init({
+                inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive') },
+                decoder: { readers: ["ean_reader", "code_128_reader"] }
+            }, (err) => {
+                if (err) return alert("Ошибка камеры");
+                Quagga.start();
+            });
+            Quagga.onDetected((data) => {
+                const code = data.codeResult.code;
+                document.getElementById('p-barcode').value = code;
+                Quagga.stop();
+                fetchInfo(code);
+            });
+        }
+
+        // 4. ЗАГРУЗКА СПИСКА МАГАЗИНОВ
+        db.collection('shops').onSnapshot(snap => {
+            const s = document.getElementById('p-shop-select');
+            s.innerHTML = '';
+            snap.forEach(doc => s.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`);
         });
-        
-        Quagga.stop();
-        document.getElementById('scanner-container').style.display = 'none';
-    });
-}
 
-// СОХРАНЕНИЕ
-function saveProduct() {
-    const barcode = document.getElementById('p-barcode').value;
-    const name = document.getElementById('p-name').value;
-    const price = Number(document.getElementById('p-price').value);
-    const shopId = document.getElementById('p-shop-select').value;
-    const shopName = document.getElementById('p-shop-select').options[document.getElementById('p-shop-select').selectedIndex].text;
+        // 5. СОХРАНЕНИЕ
+        function saveProduct() {
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true;
+            btn.innerText = "СОХРАНЯЮ...";
 
-    db.collection('products').add({
-        barcode, name, price, shopId, shopName, date: new Date()
-    }).then(() => {
-        alert("Товар для магазина " + shopName + " добавлен!");
-        document.getElementById('p-barcode').value = '';
-        document.getElementById('p-name').value = '';
-        document.getElementById('p-price').value = '';
-    });
-}
+            const payload = {
+                barcode: document.getElementById('p-barcode').value,
+                name: document.getElementById('p-name').value,
+                price: Number(document.getElementById('p-price').value),
+                shopId: document.getElementById('p-shop-select').value,
+                img: document.getElementById('preview-img').src,
+                date: new Date()
+            };
 
-loadShopsToSelect();
-</script>
+            db.collection('products').add(payload).then(() => {
+                alert("Успешно!");
+                location.reload();
+            }).catch(e => {
+                alert("Ошибка: " + e);
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
