@@ -3,154 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Global</title>
+    <title>RX HUB - Главная</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --gray: #f4f4f4; --green: #2ecc71; --red: #e74c3c; --dark: #1a1a1a; }
+        :root { --main: #ffcc00; --gray: #f4f4f4; --ozon: #005bff; --red: #e74c3c; --green: #2ecc71; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; }
-        body { background: #000; height: 100vh; display: flex; justify-content: center; }
-        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow: hidden; }
+        body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; }
 
+        /* ПРИВЕТСТВИЕ */
+        #welcome-screen { z-index: 1000; background: var(--main); display: none; text-align: center; padding: 50px 20px; }
+        #welcome-screen.active { display: flex; flex-direction: column; justify-content: center; }
+
+        /* ГЛАВНЫЙ ЭКРАН */
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
         .page.active { display: flex; }
 
-        header { background: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
-        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; outline: none; font-size: 16px; }
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+        .header-icons { display: flex; gap: 20px; color: #333; }
 
-        .code-container { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
-        .code-input { width: 42px; height: 55px; text-align: center; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; background: #fff; transition: 0.3s; }
-        
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-        .shake { animation: shake 0.3s; }
+        .main-menu { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .menu-btn { width: 100%; height: 120px; border-radius: 25px; border: none; font-size: 18px; font-weight: 900; cursor: pointer; color: #fff; transition: 0.3s; position: relative; overflow: hidden; }
+        .food-btn { background: var(--main); color: #000; }
+        .ozon-btn { background: var(--ozon); }
+
+        /* ПРОФИЛЬ НА ВЕСЬ ЭКРАН */
+        #profile-page { z-index: 100; }
+        .profile-content { padding: 30px; text-align: center; }
+
+        /* МАГАЗИНЫ И КАРТОЧКИ */
+        .shop-grid { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; }
+        .product-card { background: #fff; border-radius: 20px; padding: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; background: #eee; }
+        .product-info { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; padding: 0 5px; }
+        .add-btn { background: var(--dark); color: #000; width: 35px; height: 35px; border-radius: 10px; border: 2px solid #000; font-weight: bold; cursor: pointer; }
+
+        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="auth-screen" class="page active">
-        <div style="padding: 40px 25px; text-align: center;">
-            <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 30px;">RX HUB</h2>
-            <div style="background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <button class="btn-action" style="background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginGoogle()">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" width="18"> Google
-                </button>
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                <input type="tel" id="user-phone" class="input-field" placeholder="89641238904">
-                <button class="btn-action" style="background: var(--dark); color: #fff;" onclick="sendSmsRu()">ВОЙТИ ПО SMS</button>
-                <input type="email" id="user-email" class="input-field" placeholder="Почта" style="margin-top: 20px;">
-                <button class="btn-action" style="background: var(--main);" onclick="sendEmailReal()">ВОЙТИ ПО ПОЧТЕ</button>
-            </div>
-        </div>
+    <div id="welcome-screen" class="page">
+        <h1 style="font-size: 40px; font-weight: 900;">ПРИВЕТ!</h1>
+        <p style="margin: 20px 0;">Добро пожаловать в RX HUB. Мы доставим всё быстро.</p>
+        <button class="btn-action" style="background: #000; color: #fff;" onclick="openPage('auth-screen')">ПОЕХАЛИ</button>
     </div>
 
-    <div id="code-screen" class="page">
-        <header><i class="fa-solid fa-arrow-left" onclick="openPage('auth-screen')"></i><b>ПОДТВЕРЖДЕНИЕ</b><div></div></header>
-        <div style="padding: 30px; text-align: center;">
-            <p id="verify-info" style="color: gray; margin-bottom: 20px;"></p>
-            <div class="code-container">
-                <input type="number" class="code-input" id="c1" oninput="step(this, 'c2')">
-                <input type="number" class="code-input" id="c2" oninput="step(this, 'c3')">
-                <input type="number" class="code-input" id="c3" oninput="step(this, 'c4')">
-                <input type="number" class="code-input" id="c4" oninput="step(this, 'c5')">
-                <input type="number" class="code-input" id="c5" oninput="step(this, 'c6')">
-                <input type="number" class="code-input" id="c6" oninput="checkFinal()">
-            </div>
-        </div>
+    <div id="auth-screen" class="page" style="background: #fff; padding: 20px; justify-content: center;">
+        <h2 style="text-align: center; margin-bottom: 30px;">ВХОД</h2>
+        <input type="tel" id="user-phone" class="input-field" placeholder="8964..." style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #ddd;">
+        <button class="btn-action" style="background: #000; color: #fff;" onclick="sendSmsReal()">ПОЛУЧИТЬ SMS</button>
     </div>
 
     <div id="main-hub" class="page">
-        <header><b>RX HUB</b><i class="fa-solid fa-circle-user" onclick="openPage('profile-page')"></i></header>
-        <div style="padding: 20px;">
-            <div style="background: var(--main); padding: 30px; border-radius: 20px; text-align: center;">
-                <h2 id="welcome-user">Привет!</h2>
-                <p>Вы успешно вошли.</p>
+        <header>
+            <b>RX HUB</b>
+            <div class="header-icons">
+                <i class="fa-solid fa-basket-shopping fa-lg" onclick="showCart()"></i>
+                <i class="fa-solid fa-circle-user fa-lg" onclick="openPage('profile-page')"></i>
             </div>
+        </header>
+        <div class="main-menu">
+            <button class="menu-btn food-btn" onclick="openShops()">ЗАКАЗАТЬ ЕДУ</button>
+            <button class="menu-btn ozon-btn" onclick="openOzon()">ДОСТАВКА С OZON</button>
         </div>
     </div>
 
     <div id="profile-page" class="page">
-        <header><i class="fa-solid fa-xmark" onclick="openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
-        <div style="padding: 30px; text-align: center;">
-            <h2 id="display-name">Богдан</h2>
-            <button class="btn-action" style="background: var(--red); color: #fff; margin-top: 50px;" onclick="location.reload()">ВЫЙТИ</button>
+        <header><i class="fa-solid fa-xmark fa-lg" onclick="openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div class="profile-content">
+            <div style="width: 100px; height: 100px; background: var(--main); border-radius: 50%; margin: 0 auto 20px;"></div>
+            <h2 id="u-name">Богдан</h2>
+            <p id="u-status">Активен</p>
+            
+            <div style="margin-top: 50px; text-align: left;">
+                <p style="color: gray; font-size: 14px;">Мои заказы</p>
+                <div id="order-list" style="margin-top: 10px;">Заказов пока нет</div>
+            </div>
+
+            <button class="btn-action" style="background: var(--red); color: #fff; margin-top: 100px;" onclick="deleteAcc()">УДАЛИТЬ АККАУНТ</button>
         </div>
     </div>
 </div>
 
 <script type="module">
+    // ТУТ БУДЕТ FIREBASE ЛОГИКА
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-        authDomain: "deliverygov11.firebaseapp.com",
-        projectId: "deliverygov11",
-        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-    };
-
+    const firebaseConfig = { /* Твои данные */ };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
 
-    let targetCode = "";
+    // --- ПРОВЕРКА UID (Silent Login) ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Если залогинен - сразу на рабочий стол
+            openPage('main-hub');
+        } else {
+            // Если нет - показываем приветствие
+            openPage('welcome-screen');
+        }
+    });
 
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    window.step = (curr, next) => { if(curr.value.length >= 1) document.getElementById(next).focus(); };
-
-    window.sendSmsRu = () => {
-        const ph = document.getElementById('user-phone').value;
-        if(!ph) return alert("Введите номер!");
-        let clean = ph.replace(/\D/g, '');
-        if (clean.startsWith('8')) clean = '7' + clean.slice(1);
-        
-        const api_id = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019"; 
-        const code = Math.floor(100000 + Math.random() * 900000); 
-        targetCode = code.toString();
-
-        fetch(`https://sms.ru/sms/send?api_id=${api_id}&to=${clean}&msg=Код+RX+HUB:+${code}&json=1`)
-        .then(r => r.json()).then(data => {
-            if(data.status == "OK") {
-                document.getElementById('verify-info').innerText = "Код отправлен на " + clean;
-                openPage('code-screen');
-            } else alert("Ошибка: " + data.status_text);
-        });
-    };
-
-    window.sendEmailReal = () => {
-        targetCode = "123321";
-        document.getElementById('verify-info').innerText = "Код на почту (Тест: 123321)";
-        openPage('code-screen');
-    };
-
-    window.checkFinal = () => {
-        const inputs = Array.from(document.querySelectorAll('.code-input'));
-        const val = inputs.map(i => i.value).join('');
-        if(val.length < 6) return;
-
-        if(val === targetCode) {
-            inputs.forEach(i => { i.style.borderColor = "var(--green)"; i.style.color = "var(--green)"; });
-            setTimeout(() => openPage('main-hub'), 600);
-        } else {
-            inputs.forEach(i => {
-                i.classList.add('shake');
-                i.style.borderColor = "var(--red)";
-                setTimeout(() => { i.classList.remove('shake'); i.value = ''; i.style.borderColor = "#ddd"; }, 1000);
-            });
-            document.getElementById('c1').focus();
+    window.deleteAcc = () => {
+        const q1 = confirm("Ты точно хочешь удалить аккаунт?");
+        if(q1) {
+            const q2 = confirm("Восстановить его будет НЕВОЗМОЖНО. Удаляем?");
+            if(q2) {
+                // Тут меняем статус в Firebase на 'deleted'
+                alert("Аккаунт удален.");
+                location.reload();
+            }
         }
-    };
-
-    window.loginGoogle = () => {
-        signInWithPopup(auth, provider).then(res => {
-            document.getElementById('display-name').innerText = res.user.displayName;
-            openPage('main-hub');
-        });
-    };
+    }
 </script>
 
 </body>
