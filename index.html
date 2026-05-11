@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Welcome</title>
+    <title>RX HUB - Delivery</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -14,149 +16,171 @@
         :root { --blue: #007bff; --yellow: #ffc107; --bg: #f8f9fa; }
         body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--bg); overflow: hidden; }
 
-        /* Контейнер для слайдов */
-        .slider-container { position: relative; width: 100vw; height: 100vh; }
-        
+        /* ЭКРАНЫ ПРИВЕТСТВИЯ */
+        .onboarding { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: var(--bg); }
         .slide {
             position: absolute; width: 100%; height: 100%;
             display: none; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px; box-sizing: border-box; text-align: center;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            opacity: 0; transform: scale(0.95);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; transform: translateY(20px);
         }
+        .slide.active { display: flex; opacity: 1; transform: translateY(0); }
 
-        .slide.active { display: flex; opacity: 1; transform: scale(1); }
+        .slide img { width: 200px; height: 200px; margin-bottom: 30px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
+        .slide h1 { font-weight: 900; font-size: 28px; color: var(--blue); margin-bottom: 15px; }
+        .slide p { color: #555; line-height: 1.6; max-width: 300px; }
 
-        /* Стили текста и фото */
-        .slide img { width: 220px; height: 220px; object-fit: contain; margin-bottom: 30px; }
-        .slide h1 { font-weight: 900; font-size: 32px; color: var(--blue); margin: 10px 0; }
-        .slide p { font-size: 16px; color: #555; max-width: 300px; line-height: 1.5; }
-
-        /* Кнопка "ПОЕХАЛИ" на последнем слайде */
-        .go-btn {
-            background: var(--blue); color: white; border: none;
-            padding: 18px 50px; border-radius: 40px; font-weight: 900;
-            font-size: 20px; cursor: pointer; margin-top: 20px;
-            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
-        }
-
-        /* Навигация (Стрелочки) */
+        /* СТРЕЛКИ НАВИГАЦИИ */
         .nav-bar {
             position: absolute; bottom: 50px; width: 100%;
-            display: flex; justify-content: center; gap: 60px; align-items: center;
-            z-index: 10;
+            display: flex; justify-content: center; gap: 60px; z-index: 1100;
         }
-        .nav-arrow { font-size: 40px; color: var(--blue); cursor: pointer; transition: 0.3s; opacity: 0.5; }
-        .nav-arrow:hover { opacity: 1; transform: scale(1.2); }
+        .nav-arrow { font-size: 45px; color: var(--blue); cursor: pointer; transition: 0.3s; opacity: 0.5; }
+        .nav-arrow:hover { opacity: 1; transform: scale(1.1); }
 
-        /* Регистрация */
-        #auth-screen { display: none; background: white; z-index: 100; }
+        /* КНОПКА ФИНАЛА */
+        .go-btn {
+            background: var(--blue); color: white; border: none; padding: 18px 45px;
+            border-radius: 50px; font-weight: 900; font-size: 18px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3); margin-top: 20px;
+        }
+
+        /* ОКНО ТЕЛЕФОНА */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content { background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 350px; text-align: center; }
+        .warn { color: #e74c3c; font-weight: bold; font-size: 13px; margin: 15px 0; border: 1px dashed #e74c3c; padding: 10px; border-radius: 10px; }
+        
+        /* ГЛАВНЫЙ ИНТЕРФЕЙС (СКРЫТ) */
+        #main-app { display: none; height: 100vh; padding: 20px; overflow-y: auto; }
+        .settings-card { background: white; padding: 20px; border-radius: 20px; border-left: 6px solid var(--blue); margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="slider-container">
-        <div id="slide-1" class="slide active" onclick="moveSlide(1)">
+    <div id="onboarding-gate" class="onboarding">
+        <div id="s1" class="slide active" onclick="changeSlide(1)">
             <img src="https://cdn-icons-png.flaticon.com/512/3442/3442113.png">
-            <h1>Добро пожаловать!</h1>
-            <p>Нажми в любое место, чтобы узнать, что мы умеем</p>
+            <h1>Привет!</h1>
+            <p>Добро пожаловать в RX HUB. Нажми куда угодно, чтобы начать рассказ.</p>
         </div>
 
-        <div id="slide-2" class="slide">
+        <div id="s2" class="slide">
             <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
-            <h1>Доставка Озон</h1>
-            <p>Просто загрузи штрих-код, а мы привезем твой заказ прямо в руки.</p>
+            <h1>Доставка Ozon</h1>
+            <p>Привезем твой заказ из ПВЗ прямо к порогу. Быстро и надежно.</p>
         </div>
 
-        <div id="slide-3" class="slide">
+        <div id="s3" class="slide">
             <img src="https://cdn-icons-png.flaticon.com/512/1532/1532688.png">
-            <h1>Еда и Склад</h1>
-            <p>Заказывай продукты и следи за умным складом в реальном времени.</p>
+            <h1>Умный Склад</h1>
+            <p>Следи за продуктами и получай уведомления о свежести товаров.</p>
         </div>
 
-        <div id="slide-4" class="slide">
+        <div id="s4" class="slide">
             <img src="https://cdn-icons-png.flaticon.com/512/4416/4416112.png">
             <h1>Вы готовы?</h1>
-            <button class="go-btn" onclick="openAuth()">ПОЕХАЛИ</button>
+            <p>Остался последний шаг — авторизация.</p>
+            <button class="go-btn" onclick="startAuth()">ПОЕХАЛИ</button>
         </div>
 
-        <div class="nav-bar" id="nav-arrows" style="display:none">
-            <i class="fa-solid fa-circle-chevron-left nav-arrow" onclick="moveSlide(-1)"></i>
-            <i class="fa-solid fa-circle-chevron-right nav-arrow" onclick="moveSlide(1)"></i>
+        <div class="nav-bar" id="arrows" style="display:none">
+            <i class="fa-solid fa-circle-chevron-left nav-arrow" onclick="changeSlide(-1)"></i>
+            <i class="fa-solid fa-circle-chevron-right nav-arrow" onclick="changeSlide(1)"></i>
         </div>
     </div>
 
-    <div id="auth-screen" class="slide">
-        <h1>Вход в систему</h1>
-        <p>Выбери способ авторизации</p>
-        <button class="go-btn" style="background:#fff; color:#333; border: 1px solid #ddd;" onclick="loginGoogle()">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="20" style="margin:0; vertical-align:middle;"> Google
-        </button>
-        <button class="go-btn" style="width:230px" onclick="alert('Скоро!')">Почта</button>
+    <div id="phone-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="font-weight: 900;">Номер телефона</h2>
+            <input type="tel" id="user-phone" placeholder="+7 (___) ___-__-__" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; font-size: 18px;">
+            <div class="warn">БЕЗ НОМЕРА МЫ НЕ СМОЖЕМ ВЕРНУТЬ ДЕНЬГИ ПРИ ОТМЕНЕ!</div>
+            <button class="go-btn" style="width: 100%;" onclick="savePhone()">ВВЕСТИ СЕЙЧАС</button>
+            <button onclick="closeModal()" style="background:none; border:none; margin-top: 15px; color: #888; cursor: pointer;">Ввести потом</button>
+        </div>
     </div>
+
+    <div id="main-app">
+        <div id="settings-top"></div> <h1 style="font-weight: 900;">Главная</h1>
+        </div>
 
     <script>
-        // Сюда ты вставишь свои ключи сам!
+        // ТВОЯ КОНФИГУРАЦИЯ (Я вставил ключи из твоего сообщения)
         const firebaseConfig = {
-            apiKey: "ТВОЙ_API_KEY",
+            apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
             authDomain: "deliverygov11.firebaseapp.com",
             projectId: "deliverygov11",
-            storageBucket: "deliverygov11.appspot.com",
-            messagingSenderId: "ТВОЙ_ID",
-            appId: "ТВОЙ_APP_ID"
+            storageBucket: "deliverygov11.firebasestorage.app",
+            messagingSenderId: "562994407235",
+            appId: "1:562994407235:web:27765b2d4916e82ec871f6"
         };
         firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        let currentSlide = 1;
-        const totalSlides = 4;
+        let currentS = 1;
 
-        // Функция переключения слайдов
-        function moveSlide(direction) {
-            // Убираем текущий
-            document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+        // Переключение слайдов
+        function changeSlide(dir) {
+            document.getElementById(`s${currentS}`).classList.remove('active');
+            currentS += dir;
+            if(currentS < 1) currentS = 1;
+            if(currentS > 4) currentS = 4;
             
-            // Если мы на первом слайде и кликнули - идем вперед
-            if (currentSlide === 1) {
-                document.getElementById('nav-arrows').style.display = 'flex';
-            }
-
-            currentSlide += direction;
-
-            // Ограничения
-            if (currentSlide < 1) currentSlide = 1;
-            if (currentSlide > totalSlides) currentSlide = totalSlides;
-
-            // Показываем новый
-            document.getElementById(`slide-${currentSlide}`).classList.add('active');
-
-            // На последнем слайде скрываем стрелки, там кнопка "ПОЕХАЛИ"
-            if (currentSlide === 4) {
-                document.getElementById('nav-arrows').style.display = 'none';
-            } else if (currentSlide > 1) {
-                document.getElementById('nav-arrows').style.display = 'flex';
-            }
+            document.getElementById(`s${currentS}`).classList.add('active');
+            
+            // Показываем стрелки только со 2-го по 3-й слайд
+            document.getElementById('arrows').style.display = (currentS > 1 && currentS < 4) ? 'flex' : 'none';
         }
 
-        function openAuth() {
-            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-            document.getElementById('auth-screen').classList.add('active');
-            document.getElementById('auth-screen').style.display = 'flex';
-        }
-
-        function loginGoogle() {
+        // Логика входа
+        function startAuth() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).then(() => {
-                alert("Успешный вход!");
-                // Тут переход на твой главный интерфейс
+            firebase.auth().signInWithPopup(provider).then(res => {
+                checkUserData(res.user);
             });
         }
-        
-        // Проверка: если уже вошел - сразу в игру
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // Если залогинен, можно сразу редиректнуть
-                console.log("Пользователь уже в системе");
+
+        async function checkUserData(user) {
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (!doc.exists || !doc.data().phone) {
+                document.getElementById('phone-modal').style.display = 'flex';
+            } else {
+                launchApp(doc.data().phone);
             }
+        }
+
+        function savePhone() {
+            const val = document.getElementById('user-phone').value;
+            if(val.length < 10) return alert("Введите номер!");
+            
+            const user = firebase.auth().currentUser;
+            db.collection('users').doc(user.uid).set({ phone: val }, { merge: true });
+            closeModal();
+            launchApp(val);
+        }
+
+        function closeModal() {
+            document.getElementById('phone-modal').style.display = 'none';
+            launchApp("Не указан");
+        }
+
+        function launchApp(phone) {
+            document.getElementById('onboarding-gate').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('settings-top').innerHTML = `
+                <div class="settings-card">
+                    <small style="color: #999;">ВАШ НОМЕР ТЕЛЕФОНА</small>
+                    <div style="font-size: 20px; font-weight: 900;">${phone}</div>
+                </div>
+            `;
+        }
+
+        // Авто-вход
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) checkUserData(user);
         });
     </script>
 </body>
