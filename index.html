@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Full Edition</title>
+    <title>RX HUB - Official</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --ozon: #005bff; --white: #ffffff; }
+        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --ozon: #005bff; }
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { background: #000; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
 
-        /* Контейнер приложения - исправление "косого" вида на планшетах */
         #app { 
             width: 100%; max-width: 500px; background: var(--gray); 
             position: relative; min-height: 100vh; display: flex; flex-direction: column;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
         }
         @media (min-width: 800px) { #app { max-width: 600px; } }
 
-        /* Система страниц */
         .page { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: var(--gray); z-index: 100; display: none; flex-direction: column; 
@@ -29,22 +27,21 @@
 
         header { background: #fff; padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         
-        /* Кнопки и интерфейс */
         .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
         .big-btn { 
             height: 130px; border-radius: 22px; border: none; font-weight: 900; 
             cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
         }
-        .big-btn:active { transform: scale(0.96); }
 
-        .input-box { width: 100%; padding: 16px; margin: 8px 0; border: 1px solid #ddd; border-radius: 14px; font-size: 16px; }
-        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .input-box { width: 100%; padding: 16px; margin: 8px 0; border: 1px solid #ddd; border-radius: 14px; font-size: 16px; outline: none; }
+        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.98); }
 
-        /* Озон загрузка */
         .upload-area { border: 3px dashed #bbb; margin: 20px; padding: 40px; border-radius: 25px; text-align: center; background: #fff; }
         
-        /* Модалка юрисдикции */
-        #safety-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:20000; display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px; color:#fff; text-align:center; }
+        /* Стили для SMS подтверждения */
+        #sms-section { display: none; text-align: center; margin-top: 20px; }
+        #recaptcha-container { margin: 10px 0; display: flex; justify-content: center; }
     </style>
 </head>
 <body>
@@ -54,149 +51,116 @@
         <div style="width: 100%;">
             <h2 style="text-align: center; margin-bottom: 25px; font-weight: 900;">RX DELIVERY</h2>
             
-            <button class="btn-action" style="background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;" onclick="googleAuth()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" style="width: 18px;">
-                ПРОДОЛЖИТЬ С GOOGLE
-            </button>
+            <div id="login-methods">
+                <button id="google-login-btn" class="btn-action" style="background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" style="width: 18px;">
+                    ПРОДОЛЖИТЬ С GOOGLE
+                </button>
+                <div style="text-align: center; margin: 15px 0; color: #ccc;">ИЛИ</div>
+                <input type="text" id="phone-input" class="input-box" placeholder="+7 (___) ___-__-__">
+                <div id="recaptcha-container"></div>
+                <button class="btn-action" style="background: var(--main);" onclick="sendSmsCode()">ПОЛУЧИТЬ SMS</button>
+            </div>
 
-            <button class="btn-action" style="background: #f4f4f4; color: #555; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
-                <i class="fa-solid fa-users"></i> ПРОДОЛЖИТЬ С ДРУЗЬЯМИ
-            </button>
-
-            <input type="text" id="u-name" class="input-box" placeholder="Ваше имя">
-            <input type="text" id="u-login" class="input-box" placeholder="Номер телефона или почта">
-
-            <button class="btn-action" style="background: var(--main); margin-top: 10px;" onclick="finishAuth()">ВОЙТИ</button>
+            <div id="sms-section">
+                <p>Введите код из SMS:</p>
+                <input type="number" id="sms-code" class="input-box" placeholder="000000" style="text-align: center; letter-spacing: 10px;">
+                <button class="btn-action" style="background: #000; color: #fff;" onclick="verifySmsCode()">ПОДТВЕРДИТЬ</button>
+            </div>
         </div>
     </div>
 
     <header>
-        <b>RX HUB</b>
-        <div style="display:flex; gap:18px; font-size: 20px;">
-            <i class="fa-solid fa-cart-shopping" onclick="openPage('cart-page')"></i>
-            <i class="fa-solid fa-user-gear"></i>
-        </div>
+        <b style="font-size: 20px;">RX HUB</b>
+        <div style="display:flex; gap:18px; font-size: 20px;"><i class="fa-solid fa-bars"></i></div>
     </header>
 
-    <div style="padding: 15px;">
-        <div style="background:#fff; padding:15px; border-radius:18px; margin-bottom:15px; border-left:6px solid var(--main); display:flex; align-items:center; gap:12px;">
-            <i class="fa-solid fa-clock-rotate-left" style="color:var(--main)"></i>
-            <div><small style="color:#888">Заказ:</small><br><b id="widget-status">Активных заказов нет</b></div>
+    <div id="main-content" style="padding: 15px;">
+        <div style="background:#fff; padding:15px; border-radius:18px; margin-bottom:15px; border-left:6px solid var(--main);">
+            <small style="color:#888">Статус:</small><br><b id="widget-status">Вход выполнен успешно</b>
         </div>
-
         <div class="hub-grid">
-            <button class="big-btn" style="background:var(--main)" onclick="openPage('shop-page')">
-                <i class="fa-solid fa-truck-fast fa-2x"></i>ДОСТАВКА
-            </button>
-            <button class="big-btn" style="background:var(--ozon); color:#fff" onclick="openPage('ozon-user-page')">
-                <i class="fa-solid fa-barcode fa-2x"></i>OZON
-            </button>
-        </div>
-    </div>
-
-    <div id="shop-page" class="page">
-        <header><i class="fa-solid fa-chevron-left" onclick="closePage('shop-page')"></i><b>МЕНЮ ЕДЫ</b><div></div></header>
-        <div style="padding:20px; text-align:center; color:#888;">Загрузка товаров...</div>
-    </div>
-
-    <div id="cart-page" class="page">
-        <header><i class="fa-solid fa-chevron-left" onclick="closePage('cart-page')"></i><b>ВАШ ЧЕК</b><div></div></header>
-        <div style="padding:20px;">
-            <div id="check-items" style="font-family: monospace;"></div>
-            <hr style="margin:15px 0; border:1px dashed #ccc;">
-            <select id="addr-street" class="input-box">
-                <option>Центральная</option><option>Октябрьская</option><option>Нагорная</option>
-                <option>Пушкинская</option><option>Лесная</option><option>Шахтерская</option>
-            </select>
-            <input type="text" id="addr-house" class="input-box" placeholder="Дом / Квартира">
-            <label style="display:flex; align-items:center; gap:10px; padding:10px 0;">
-                <input type="checkbox" id="leave-door" style="width:20px; height:20px;"> <b>Оставить у двери</b>
-            </label>
-            <button class="btn-action" style="background:var(--main); height:60px;" onclick="checkJurisdiction()">ОФОРМИТЬ ЗАКАЗ</button>
+            <button class="big-btn" style="background:var(--main)"><i class="fa-solid fa-pizza-slice fa-2x"></i>ЕДА</button>
+            <button class="big-btn" style="background:var(--ozon); color:#fff" onclick="openPage('ozon-user-page')"><i class="fa-solid fa-barcode fa-2x"></i>OZON</button>
         </div>
     </div>
 
     <div id="ozon-user-page" class="page">
         <header><i class="fa-solid fa-chevron-left" onclick="closePage('ozon-user-page')"></i><b>ЗАКАЗ ОЗОН</b><div></div></header>
         <div class="upload-area" onclick="document.getElementById('ozon-file').click()">
-            <i class="fa-solid fa-file-arrow-up fa-3x" style="color:var(--ozon); margin-bottom:15px;"></i>
-            <p id="ozon-info">Загрузите скриншот штрих-кода</p>
-            <small style="color:#999">(PNG/JPG, минимум 3 МБ)</small>
+            <i class="fa-solid fa-cloud-arrow-up fa-3x" style="color:var(--ozon); margin-bottom:15px;"></i>
+            <p id="ozon-info">Штрих-код (от 3 МБ)</p>
         </div>
-        <input type="file" id="ozon-file" hidden accept="image/png, image/jpeg" onchange="validateOzon(this)">
-        <button id="ozon-send-btn" class="btn-action" style="margin:0 20px; width:calc(100% - 40px); background:#ddd;" disabled onclick="submitOzon()">ОТПРАВИТЬ КУРЬЕРУ</button>
-    </div>
-
-    <div id="safety-overlay">
-        <i class="fa-solid fa-shield-virus fa-4x" style="color:var(--main); margin-bottom:20px;"></i>
-        <h2>ВНИМАНИЕ!</h2>
-        <p>Вы выбрали "Оставить у двери". Если заказ украдут — это ВНЕ НАШЕЙ ЮРИСДИКЦИИ.</p>
-        <label style="margin:20px 0; display:block;">
-            <input type="checkbox" id="risk-confirm"> Я принимаю на себя риск кражи
-        </label>
-        <button class="btn-action" style="background:var(--main); color:#000;" onclick="finalConfirm()">ПОДТВЕРЖДАЮ</button>
-        <button onclick="document.getElementById('safety-overlay').style.display='none'" style="background:none; color:#fff; border:none; margin-top:15px; cursor:pointer;">Отмена</button>
+        <input type="file" id="ozon-file" hidden accept="image/png, image/jpeg" onchange="checkOzonFile(this)">
+        <button id="ozon-send-btn" class="btn-action" style="margin:20px; width:calc(100% - 40px); background:#ccc;" disabled>ОТПРАВИТЬ</button>
     </div>
 </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
+    authDomain: "deliverygov11.firebaseapp.com",
+    databaseURL: "https://deliverygov11-default-rtdb.firebaseio.com",
+    projectId: "deliverygov11",
+    storageBucket: "deliverygov11.firebasestorage.app",
+    messagingSenderId: "562994407235",
+    appId: "1:562994407235:web:27765b2d4916e82ec871f6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // Настройка Recaptcha
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    'size': 'normal'
+  });
+
+  // Логика Google
+  document.getElementById('google-login-btn').onclick = () => {
+    signInWithPopup(auth, provider).then((result) => {
+      if (!result.user.phoneNumber) {
+          alert("В аккаунте Google нет телефона. Пожалуйста, введите его для связи с курьером.");
+      } else {
+          enterApp();
+      }
+    });
+  };
+
+  // Логика SMS
+  window.sendSmsCode = () => {
+    const phone = document.getElementById('phone-input').value;
+    signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
+      .then((confirmationResult) => {
+        window.confirmationResult = confirmationResult;
+        document.getElementById('login-methods').style.display = 'none';
+        document.getElementById('sms-section').style.display = 'block';
+      }).catch(e => alert("Ошибка: " + e.message));
+  };
+
+  window.verifySmsCode = () => {
+    const code = document.getElementById('sms-code').value;
+    window.confirmationResult.confirm(code).then(() => enterApp());
+  };
+
+  function enterApp() {
+    document.getElementById('auth-screen').style.display = 'none';
+  }
+</script>
 
 <script>
     function openPage(id) { document.getElementById(id).classList.add('active'); }
     function closePage(id) { document.getElementById(id).classList.remove('active'); }
-
-    // Регистрация
-    function googleAuth() { alert("Запуск Google Auth для Firebase..."); }
-    function finishAuth() {
-        if(!document.getElementById('u-name').value) return alert("Введите имя!");
-        document.getElementById('auth-screen').classList.remove('active');
-        document.getElementById('auth-screen').style.display = 'none';
-    }
-
-    // Логика Ozon (Юзер)
-    function validateOzon(input) {
+    function checkOzonFile(input) {
         const file = input.files[0];
-        const btn = document.getElementById('ozon-send-btn');
-        const info = document.getElementById('ozon-info');
-
-        if(!file) return;
-
-        const sizeMB = file.size / (1024 * 1024);
-        const isImg = file.type === "image/png" || file.type === "image/jpeg";
-
-        if(!isImg) { alert("Ошибка: только PNG или JPG!"); input.value=""; return; }
-        if(sizeMB < 3) { alert("Ошибка: файл меньше 3 МБ! Сделайте качественный скриншот."); input.value=""; return; }
-
-        info.innerText = `Файл готов (${sizeMB.toFixed(1)} МБ)`;
-        btn.disabled = false;
-        btn.style.background = "var(--ozon)";
-        btn.style.color = "#fff";
+        if(file && file.size / (1024*1024) >= 3) {
+            const btn = document.getElementById('ozon-send-btn');
+            btn.disabled = false; btn.style.background = "#005bff"; btn.style.color = "#fff";
+        } else { alert("Файл слишком мал!"); }
     }
-
-    function submitOzon() {
-        alert("Штрих-код отправлен в базу курьеру!");
-        closePage('ozon-user-page');
-        document.getElementById('widget-status').innerText = "Курьер едет за Ozon";
-    }
-
-    // Юрисдикция и Заказ
-    function checkJurisdiction() {
-        if(!document.getElementById('addr-house').value) return alert("Введите номер дома!");
-        if(document.getElementById('leave-door').checked) {
-            document.getElementById('safety-overlay').style.display = 'flex';
-        } else {
-            alert("Заказ оформлен! Ждите звонка.");
-        }
-    }
-
-    function finalConfirm() {
-        if(!document.getElementById('risk-confirm').checked) return alert("Нужно подтвердить согласие с риском!");
-        document.getElementById('safety-overlay').style.display = 'none';
-        alert("Заказ оформлен бесконтактно. Ответственность принята.");
-    }
-
-    // Защита от скриншотов (PrintScreen)
-    window.addEventListener('keyup', e => {
-        if(e.key === 'PrintScreen') { navigator.clipboard.writeText(''); alert('Скриншоты запрещены защитой!'); }
-    });
 </script>
 
 </body>
