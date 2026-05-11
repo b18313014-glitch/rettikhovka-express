@@ -1,112 +1,12 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Real Auth</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --main: #ffcc00; --gray: #f4f4f4; --green: #2ecc71; --red: #e74c3c; --ozon: #005bff; --dark: #1a1a1a; }
-        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; display: flex; flex-direction: column; }
-
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); z-index: 100; display: none; flex-direction: column; }
-        .page.active { display: flex; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        header { background: #fff; padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-        .btn-action { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; }
-        
-        .auth-tab { background: #fff; border-radius: 20px; padding: 25px; margin: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .input-field { width: 100%; padding: 14px; background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; outline: none; }
-
-        /* КОД СТИЛИ */
-        .code-container { display: flex; gap: 8px; justify-content: center; margin: 15px 0; }
-        .code-input { width: 40px; height: 55px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 10px; outline: none; transition: 0.3s; }
-        .code-input.error { border-color: var(--red); color: var(--red); animation: shake 0.3s; }
-        .code-input.success { border-color: var(--green); color: var(--green); transform: scale(1.05); }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-        .hub-grid { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .hub-btn { height: 130px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 900; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-<div id="app">
-    <div id="auth-screen" class="page active" style="background: #fff; overflow-y: auto; padding: 20px;">
-        <h2 style="text-align: center; margin: 30px 0; font-weight: 900;">RX HUB</h2>
-        
-        <div class="auth-tab">
-            <button class="btn-action" style="background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px;" onclick="loginGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_打%22G%22_Logo.svg" width="18"> Google
-            </button>
-            
-            <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 10px;">ПО ТЕЛЕФОНУ</p>
-            <input type="tel" id="auth-phone" class="input-field" placeholder="+79001112233">
-            <button class="btn-action" id="btn-auth-sms" style="background: var(--dark); color: #fff; margin-bottom: 20px;" onclick="sendAuthSMS()">ПОЛУЧИТЬ SMS</button>
-
-            <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 10px;">ПО ПОЧТЕ</p>
-            <input type="email" id="auth-email" class="input-field" placeholder="mail@example.com">
-            <button class="btn-action" style="background: var(--main);" onclick="sendEmailCode()">ОТПРАВИТЬ КОД НА EMAIL</button>
-        </div>
-        <div id="recaptcha-container"></div>
-    </div>
-
-    <div id="code-screen" class="page" style="background: #fff; justify-content: center; padding: 30px; text-align: center;">
-        <h2 id="code-title">ПРОВЕРКА</h2>
-        <p id="code-info" style="color: gray; margin-bottom: 20px; font-size: 14px;"></p>
-        
-        <div class="code-container">
-            <input type="number" class="code-input" id="v1" oninput="if(this.value)document.getElementById('v2').focus()">
-            <input type="number" class="code-input" id="v2" oninput="if(this.value)document.getElementById('v3').focus()">
-            <input type="number" class="code-input" id="v3" oninput="if(this.value)document.getElementById('v4').focus()">
-            <input type="number" class="code-input" id="v4" oninput="if(this.value)document.getElementById('v5').focus()">
-            <input type="number" class="code-input" id="v5" oninput="if(this.value)document.getElementById('v6').focus()">
-            <input type="number" class="code-input" id="v6" oninput="verifyFinalCode()">
-        </div>
-        <p id="error-text" style="color: var(--red); font-size: 12px; margin-top: 10px; display: none;">Неверный код, попробуйте снова</p>
-    </div>
-
-    <div id="main-hub" class="page">
-        <header><b>RX HUB</b><i class="fa-solid fa-circle-user" onclick="openPage('profile-page')"></i></header>
-        <div class="hub-grid">
-            <button class="hub-btn" style="background: var(--main);" onclick="alert('Магазины скоро!')">
-                <i class="fa-solid fa-pizza-slice fa-2x"></i> ЗАКАЗАТЬ ЕДУ
-            </button>
-            <button class="hub-btn" style="background: var(--ozon); color: #fff;" onclick="alert('Озон!')">
-                <i class="fa-solid fa-box fa-2x"></i> ЗАБРАТЬ OZON
-            </button>
-        </div>
-    </div>
-
-    <div id="profile-page" class="page">
-        <header><i class="fa-solid fa-xmark" onclick="openPage('main-hub')"></i><b>ПРОФИЛЬ</b><div></div></header>
-        <div style="padding: 20px; text-align: center;">
-            <h2 id="u-name">Богдан</h2>
-            <p id="u-login" style="color: gray; margin-bottom: 20px;"></p>
-            <button class="btn-action" style="background: var(--red); color: #fff;" onclick="location.reload()">ВЫЙТИ</button>
-        </div>
-    </div>
-</div>
-
 <script type="module">
+    // Настройки для Google (для входа через Google)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getAuth, 
-        GoogleAuthProvider, 
-        signInWithPopup, 
-        RecaptchaVerifier, 
-        signInWithPhoneNumber,
-        sendSignInLinkToEmail
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
         authDomain: "deliverygov11.firebaseapp.com",
         projectId: "deliverygov11",
-        storageBucket: "deliverygov11.appspot.com",
         appId: "1:562994407235:web:27765b2d4916e82ec871f6"
     };
 
@@ -114,94 +14,93 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    window.onload = () => {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-    };
+    let targetCode = ""; // Переменная для хранения отправленного кода
 
+    // Переключение страниц
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    // 1. Google
-    window.loginGoogle = () => {
-        signInWithPopup(auth, provider).then(res => {
-            document.getElementById('u-name').innerText = res.user.displayName;
-            document.getElementById('u-login').innerText = res.user.email;
-            openPage('main-hub');
-        });
-    };
+    // Автопереход между ячейками кода
+    window.step = (curr, next) => { if(curr.value.length >= 1) document.getElementById(next).focus(); };
 
-    // 2. Реальная Почта (Логика ссылки/кода)
-    window.sendEmailCode = () => {
-        const email = document.getElementById('auth-email').value;
-        if(!email) return alert("Введите почту!");
+    // 1. ОТПРАВКА SMS ЧЕРЕЗ SMS.RU
+    window.sendSmsRu = () => {
+        const phoneInput = document.getElementById('user-phone').value;
+        if(!phoneInput) return alert("Введите номер!");
 
-        const actionCodeSettings = {
-            url: window.location.href,
-            handleCodeInApp: true,
-        };
+        // Исправляем номер (8 на 7)
+        let cleanPhone = phoneInput.replace(/\D/g, '');
+        if (cleanPhone.startsWith('8')) cleanPhone = '7' + cleanPhone.slice(1);
+        
+        const api_id = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019"; // Твой ключ
+        const code = Math.floor(100000 + Math.random() * 900000); 
+        targetCode = code.toString();
 
-        sendSignInLinkToEmail(auth, email, actionCodeSettings)
-            .then(() => {
-                window.localStorage.setItem('emailForSignIn', email);
-                document.getElementById('code-title').innerText = "ПРОВЕРКА ПОЧТЫ";
-                document.getElementById('code-info').innerText = "Мы отправили ссылку на " + email + ". Для теста введи 111111";
+        fetch(`https://sms.ru/sms/send?api_id=${api_id}&to=${cleanPhone}&msg=Код+RX+HUB:+${code}&json=1`)
+        .then(r => r.json())
+        .then(data => {
+            if(data.status == "OK") {
+                document.getElementById('verify-info').innerText = "Код отправлен на " + cleanPhone;
                 openPage('code-screen');
-            })
-            .catch(e => alert(e.message));
-    };
-
-    // 3. Реальное SMS
-    window.sendAuthSMS = () => {
-        const phone = document.getElementById('auth-phone').value;
-        if(!phone) return alert("Введите номер!");
-
-        signInWithPhoneNumber(auth, phone, window.recaptchaVerifier).then(res => {
-            window.confirmationResult = res;
-            document.getElementById('code-title').innerText = "ПРОВЕРКА SMS";
-            document.getElementById('code-info').innerText = "Код отправлен на " + phone;
-            openPage('code-screen');
-        }).catch(e => alert(e.message));
-    };
-
-    // ФИНАЛЬНАЯ ПРОВЕРКА (И SMS И ПОЧТА)
-    window.verifyFinalCode = () => {
-        const inputs = Array.from(document.querySelectorAll('.code-input'));
-        const code = inputs.map(i => i.value).join('');
-        if(code.length < 6) return;
-
-        // Если это SMS
-        if(window.confirmationResult) {
-            window.confirmationResult.confirm(code).then(res => {
-                successAuth(res.user.phoneNumber);
-            }).catch(() => errorAuth(inputs));
-        } 
-        // Если это Почта (для теста сделал 111111, так как почта обычно требует клика по ссылке)
-        else {
-            if(code === "111111") {
-                successAuth(window.localStorage.getItem('emailForSignIn'));
             } else {
-                errorAuth(inputs);
+                alert("Ошибка SMS.RU: " + data.status_text);
             }
+        }).catch(e => alert("Ошибка сети: " + e.message));
+    };
+
+    // 2. ВЕРСИЯ ДЛЯ ПОЧТЫ (РЕАЛЬНАЯ ПРОВЕРКА ЦВЕТОМ)
+    window.sendEmailReal = () => {
+        const email = document.getElementById('user-email').value;
+        if(!email) return alert("Введите почту!");
+        
+        targetCode = "123321"; // Тестовый код для твоей почты
+        document.getElementById('verify-info').innerText = "Код отправлен на " + email + " (Тест: 123321)";
+        openPage('code-screen');
+    };
+
+    // 3. ПРОВЕРКА КОДА (КРАСНЫЙ / ЗЕЛЕНЫЙ)
+    window.checkFinal = () => {
+        const inputs = Array.from(document.querySelectorAll('.code-input'));
+        const enteredCode = inputs.map(i => i.value).join('');
+        
+        if(enteredCode.length < 6) return;
+
+        if(enteredCode === targetCode) {
+            // УСПЕХ: Все поля становятся зелеными
+            inputs.forEach(i => {
+                i.style.borderColor = "var(--green)";
+                i.style.color = "var(--green)";
+                i.style.background = "#e8f5e9";
+            });
+            setTimeout(() => {
+                document.getElementById('display-name').innerText = "Пользователь RX";
+                openPage('main-hub');
+            }, 800);
+        } else {
+            // ОШИБКА: Поля краснеют и очищаются
+            inputs.forEach(i => {
+                i.style.borderColor = "var(--red)";
+                i.style.color = "var(--red)";
+                i.classList.add('error'); // Тряска из CSS
+                
+                setTimeout(() => {
+                    i.classList.remove('error');
+                    i.style.borderColor = "#ddd";
+                    i.style.color = "#000";
+                    i.style.background = "#fff";
+                    i.value = '';
+                }, 1000);
+            });
+            document.getElementById('c1').focus();
         }
     };
 
-    function successAuth(login) {
-        document.querySelectorAll('.code-input').forEach(i => i.classList.add('success'));
-        document.getElementById('u-login').innerText = login;
-        setTimeout(() => openPage('main-hub'), 600);
-    }
-
-    function errorAuth(inputs) {
-        document.getElementById('error-text').style.display = 'block';
-        inputs.forEach(i => {
-            i.classList.add('error');
-            setTimeout(() => i.classList.remove('error'), 500);
-            i.value = '';
+    window.loginGoogle = () => {
+        signInWithPopup(auth, provider).then(res => {
+            document.getElementById('display-name').innerText = res.user.displayName;
+            openPage('main-hub');
         });
-        document.getElementById('v1').focus();
-    }
+    };
 </script>
-</body>
-</html>
