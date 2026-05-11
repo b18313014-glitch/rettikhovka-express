@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - Обучение</title>
+    <title>RX HUB - PRO EDITION</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main: #ffcc00; --gray: #f5f5f5; --dark: #111; --blue: #005bff; --red: #ff3b30; --green: #34c759; }
@@ -11,27 +11,30 @@
         body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; }
 
-        /* СТРАНИЦЫ */
+        /* НАВИГАЦИЯ И СТРАНИЦЫ */
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
-        .page.active { display: flex; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .page.active { display: flex; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* СТИЛЬ ОБУЧЕНИЯ (ONBOARDING) */
-        .onboard-content { padding: 40px; text-align: center; display: flex; flex-direction: column; height: 100%; justify-content: center; align-items: center; }
-        .onboard-icon { font-size: 80px; color: var(--main); margin-bottom: 30px; text-shadow: 2px 2px 0px #000; }
-        .onboard-step { font-size: 14px; font-weight: bold; color: #bbb; margin-bottom: 10px; text-transform: uppercase; }
-        .onboard-title { font-size: 28px; font-weight: 900; line-height: 1.2; margin-bottom: 15px; }
-        .onboard-text { color: #666; line-height: 1.6; font-size: 16px; }
+        /* ШАПКА */
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
         
-        /* ИНДИКАТОР ТОЧЕК */
-        .dots { display: flex; gap: 8px; margin-top: 30px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; }
-        .dot.active { background: var(--main); width: 20px; border-radius: 10px; }
+        /* ВИДЖЕТ ЗАКАЗОВ (НОВОЕ) */
+        .orders-tracker { background: #fff; border-radius: 25px; padding: 20px; margin: 15px; border: 2px solid #eee; }
+        .order-item { display: flex; align-items: center; gap: 15px; margin-top: 10px; padding: 10px; background: #fafafa; border-radius: 15px; }
+        .status-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-        /* КНОПКИ */
-        .btn-ui { width: 100%; padding: 18px; border-radius: 20px; border: none; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 40px; }
+        /* КАТЕГОРИИ (НОВОЕ) */
+        .category-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px; background: #fff; border-bottom: 1px solid #eee; scrollbar-width: none; }
+        .cat-btn { padding: 10px 20px; background: #eee; border-radius: 15px; border: none; white-space: nowrap; font-weight: bold; font-size: 13px; }
+        .cat-btn.active { background: var(--main); color: #000; }
+
+        /* КНОПКИ И ГРИДЫ */
+        .btn-ui { width: 100%; padding: 18px; border-radius: 20px; border: none; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-black { background: var(--dark); color: #fff; }
-        .rx-input { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #ddd; margin-bottom: 12px; font-size: 16px; outline: none; background: #fff; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .item-box { background: #fff; border-radius: 22px; padding: 12px; text-align: center; }
 
         /* МОДАЛКИ */
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 25px; }
@@ -42,173 +45,135 @@
 <body>
 
 <div id="app">
-    <div id="page-welcome" class="page active" style="background: var(--main); justify-content: center; align-items: center;">
+    <div id="step-1" class="page active" style="background: var(--main); justify-content: center; align-items: center; text-align: center; padding: 20px;">
         <h1 style="font-size: 50px; font-weight: 900;">RX HUB</h1>
-        <p style="font-weight: bold; letter-spacing: 2px;">DELIVERY SYSTEM</p>
+        <p style="margin-top: 10px; font-weight: bold;">ОТКРЫВАЕМ ПРИЛОЖЕНИЕ...</p>
+        <button class="btn-ui btn-black" style="margin-top: 30px; width: 200px;" onclick="openPage('page-main')">СТАРТ</button>
     </div>
 
-    <div id="step-1" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 1 из 6</div>
-            <i class="fa-solid fa-store onboard-icon"></i>
-            <h2 class="onboard-title">ВЫБИРАЙТЕ МАГАЗИН</h2>
-            <p class="onboard-text">На главном экране нажмите на «МАГАЗИНЫ», чтобы увидеть список доступных точек: Дежурный, Алина или Берёзка.</p>
-            <div class="dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="btn-ui btn-black" onclick="openPage('step-2')">ДАЛЕЕ</button>
+    <div id="page-main" class="page">
+        <header>
+            <b style="font-size: 24px; font-weight: 900;">RX HUB</b>
+            <i class="fa-solid fa-user-circle" style="font-size: 24px;" onclick="openPage('page-profile')"></i>
+        </header>
+
+        <div style="padding-bottom: 20px;">
+            <div class="orders-tracker">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <b style="font-size: 18px;">Ваши заказы</b>
+                    <span style="font-size: 12px; color: #888;">Активно: <span id="order-count">1</span></span>
+                </div>
+                <div id="active-orders-list">
+                    <div class="order-item">
+                        <div class="status-dot"></div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: bold;">Посылка OZON</div>
+                            <div style="font-size: 12px; color: #666;">Статус: Курьер в пути</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 0 20px;">
+                <div style="background: var(--main); height: 140px; border-radius: 30px; margin-bottom: 15px; padding: 25px; display: flex; align-items: flex-end;" onclick="openPage('page-shops')">
+                    <h2 style="font-size: 28px; font-weight: 900;">МАГАЗИНЫ</h2>
+                </div>
+                <div style="background: var(--blue); height: 140px; border-radius: 30px; padding: 25px; color: #fff; display: flex; align-items: flex-end;" onclick="openPage('page-ozon')">
+                    <h2 style="font-size: 28px; font-weight: 900;">ЗАКАЗАТЬ OZON</h2>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="step-2" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 2 из 6</div>
-            <i class="fa-solid fa-cart-plus onboard-icon"></i>
-            <h2 class="onboard-title">ДОБАВЛЯЙТЕ В КОРЗИНУ</h2>
-            <p class="onboard-text">Внутри магазина просто нажимайте на кнопку «КУПИТЬ» под нужным товаром. Он мгновенно попадет в вашу корзину.</p>
-            <div class="dots"><div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="btn-ui btn-black" onclick="openPage('step-3')">ДАЛЕЕ</button>
+    <div id="page-items" class="page">
+        <header>
+            <i class="fa-solid fa-arrow-left" onclick="openPage('page-shops')"></i>
+            <b id="active-shop-name">МАГАЗИН</b>
+            <i class="fa-solid fa-basket-shopping" onclick="alert('Переход в корзину')"></i>
+        </header>
+        
+        <div class="category-bar" id="cat-bar">
+            <button class="cat-btn active" onclick="filterItems('Все')">Все</button>
+            <button class="cat-btn" onclick="filterItems('Напитки')">Напитки</button>
+            <button class="cat-btn" onclick="filterItems('Снеки')">Снеки</button>
+            <button class="cat-btn" onclick="filterItems('Хлеб')">Хлеб</button>
         </div>
+
+        <div class="product-grid" id="items-grid">
+            </div>
     </div>
 
-    <div id="step-3" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 3 из 6</div>
-            <i class="fa-solid fa-wallet onboard-icon" style="color: var(--green);"></i>
-            <h2 class="onboard-title">УПРАВЛЯЙТЕ ЗАКАЗОМ</h2>
-            <p class="onboard-text">В корзине можно выбрать способ оплаты: наличными или перевод СБП. Если выберете «Оставить у двери», оплата только СБП.</p>
-            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="btn-ui btn-black" onclick="openPage('step-4')">ДАЛЕЕ</button>
-        </div>
-    </div>
-
-    <div id="step-4" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 4 из 6</div>
-            <i class="fa-solid fa-qrcode onboard-icon" style="color: var(--blue);"></i>
-            <h2 class="onboard-title">ДОСТАВКА OZON</h2>
-            <p class="onboard-text">Нужна посылка? Нажмите на кнопку OZON, загрузите скриншот штрих-кода, и курьер заберет её за вас.</p>
-            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="btn-ui btn-black" onclick="openPage('step-5')">ДАЛЕЕ</button>
-        </div>
-    </div>
-
-    <div id="step-5" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 5 из 6</div>
-            <i class="fa-solid fa-user-gear onboard-icon" style="color: #444;"></i>
-            <h2 class="onboard-title">ВАШ ПРОФИЛЬ</h2>
-            <p class="onboard-text">В профиле (иконка человечка) можно выйти из аккаунта или проверить, привязан ли ваш номер телефона.</p>
-            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div></div>
-            <button class="btn-ui btn-black" onclick="openPage('step-6')">ДАЛЕЕ</button>
-        </div>
-    </div>
-
-    <div id="step-6" class="page">
-        <div class="onboard-content">
-            <div class="onboard-step">Шаг 6 из 6</div>
-            <i class="fa-solid fa-shield-halved onboard-icon" style="color: var(--red);"></i>
-            <h2 class="onboard-title">ВАШИ ДАННЫЕ</h2>
-            <p class="onboard-text">Мы храним только вашу почту и номер для связи. Данные зашифрованы и нужны только для работы курьера и возврата средств.</p>
-            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div></div>
-            <button class="btn-ui btn-black" style="background: var(--green);" onclick="openPage('page-auth')">К РЕГИСТРАЦИИ</button>
-        </div>
-    </div>
-
-    <div id="page-auth" class="page" style="padding: 30px; justify-content: center;">
-        <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 30px;">Вход</h1>
-        <input type="email" id="email-field" class="rx-input" placeholder="Email">
-        <input type="password" id="pass-field" class="rx-input" placeholder="Пароль">
-        <button class="btn-ui btn-black" onclick="handleLogin()">ВОЙТИ / СОЗДАТЬ</button>
-        <div style="text-align: center; margin: 25px 0; color: #bbb;">ИЛИ</div>
-        <button class="btn-ui" style="background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="handleGoogle()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Через Google
-        </button>
-    </div>
-
-    <div id="modal-phone" class="modal">
-        <div class="modal-box">
-            <i class="fa-solid fa-triangle-exclamation fa-4x" style="color: var(--main); margin-bottom: 20px;"></i>
-            <h3>Внимание!</h3>
-            <p style="margin: 15px 0; color: #555; font-size: 14px;">Мы не нашли в вашем аккаунте номер телефона. Без него мы не сможем вернуть вам деньги при проблемах с оплатой.</p>
-            <button class="btn-ui btn-black" onclick="closeModal('modal-phone'); showModal('modal-input');">ВВЕСТИ СЕЙЧАС</button>
-            <button class="btn-ui" style="background: none; color: #888;" onclick="closeModal('modal-phone'); alert('ОК, работаем без номера');">ПОЗЖЕ</button>
-        </div>
-    </div>
-
-    <div id="modal-input" class="modal">
-        <div class="modal-box">
-            <h3>Ваш номер</h3>
-            <input type="tel" id="user-phone-input" class="rx-input" placeholder="8 9XX XXX XX XX" style="margin-top:20px; text-align:center;">
-            <button class="btn-ui btn-black" onclick="savePhone()">СОХРАНИТЬ</button>
+    <div id="page-shops" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="openPage('page-main')"></i><b>ВЫБОР МАГАЗИНА</b><div></div></header>
+        <div style="padding: 20px;">
+            <div style="background:#fff; padding:25px; border-radius:20px; margin-bottom:12px;" onclick="openShop('Дежурный')"><b>ДЕЖУРНЫЙ</b></div>
+            <div style="background:#fff; padding:25px; border-radius:20px; margin-bottom:12px;" onclick="openShop('Алина')"><b>АЛИНА</b></div>
+            <div style="background:#fff; padding:25px; border-radius:20px; margin-bottom:12px;" onclick="openShop('Берёзка')"><b>БЕРЁЗКА</b></div>
         </div>
     </div>
 
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-        authDomain: "deliverygov11.firebaseapp.com",
-        projectId: "deliverygov11",
-        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
+<script>
+    // БАЗА ДАННЫХ С КАТЕГОРИЯМИ
+    const productsDB = {
+        "Дежурный": [
+            {n: "Кола 0.5", p: 90, c: "Напитки"},
+            {n: "Сухарики", p: 45, c: "Снеки"},
+            {n: "Батон", p: 55, c: "Хлеб"}
+        ],
+        "Алина": [
+            {n: "Энергетик", p: 120, c: "Напитки"},
+            {n: "Чипсы Lays", p: 160, c: "Снеки"},
+            {n: "Пирожок", p: 40, c: "Хлеб"}
+        ]
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const gProv = new GoogleAuthProvider();
+    let currentShop = "";
 
     window.openPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    window.showModal = (id) => document.getElementById(id).classList.add('active');
-    window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    window.openShop = (name) => {
+        currentShop = name;
+        document.getElementById('active-shop-name').innerText = name;
+        renderItems("Все");
+        openPage('page-items');
+    };
 
-    // СТАРТ
-    setTimeout(() => {
-        if(localStorage.getItem('rx_user')) {
-            alert("С возвращением!"); // Тут можно сразу в Main отправлять
-        } else {
-            openPage('step-1'); // Запускаем обучение
-        }
-    }, 2500);
-
-    window.handleLogin = () => {
-        const e = document.getElementById('email-field').value;
-        const p = document.getElementById('pass-field').value;
-        if(!e || !p) return;
+    function renderItems(category) {
+        const grid = document.getElementById('items-grid');
+        grid.innerHTML = "";
         
-        signInWithEmailAndPassword(auth, e, p)
-        .then(() => finishAuth(e))
-        .catch(() => {
-            createUserWithEmailAndPassword(auth, e, p).then(() => finishAuth(e));
+        const items = productsDB[currentShop] || [];
+        
+        items.forEach(item => {
+            if(category === "Все" || item.c === category) {
+                grid.innerHTML += `
+                    <div class="item-box">
+                        <div style="height:80px; background:#f9f9f9; border-radius:15px; margin-bottom:10px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-box" style="color:#ddd;"></i>
+                        </div>
+                        <b style="font-size:14px;">${item.n}</b><br>
+                        <span style="color:var(--green); font-weight:900;">${item.p}₽</span><br>
+                        <button class="btn-ui btn-black" style="padding:10px; margin-top:10px; font-size:12px;" onclick="alert('Добавлено!')">В КОРЗИНУ</button>
+                    </div>
+                `;
+            }
         });
-    };
-
-    window.handleGoogle = () => {
-        signInWithPopup(auth, gProv).then(r => finishAuth(r.user.email, r.user.phoneNumber));
-    };
-
-    function finishAuth(email, phone) {
-        localStorage.setItem('rx_user', email);
-        if(phone) {
-            localStorage.setItem('rx_phone', phone);
-            alert("Вход выполнен!");
-        } else {
-            showModal('modal-phone');
-        }
     }
 
-    window.savePhone = () => {
-        const p = document.getElementById('user-phone-input').value;
-        if(p.length < 10) return;
-        localStorage.setItem('rx_phone', p);
-        closeModal('modal-input');
-        alert("Номер сохранен. Добро пожаловать!");
+    window.filterItems = (cat) => {
+        // Меняем активную кнопку
+        document.querySelectorAll('.cat-btn').forEach(b => {
+            b.classList.remove('active');
+            if(b.innerText === cat) b.classList.add('active');
+        });
+        renderItems(cat);
     };
 </script>
+
 </body>
 </html>
