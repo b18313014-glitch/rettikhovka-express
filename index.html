@@ -3,154 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Delivery - Официальное приложение</title>
+    <title>RX HUB - Delivery & Ozon</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --white: #ffffff; }
+        :root { --main: #ffcc00; --dark: #1a1a1a; --gray: #f4f4f4; --ozon: #005bff; --white: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Ubuntu', sans-serif; }
+        /* Адаптация: на телефоне во весь экран, на ПК - по центру */
+        body { margin: 0; background: #000; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        #app { width: 100%; max-width: 100%; background: var(--gray); position: relative; display: flex; flex-direction: column; }
+        @media (min-width: 768px) { #app { max-width: 900px; margin: 10px; border-radius: 20px; height: 97vh; } }
 
-        /* Оболочка приложения (вид смартфона) */
-        #app-wrapper {
-            width: 100%; max-width: 500px; height: 100%; background: var(--gray);
-            margin: 0 auto; position: relative; overflow: hidden;
-            display: flex; flex-direction: column;
-            border-left: 1px solid #333; border-right: 1px solid #333;
-        }
-
-        /* ЭКРАНЫ ОБУЧЕНИЯ */
-        #onboarding {
-            position: absolute; top: 0; left: 0; width: 500%; height: 100%;
-            background: var(--main); z-index: 10000; display: flex;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        /* Обучение */
+        #onboarding { position: absolute; top: 0; left: 0; width: 500%; height: 100%; background: var(--main); z-index: 10000; display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .slide { width: 20%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
-        .slide i { font-size: 80px; margin-bottom: 20px; color: var(--dark); }
-        .slide h2 { font-size: 28px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
+        .onb-nav { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; z-index: 10001; }
+        .btn-arrow { width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--dark); color: #fff; font-size: 20px; cursor: pointer; }
+
+        /* Экраны и модалки */
+        .page { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: var(--gray); transition: 0.4s; z-index: 50; display: flex; flex-direction: column; }
+        .page.active { left: 0; }
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+        /* Виджет и Кнопки Хаба */
+        .widget { width: 92%; background: #fff; border-radius: 20px; padding: 15px; margin: 15px auto; display: flex; align-items: center; gap: 15px; border-left: 5px solid var(--main); }
+        .hub-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 0 15px; }
+        @media (min-width: 600px) { .hub-grid { grid-template-columns: 1fr 1fr; } }
+        .big-btn { height: 140px; border-radius: 25px; border: none; font-weight: 900; font-size: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .big-btn:active { transform: scale(0.95); }
+
+        /* Корзина (Чек) */
+        .check-line { display: flex; justify-content: space-between; font-family: monospace; padding: 5px 0; border-bottom: 1px dashed #ddd; }
+        .input-box { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; }
         
-        /* КНОПКИ ОБУЧЕНИЯ */
-        .onb-footer { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; z-index: 10001; }
-        .btn-arrow { width: 65px; height: 65px; border-radius: 50%; border: none; background: var(--dark); color: #fff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-
-        /* ЭКРАН РЕГИСТРАЦИИ */
-        #auth-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--white); z-index: 9000; display: none; flex-direction: column;
-            padding: 40px 30px; justify-content: center;
-        }
-
-        /* ПОДДЕРЖКА ВНИЗУ */
-        .support-btn {
-            position: absolute; bottom: 20px; left: 20px; right: 20px;
-            background: var(--dark); color: #fff; padding: 20px; border-radius: 20px;
-            text-align: center; font-weight: 900; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        /* ВВОД ДАННЫХ */
-        .input-box { width: 100%; padding: 18px; margin: 10px 0; border: 2px solid #eee; border-radius: 15px; font-size: 16px; outline: none; transition: 0.3s; }
-        .input-box:focus { border-color: var(--main); }
-        
-        .btn-action { width: 100%; padding: 18px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .btn-action:active { transform: scale(0.97); }
-
-        header { background: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* Защита */
+        .no-screenshot { position: relative; user-select: none; pointer-events: none; }
+        #safety-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px; color:#fff; text-align:center; }
     </style>
 </head>
 <body>
 
-<div id="app-wrapper">
+<div id="app">
     <div id="onboarding">
-        <div class="slide"><i class="fa-solid fa-truck-fast"></i><h2>Доставка</h2><p>Быстрая доставка еды в Реттиховке и окрестностях.</p></div>
-        <div class="slide"><i class="fa-solid fa-qrcode"></i><h2>Оплата СБП</h2><p>Плати в один клик через QR-код. Безопасно и удобно.</p></div>
-        <div class="slide"><i class="fa-solid fa-headset"></i><h2>Поддержка</h2><p>Мы на связи 24/7. Кнопка помощи всегда под рукой.</p></div>
-        <div class="slide"><i class="fa-solid fa-users"></i><h2>Бонусы</h2><p>Приглашай друзей и получай кэшбэк на заказы!</p></div>
+        <div class="slide"><i class="fa-solid fa-rocket fa-4x"></i><h2>RX DELIVERY</h2><p>Быстрая доставка в Реттиховке</p></div>
+        <div class="slide"><i class="fa-solid fa-qrcode fa-4x"></i><h2>СБП ОПЛАТА</h2><p>Всегда пишите номер заказа в банке!</p></div>
+        <div class="slide"><i class="fa-solid fa-shield-halved fa-4x"></i><h2>БЕЗОПАСНОСТЬ</h2><p>Гео-замок и защита штрих-кодов</p></div>
+        <div class="slide"><i class="fa-solid fa-users fa-4x"></i><h2>ДРУЗЬЯ</h2><p>Заказывайте вместе — это выгодно!</p></div>
         <div class="slide">
-            <i class="fa-solid fa-rocket"></i><h2>Поехали?</h2>
-            <button class="btn-action" style="background:var(--dark); color:#fff; margin-top: 20px;" onclick="toAuth()">НАЧАТЬ РЕГИСТРАЦИЮ</button>
+            <i class="fa-solid fa-check-double fa-4x"></i><h2>ГОТОВО</h2>
+            <button class="big-btn" style="background:var(--dark); color:#fff; height:60px; width:200px;" onclick="finishOnboarding()">ПОГНАЛИ</button>
         </div>
     </div>
-
-    <div class="onb-footer" id="onbNav">
-        <button class="btn-arrow" onclick="moveSlide(-1)"><i class="fa-solid fa-arrow-left"></i></button>
-        <button class="btn-arrow" onclick="moveSlide(1)"><i class="fa-solid fa-arrow-right"></i></button>
-    </div>
-
-    <div id="auth-screen">
-        <h2 style="margin-bottom: 30px; text-align: center;">Вход в систему</h2>
-        
-        <input type="text" id="u-name" class="input-box" placeholder="Ваше имя">
-        
-        <input type="text" id="u-login" class="input-box" placeholder="Номер телефона или почта">
-        
-        <button class="btn-action" style="background:var(--main); margin-top: 10px;" onclick="doRegister()">ВОЙТИ В КОРПОРАЦИЮ</button>
-        
-        <div style="text-align: center; margin: 20px 0; color: #aaa;">или</div>
-        
-        <button class="btn-action" style="background:#fff; border: 2px solid #eee; color: #555;">
-            <i class="fa-solid fa-share-nodes" style="margin-right: 10px;"></i> ПРОДОЛЖИТЬ С ДРУЗЬЯМИ
-        </button>
+    <div class="onb-nav" id="onbNav">
+        <button class="btn-arrow" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="btn-arrow" onclick="moveSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
 
     <header>
-        <div style="font-weight: 900; font-size: 20px;">RX DELIVERY</div>
-        <div style="display:flex; gap: 15px;">
-            <i class="fa-solid fa-basket-shopping" style="font-size: 20px;"></i>
-            <i class="fa-solid fa-circle-user" style="font-size: 20px;"></i>
+        <b style="font-size: 20px;">RX HUB</b>
+        <div style="display:flex; gap:15px;">
+            <i class="fa-solid fa-cart-shopping" onclick="openPage('cart-page')"></i>
+            <i class="fa-solid fa-user" onclick="openPage('profile-page')"></i>
         </div>
     </header>
 
-    <div style="padding: 20px; flex: 1; overflow-y: auto;">
-        <div style="background:#fff; padding: 20px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <b style="font-size: 18px;">Картошка по-деревенски</b><br>
-                <span style="color: #888;">Специи, чеснок • 200г</span><br>
-                <b style="color: var(--dark);">130 ₽</b>
+    <div class="widget">
+        <i class="fa-solid fa-truck-ramp-box fa-2x" style="color:var(--main)"></i>
+        <div><small style="color:#888">Статус заказа:</small><div id="widget-status">Нет активных заказов</div></div>
+    </div>
+
+    <div class="hub-grid">
+        <button class="big-btn" style="background:var(--main)" onclick="openPage('shop-page')">
+            <i class="fa-solid fa-utensils fa-2x"></i>ДОСТАВКА ЕДЫ
+        </button>
+        <button class="big-btn" style="background:var(--ozon); color:#fff" onclick="openPage('ozon-page')">
+            <i class="fa-solid fa-barcode fa-2x"></i>ЗАБРАТЬ OZON
+        </button>
+    </div>
+
+    <div id="shop-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="closePage('shop-page')"></i><b>МЕНЮ</b><div></div></header>
+        <div style="padding:15px; overflow-y:auto;">
+            <div style="background:#fff; border-radius:20px; overflow:hidden; margin-bottom:15px; border:1px solid #eee;">
+                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" style="width:100%; height:150px; object-fit:cover;">
+                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>Биг Реттиховка</b><br><small>320 ₽</small></div>
+                    <button class="btn-arrow" style="width:40px; height:40px; background:var(--main); color:#000" onclick="addToCart('Биг Реттиховка', 320)">+</button>
+                </div>
             </div>
-            <button style="background: var(--main); border:none; width: 45px; height: 45px; border-radius: 12px; font-size: 20px; font-weight: 900;">+</button>
         </div>
     </div>
 
-    <div class="support-btn" onclick="alert('Чат с поддержкой RX...')">
-        СЛУЖБА ПОДДЕРЖКИ
+    <div id="cart-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="closePage('cart-page')"></i><b>ВАШ ЧЕК</b><div></div></header>
+        <div style="padding:20px; flex:1; overflow-y:auto;" id="cart-content">
+            <p style="text-align:center; color:#888; margin-top:50px;">Тут нечего оплачивать!</p>
+        </div>
+        <div id="cart-controls" style="padding:20px; background:#fff; display:none;">
+            <select id="addr-street" class="input-box">
+                <option>Центральная</option><option>Октябрьская</option><option>Нагорная</option>
+                <option>Пушкинская</option><option>Лесная</option><option>Шахтерская</option>
+            </select>
+            <input type="text" id="addr-house" class="input-box" placeholder="Дом / Квартира">
+            <label style="display:flex; align-items:center; gap:10px; margin:10px 0;">
+                <input type="checkbox" id="leave-door" onchange="toggleCash()"> <b>Оставить у двери</b>
+            </label>
+            <button id="pay-cash" class="big-btn" style="height:50px; width:100%; background:#eee; font-size:14px; margin-bottom:10px;" onclick="finishOrder('cash')">НАЛИЧНЫЕ</button>
+            <button class="big-btn" style="height:50px; width:100%; background:var(--main); font-size:14px;" onclick="finishOrder('sbp')">ОПЛАТИТЬ СБП</button>
+        </div>
+    </div>
+
+    <div id="ozon-page" class="page">
+        <header><i class="fa-solid fa-arrow-left" onclick="closePage('ozon-page')"></i><b>OZON ЗАКАЗ</b><div></div></header>
+        <div style="padding:20px; text-align:center;">
+            <div id="geo-lock" style="background:#fff; padding:30px; border-radius:20px;">
+                <i class="fa-solid fa-location-crosshairs fa-3x" style="color:var(--ozon)"></i>
+                <p>Штрих-код откроется автоматически в 50м от пункта выдачи.</p>
+                <small id="dist-val">Определяем место...</small>
+            </div>
+            <div id="barcode-area" style="display:none;" class="no-screenshot">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=RX-OZON-PROTECTED" style="width:200px;">
+                <p style="color:red; font-size:12px;">ЗАЩИТА ОТ СКРИНШОТОВ ВКЛЮЧЕНА</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="safety-overlay">
+        <i class="fa-solid fa-triangle-exclamation fa-4x" style="color:var(--main)"></i>
+        <h2>ЮРИСДИКЦИЯ RX</h2>
+        <p>Если заказ украдут после доставки "до двери" — мы не несем ответственности.</p>
+        <label><input type="checkbox" id="safety-check"> Я принимаю риск</label>
+        <button class="big-btn" style="background:var(--main); width:100%; margin-top:20px;" onclick="confirmSafety()">Я СОГЛАСЕН</button>
     </div>
 </div>
 
 <script>
-    // Конфиг Firebase (добавишь свои данные сюда)
-    const firebaseConfig = {
-      apiKey: "AIza...",
-      projectId: "rx-delivery-...",
-      appId: "1:..."
-    };
-
     let currentSlide = 0;
-    function moveSlide(dir) {
-        currentSlide += dir;
-        if(currentSlide < 0) currentSlide = 0;
-        if(currentSlide > 4) currentSlide = 4;
+    let cart = [];
+    const OZON_COORD = {lat: 44.288, lon: 132.555}; // Настрой под свой Озон
+
+    // Навигация
+    function moveSlide(d) {
+        currentSlide = Math.min(Math.max(currentSlide + d, 0), 4);
         document.getElementById('onboarding').style.transform = `translateX(-${currentSlide * 20}%)`;
     }
-
-    function toAuth() {
+    function finishOnboarding() {
         document.getElementById('onboarding').style.display = 'none';
         document.getElementById('onbNav').style.display = 'none';
-        document.getElementById('auth-screen').style.display = 'flex';
+    }
+    function openPage(id) { document.getElementById(id).classList.add('active'); if(id==='ozon-page') startGeo(); }
+    function closePage(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Магазин и Корзина
+    function addToCart(n, p) {
+        cart.push({n, p});
+        renderCart();
+        alert("Добавлено в чек!");
+    }
+    function renderCart() {
+        const cont = document.getElementById('cart-content');
+        if(cart.length === 0) return;
+        let total = 0;
+        cont.innerHTML = cart.map(i => { total += i.p; return `<div class="check-line"><span>${i.n}</span><b>${i.p} ₽</b></div>`}).join('');
+        cont.innerHTML += `<div style="display:flex; justify-content:space-between; font-weight:900; font-size:20px; margin-top:20px;"><span>ИТОГО:</span><span>${total} ₽</span></div>`;
+        document.getElementById('cart-controls').style.display = 'block';
+    }
+    function toggleCash() {
+        document.getElementById('pay-cash').style.display = document.getElementById('leave-door').checked ? 'none' : 'block';
     }
 
-    function doRegister() {
-        const name = document.getElementById('u-name').value;
-        const login = document.getElementById('u-login').value;
-        if(!name || !login) return alert("Заполни все поля!");
-        
-        document.getElementById('auth-screen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('auth-screen').style.display = 'none';
-            alert("Добро пожаловать в RX Delivery, " + name + "!");
-        }, 300);
+    // Безопасность
+    function finishOrder(method) {
+        if(!document.getElementById('addr-house').value) return alert("Введите дом!");
+        if(document.getElementById('leave-door').checked) {
+            document.getElementById('safety-overlay').style.display = 'flex';
+        } else {
+            alert("Заказ оформлен!");
+            if(method==='sbp') window.location.href = "https://c2c.cbrpay.ru/AS1I003EI3T7RIPG9018PF66SR2FTN0V";
+        }
     }
+    function confirmSafety() {
+        if(!document.getElementById('safety-check').checked) return alert("Поставьте галочку!");
+        document.getElementById('safety-overlay').style.display = 'none';
+        alert("Риск принят. Оформляем!");
+    }
+
+    // ГЕОЛОКАЦИЯ
+    function startGeo() {
+        navigator.geolocation.watchPosition(p => {
+            const d = calcDist(p.coords.latitude, p.coords.longitude, OZON_COORD.lat, OZON_COORD.lon);
+            document.getElementById('dist-val').innerText = `До Озона: ${Math.round(d)}м`;
+            if(d <= 50) { document.getElementById('geo-lock').style.display = 'none'; document.getElementById('barcode-area').style.display = 'block'; }
+        });
+    }
+    function calcDist(l1, o1, l2, o2) {
+        const R = 6371e3;
+        const dL = (l2-l1)*Math.PI/180; const dO = (o2-o1)*Math.PI/180;
+        const a = Math.sin(dL/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dO/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // ЗАЩИТА СКРИНШОТОВ
+    window.addEventListener('keyup', e => { if(e.key === 'PrintScreen') navigator.clipboard.writeText(''); });
 </script>
 
 </body>
-            </html>
+</html>
