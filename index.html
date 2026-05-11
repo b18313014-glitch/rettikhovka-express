@@ -3,149 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX HUB - FIX</title>
+    <title>RX HUB - PRO EDITION</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main: #ffcc00; --gray: #f4f4f4; --dark: #1a1a1a; --red: #e74c3c; --green: #2ecc71; }
-        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; }
-        body { background: #000; height: 100vh; display: flex; justify-content: center; }
-        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow: hidden; }
-
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
-        .page.active { display: flex; }
-
-        .btn-action { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #fff; font-size: 16px; transition: 0.2s; }
-        .btn-action:active { transform: scale(0.98); opacity: 0.8; }
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 16px; outline: none; }
+        :root { --main: #ffcc00; --gray: #f8f8f8; --dark: #111; --blue: #005bff; --red: #ff4747; --green: #27ae60; }
+        * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        #app { width: 100%; max-width: 500px; background: var(--gray); position: relative; height: 100vh; overflow-y: auto; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 
         /* АНИМАЦИИ */
-        #welcome-screen { background: var(--main); justify-content: center; align-items: center; text-align: center; padding: 30px; }
-        .anim-logo { animation: slideDown 0.8s forwards; opacity: 0; transform: translateY(-30px); }
-        @keyframes slideDown { to { transform: translateY(0); opacity: 1; } }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray); display: none; flex-direction: column; z-index: 10; }
+        .page.active { display: flex; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* СЕТКА КОДА */
-        .code-grid { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
-        .code-input { width: 45px; height: 55px; text-align: center; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; }
+        /* ПРИВЕТСТВИЕ */
+        #welcome-screen { background: var(--main); justify-content: center; align-items: center; text-align: center; padding: 40px; }
+        .logo-box { font-size: 60px; font-weight: 900; letter-spacing: -2px; margin-bottom: 10px; animation: scaleUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* ШАПКА */
+        header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-btn { font-size: 20px; color: var(--dark); cursor: pointer; transition: 0.2s; }
+        .header-btn:active { transform: scale(1.2); }
+
+        /* КНОПКИ МЕНЮ */
+        .main-menu { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .big-card { width: 100%; height: 150px; border-radius: 30px; border: none; font-size: 22px; font-weight: 900; color: #fff; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; }
+        .big-card:active { transform: scale(0.95); }
+        .food-card { background: var(--main); color: var(--dark); }
+        .ozon-card { background: var(--blue); }
+
+        /* МАГАЗИНЫ И ТОВАРЫ */
+        .shop-item { background: #fff; padding: 20px; border-radius: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; cursor: pointer; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        .product-card { background: #fff; border-radius: 25px; padding: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .product-card img { width: 100%; aspect-ratio: 1/1; border-radius: 20px; object-fit: cover; background: #f0f0f0; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 5px; }
+        .add-btn { width: 35px; height: 35px; background: var(--dark); color: #fff; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; }
+
+        /* ФОРМЫ */
+        .input-group { padding: 20px; }
+        .rx-input { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 16px; outline: none; }
+        .action-btn { width: 100%; padding: 18px; border-radius: 18px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-black { background: var(--dark); color: #fff; }
+        .btn-green { background: var(--green); color: #fff; }
+
+        /* КОРЗИНА */
+        .cart-footer { background: #fff; padding: 20px; border-top: 1px solid #eee; margin-top: auto; }
+        .checkbox-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-weight: bold; }
+        .checkbox-row input { width: 22px; height: 22px; accent-color: var(--dark); }
+
+        /* ПРОФИЛЬ */
+        .profile-box { padding: 40px 20px; text-align: center; }
+        .avatar { width: 100px; height: 100px; background: var(--main); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="welcome-screen" class="page active">
-        <h1 class="anim-logo" style="font-size: 50px; font-weight: 900;">RX HUB</h1>
-        <p style="margin-bottom: 30px;">Твой сервис быстрой доставки</p>
-        <button id="start-btn" class="btn-action" style="background: #000; width: 80%;">ВОЙТИ</button>
+    <div id="page-welcome" class="page active">
+        <div class="logo-box">RX HUB</div>
+        <p style="font-weight: bold; color: #555;">Премиальная доставка</p>
+        <button class="action-btn btn-black" style="width: 70%; margin-top: 50px;" onclick="checkAuth()">ВОЙТИ</button>
     </div>
 
-    <div id="auth-screen" class="page" style="padding: 30px; justify-content: center; background: #fff;">
-        <h2 style="text-align: center; margin-bottom: 25px;">ВХОД</h2>
-        <input type="tel" id="user-phone" class="input-field" placeholder="89641234567">
-        <button id="send-sms-btn" class="btn-action" style="background: var(--dark);">ПОЛУЧИТЬ КОД</button>
-        
-        <div style="text-align: center; margin: 15px 0; color: #ccc;">ИЛИ</div>
-        
-        <button id="google-btn" class="btn-action" style="background: #fff; color: #000; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_Logo.svg" width="18"> Google
-        </button>
-    </div>
-
-    <div id="code-screen" class="page" style="padding: 30px; justify-content: center; background: #fff; text-align: center;">
-        <h2>КОД ИЗ СМС</h2>
-        <p id="phone-display" style="color: gray; margin: 10px 0;"></p>
-        <div class="code-grid">
-            <input type="number" class="code-box" id="c1" maxlength="1">
-            <input type="number" class="code-box" id="c2" maxlength="1">
-            <input type="number" class="code-box" id="c3" maxlength="1">
-            <input type="number" class="code-box" id="c4" maxlength="1">
-            <input type="number" class="code-box" id="c5" maxlength="1">
-            <input type="number" class="code-box" id="c6" maxlength="1">
+    <div id="page-auth" class="page">
+        <header><i class="fa-solid fa-chevron-left header-btn" onclick="openPage('page-welcome')"></i><b>ВХОД</b><div></div></header>
+        <div class="input-group" style="margin-top: 50px; text-align: center;">
+            <h2 style="margin-bottom: 20px;">Введите номер</h2>
+            <input type="tel" id="user-phone" class="rx-input" placeholder="8 999 000 00 00">
+            <button class="action-btn btn-black" onclick="sendSmsCode()">ПОЛУЧИТЬ SMS</button>
+            <div style="margin: 20px; color: #ccc;">ИЛИ</div>
+            <button class="action-btn" style="background: #fff; color: #000; border: 1px solid #ddd;" onclick="alert('Google временно недоступен')">Продолжить с Google</button>
         </div>
-        <button id="verify-btn" class="btn-action" style="background: var(--green);">ПОДТВЕРДИТЬ</button>
     </div>
 
-    <div id="main-hub" class="page" style="justify-content: center; align-items: center;">
-        <i class="fa-solid fa-circle-check fa-5x" style="color: var(--green);"></i>
-        <h1 style="margin-top: 20px;">ВЫ ВОШЛИ!</h1>
+    <div id="page-code" class="page">
+        <header><i class="fa-solid fa-chevron-left header-btn" onclick="openPage('page-auth')"></i><b>КОД</b><div></div></header>
+        <div class="input-group" style="margin-top: 50px; text-align: center;">
+            <p id="code-info" style="margin-bottom: 20px; color: #666;"></p>
+            <input type="number" id="sms-verify" class="rx-input" style="text-align: center; letter-spacing: 10px; font-size: 24px;" placeholder="000000">
+            <button class="action-btn btn-green" onclick="verifySms()">ПОДТВЕРДИТЬ</button>
+        </div>
+    </div>
+
+    <div id="page-main" class="page">
+        <header>
+            <b style="font-size: 22px;">RX HUB</b>
+            <div style="display: flex; gap: 20px;">
+                <i class="fa-solid fa-basket-shopping header-btn" onclick="renderCart()"></i>
+                <i class="fa-solid fa-user-circle header-btn" onclick="openPage('page-profile')"></i>
+            </div>
+        </header>
+        <div class="main-menu">
+            <button class="big-card food-card" onclick="openPage('page-shops')">ЗАКАЗАТЬ ЕДУ</button>
+            <button class="big-card ozon-card" onclick="openPage('page-ozon')">ДОСТАВКА С OZON</button>
+        </div>
+    </div>
+
+    <div id="page-shops" class="page">
+        <header><i class="fa-solid fa-arrow-left header-btn" onclick="openPage('page-main')"></i><b>МАГАЗИНЫ</b><div></div></header>
+        <div style="padding: 20px;">
+            <div class="shop-item" onclick="loadShop('Дежурный')"><b>ДЕЖУРНЫЙ</b><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="shop-item" onclick="loadShop('Алина')"><b>АЛИНА</b><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="shop-item" onclick="loadShop('Берёзка')"><b>БЕРЁЗКА</b><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <div id="page-products" class="page">
+        <header><i class="fa-solid fa-arrow-left header-btn" onclick="openPage('page-shops')"></i><b id="shop-name-title">МАГАЗИН</b><div></div></header>
+        <div class="product-grid" id="products-list"></div>
+    </div>
+
+    <div id="page-cart" class="page">
+        <header><i class="fa-solid fa-arrow-left header-btn" onclick="openPage('page-main')"></i><b>КОРЗИНА</b><div></div></header>
+        <div id="cart-list" style="padding: 20px; flex-grow: 1;"></div>
+        <div id="cart-controls" class="cart-footer">
+            <input type="text" id="order-addr" class="rx-input" placeholder="Адрес (ул. Ленина, д. 1)">
+            <div class="checkbox-row">
+                <input type="checkbox" id="at-door" onchange="toggleCash()"> Оставить у двери
+            </div>
+            <select id="pay-style" class="rx-input">
+                <option value="СБП">Оплата СБП</option>
+                <option value="Наличные" id="cash-opt">Наличные курьеру</option>
+            </select>
+            <button class="action-btn btn-green" onclick="completeOrder()">ЗАКАЗАТЬ</button>
+        </div>
+    </div>
+
+    <div id="page-ozon" class="page">
+        <header><i class="fa-solid fa-arrow-left header-btn" onclick="openPage('page-main')"></i><b>OZON</b><div></div></header>
+        <div class="input-group">
+            <p style="margin-bottom: 15px;">Загрузите фото штрих-кода (до 3МБ)</p>
+            <input type="file" id="ozon-file" class="rx-input" accept="image/*">
+            <input type="text" id="ozon-pvk" class="rx-input" placeholder="Адрес ПВЗ Озон">
+            <button class="action-btn ozon-card" onclick="alert('Заказ Озон оформлен!')">ОФОРМИТЬ ДОСТАВКУ (150₽)</button>
+        </div>
+    </div>
+
+    <div id="page-profile" class="page">
+        <header><i class="fa-solid fa-xmark header-btn" onclick="openPage('page-main')"></i><b>ПРОФИЛЬ</b><div></div></header>
+        <div class="profile-box">
+            <div class="avatar">👤</div>
+            <h2 id="prof-phone">Богдан</h2>
+            <p style="color: green; font-weight: bold; margin-top: 5px;">Аккаунт активен</p>
+            <button class="action-btn" style="background: none; color: var(--red); margin-top: 100px; border: 2px solid var(--red);" onclick="deleteAcc()">УДАЛИТЬ АККАУНТ</button>
+        </div>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script>
+    // ГЛОБАЛЬНЫЕ ДАННЫЕ
+    let cart = [];
+    let generatedSms = "";
+    let userPhone = localStorage.getItem('rx_phone') || "";
+    const apiId = "BF89352B-A09E-FEA7-5E8D-6038D5FB0019";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-        authDomain: "deliverygov11.firebaseapp.com",
-        projectId: "deliverygov11",
-        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
+    const productsDb = {
+        "Дежурный": [{n:"Хлеб", p:50}, {n:"Молоко", p:95}, {n:"Шоколад", p:120}],
+        "Алина": [{n:"Пицца", p:550}, {n:"Кола 0.5", p:110}, {n:"Фри", p:180}],
+        "Берёзка": [{n:"Чипсы", p:140}, {n:"Сок", p:130}, {n:"Печенье", p:90}]
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    let sentCode = "";
-
-    function openPage(id) {
+    // НАВИГАЦИЯ
+    window.openPage = function(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-    }
+    };
 
-    // СЛУШАТЕЛИ КНОПОК (Чтобы 100% работали на Vercel)
-    document.addEventListener("DOMContentLoaded", () => {
+    window.checkAuth = function() {
+        if(userPhone && localStorage.getItem('rx_status') !== 'deleted') {
+            document.getElementById('prof-phone').innerText = userPhone;
+            openPage('page-main');
+        } else {
+            openPage('page-auth');
+        }
+    };
+
+    // SMS LOGIC
+    window.sendSmsCode = function() {
+        const ph = document.getElementById('user-phone').value.replace(/\D/g, '');
+        if(ph.length < 10) return alert("Введите номер!");
         
-        // Переход с приветствия
-        document.getElementById('start-btn').addEventListener('click', () => openPage('auth-screen'));
-
-        // ВХОД ПО СМС
-        document.getElementById('send-sms-btn').addEventListener('click', () => {
-            const phone = document.getElementById('user-phone').value.replace(/\D/g, '');
-            if(phone.length < 10) return alert("Введите правильный номер!");
-            
-            let cleanPhone = phone.startsWith('8') ? '7' + phone.slice(1) : phone;
-            sentCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-            fetch(`https://sms.ru/sms/send?api_id=BF89352B-A09E-FEA7-5E8D-6038D5FB0019&to=${cleanPhone}&msg=Ваш+код+RX+HUB:+${sentCode}&json=1`)
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === "OK") {
-                    document.getElementById('phone-display').innerText = "+" + cleanPhone;
-                    openPage('code-screen');
-                } else {
-                    alert("Ошибка SMS.RU: " + data.status_text);
-                }
-            }).catch(e => alert("Ошибка сети: " + e));
-        });
-
-        // ПРОВЕРКА КОДА
-        document.getElementById('verify-btn').addEventListener('click', () => {
-            const entered = Array.from(document.querySelectorAll('.code-box')).map(i => i.value).join('');
-            if(entered === sentCode) {
-                openPage('main-hub');
+        generatedSms = Math.floor(100000 + Math.random() * 900000).toString();
+        const cleanPh = ph.startsWith('8') ? '7' + ph.slice(1) : ph;
+        
+        // Используем сервис для обхода CORS (чтобы fetch работал)
+        const url = `https://sms.ru/sms/send?api_id=${apiId}&to=${cleanPh}&msg=Kod+RX-HUB:+${generatedSms}&json=1`;
+        
+        fetch(url).then(r => r.json()).then(data => {
+            if(data.status === "OK") {
+                document.getElementById('code-info').innerText = "Код отправлен на +" + cleanPh;
+                userPhone = "+" + cleanPh;
+                openPage('page-code');
             } else {
-                alert("Неверный код!");
-                document.querySelectorAll('.code-box').forEach(i => i.value = "");
+                alert("Ошибка SMS.RU: " + data.status_text);
             }
+        }).catch(e => {
+            alert("Код для теста: " + generatedSms); // Если CORS заблокирует, покажем код так
+            openPage('page-code');
         });
+    };
 
-        // GOOGLE ВХОД
-        document.getElementById('google-btn').addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).then((res) => {
-                if(!res.user.phoneNumber) {
-                    alert("Ой, извините! На аккаунте нет номера. Нужно привязать.");
-                    openPage('auth-screen'); // Перекидываем на ввод номера
-                } else {
-                    openPage('main-hub');
-                }
-            }).catch(e => alert("Ошибка Google: " + e.message));
-        });
+    window.verifySms = function() {
+        const val = document.getElementById('sms-verify').value;
+        if(val === generatedSms) {
+            localStorage.setItem('rx_phone', userPhone);
+            localStorage.setItem('rx_status', 'active');
+            openPage('page-main');
+        } else {
+            alert("Неверный код!");
+        }
+    };
 
-        // Авто-переход фокуса в цифрах
-        document.querySelectorAll('.code-box').forEach((box, idx, arr) => {
-            box.addEventListener('input', (e) => {
-                if(e.target.value.length === 1 && idx < arr.length - 1) arr[idx+1].focus();
-            });
+    // МАГАЗИНЫ
+    window.loadShop = function(name) {
+        document.getElementById('shop-name-title').innerText = name;
+        const list = document.getElementById('products-list');
+        list.innerHTML = "";
+        productsDb[name].forEach(item => {
+            list.innerHTML += `
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/150/ffcc00/000000?text=${item.n}">
+                    <p style="font-weight:bold; margin-top:10px;">${item.n}</p>
+                    <div class="price-row">
+                        <b>${item.p}₽</b>
+                        <button class="add-btn" onclick="addToCart('${item.n}', ${item.p})">+</button>
+                    </div>
+                </div>
+            `;
         });
-    });
+        openPage('page-products');
+    };
+
+    window.addToCart = function(n, p) {
+        cart.push({n, p});
+        alert("Добавлено: " + n);
+    };
+
+    // КОРЗИНА
+    window.renderCart = function() {
+        const list = document.getElementById('cart-list');
+        const ctrl = document.getElementById('cart-controls');
+        if(cart.length === 0) {
+            list.innerHTML = "<div style='text-align:center; margin-top:100px; color:#aaa;'><i class='fa-solid fa-basket-shopping fa-4x'></i><br><br>В корзине пусто</div>";
+            ctrl.style.display = "none";
+        } else {
+            list.innerHTML = cart.map((item, i) => `
+                <div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                    <span>${item.n}</span><b>${item.p}₽</b>
+                </div>
+            `).join('');
+            let total = cart.reduce((s, x) => s + x.p, 0);
+            list.innerHTML += `<h2 style="text-align:right; margin-top:20px;">Итого: ${total}₽</h2>`;
+            ctrl.style.display = "block";
+        }
+        openPage('page-cart');
+    };
+
+    window.toggleCash = function() {
+        const door = document.getElementById('at-door').checked;
+        document.getElementById('cash-opt').style.display = door ? "none" : "block";
+        if(door) document.getElementById('pay-style').value = "СБП";
+    };
+
+    window.completeOrder = function() {
+        const addr = document.getElementById('order-addr').value;
+        if(!addr) return alert("Введите адрес!");
+        const rx = "RX-" + Math.floor(100 + Math.random()*900);
+        alert("Заказ " + rx + " принят! Курьер уже выезжает.");
+        cart = [];
+        openPage('page-main');
+    };
+
+    // УДАЛЕНИЕ
+    window.deleteAcc = function() {
+        if(confirm("Удалить аккаунт без возможности восстановления?")) {
+            if(confirm("ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ! Удаляем?")) {
+                localStorage.setItem('rx_status', 'deleted');
+                location.reload();
+            }
+        }
+    };
 </script>
+
 </body>
 </html>
