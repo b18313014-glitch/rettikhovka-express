@@ -2,21 +2,46 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
   background: #f5f6fa;
-  padding: 20px;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
+/* Увеличили ширину и внутренние отступы для солидности */
 .onboarding-wrapper {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 24px;
-  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  padding: 32px;
+  border-radius: 24px;
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* Увеличили заголовки и текст */
+h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+h3 {
+  font-size: 22px;
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #5a6c7d;
+  margin-top: 15px;
 }
 
 .slide {
@@ -36,37 +61,141 @@ body {
 .onboarding-navigation {
   display: flex;
   justify-content: space-between;
-  margin-top: 24px;
+  margin-top: 32px;
 }
 
+/* Сделали кнопки крупнее */
 .nav-btn {
-  padding: 10px 20px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #3498db;
   color: white;
   cursor: pointer;
+  font-size: 16px;
   font-weight: bold;
+  transition: background 0.2s;
 }
 
-.status-bar-demo, .shop-list-demo, .cart-demo-box, .unitpay-badge {
+.nav-btn:active {
+  background: #2980b9;
+}
+
+.demo-btn-order {
+  width: 100%;
+  padding: 12px;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+/* Стили для списка магазинов с поддержкой картинок */
+.shop-list-demo {
+  margin: 15px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   background: #f8f9fa;
   padding: 12px;
-  border-radius: 8px;
-  margin: 15px 0;
-  border: 1px solid #eed;
+  border-radius: 14px;
+  border: 1px solid #eef2f5;
+  font-weight: bold;
+  font-size: 16px;
 }
 
+/* Крупные круглые аватарки магазинов */
+.shop-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ddd;
+}
+
+/* Карточка корзины с картинкой товара */
+.cart-demo-box {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 16px;
+  margin: 15px 0;
+  border: 1px solid #eef2f5;
+  position: relative;
+}
+
+.close-x {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  cursor: pointer;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.product-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.product-name {
+  font-weight: bold;
+  flex-grow: 1;
+  font-size: 16px;
+}
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter button {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.status-bar-demo, .unitpay-badge {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 15px 0;
+  border: 1px solid #eef2f5;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Окно регистрации */
 .modal-hidden {
   display: none;
 }
 
 .modal-content {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 460px;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
   animation: slideUp 0.4s ease;
   background-color: #2c3e50; 
   color: white;
@@ -84,29 +213,32 @@ body {
 }
 
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  opacity: 0.9;
 }
 
 .input-group input {
   width: 100%;
-  padding: 10px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 10px;
   border: 1px solid #ccc;
+  font-size: 16px;
 }
 
 .auth-btn-submit {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   color: white;
   font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
   margin-top: 15px;
   transition: background 0.2s ease;
@@ -118,21 +250,24 @@ body {
 
 .divider {
   text-align: center;
-  margin: 15px 0;
-  font-size: 14px;
+  margin: 20px 0;
+  font-size: 15px;
+  opacity: 0.7;
 }
 
 .yandex-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   background: #fff;
   color: #000;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
