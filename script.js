@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -79,6 +79,9 @@ btnYandexAuth.addEventListener('click', () => {
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    onboardingContainer.style.display = 'none';
+    registerModal.classList.add('modal-hidden');
+
     const userOrdersRef = ref(database, `orders/${user.uid}`);
     onValue(userOrdersRef, (snapshot) => {
       const activeOrders = snapshot.val();
@@ -96,14 +99,54 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+const urlParams = new URLSearchParams(window.location.search);
+const yandexCode = urlParams.get('code');
+
+if (yandexCode) {
+  onboardingContainer.style.display = 'none';
+  fetch('/api/yandex-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: yandexCode })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.token) {
+      return signInWithCustomToken(auth, data.token);
+    } else {
+      throw new Error('Не удалось получить токен');
+    }
+  })
+  .catch(err => {
+    console.error('Ошибка авторизации:', err);
+    onboardingContainer.style.display = 'block';
+  });
+}
+
+// Слушатель для вывода магазинов вместе с их фотками из Firebase
 const shopsRef = ref(database, 'shops');
 onValue(shopsRef, (snapshot) => {
   const shopsData = snapshot.val();
   shopListContainer.innerHTML = '';
+  
   if (shopsData) {
     for (let shopId in shopsData) {
+      const shop = shopsData[shopId];
+      
       const shopElement = document.createElement('div');
-      shopElement.innerText = `🏪 Магазин «${shopsData[shopId].name}»`;
+      shopElement.classList.add('shop-item');
+      
+      // Создаем тег картинки. Берем поле image из Firebase, либо ставим красивый дефолтный супермаркет
+      const shopImg = document.createElement('img');
+      shopImg.classList.add('shop-logo');
+      shopImg.src = shop.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150&q=80';
+      shopImg.alt = shop.name;
+      
+      const shopName = document.createElement('span');
+      shopName.innerText = `Магазин «${shop.name}»`;
+      
+      shopElement.appendChild(shopImg);
+      shopElement.appendChild(shopName);
       shopListContainer.appendChild(shopElement);
     }
   }
