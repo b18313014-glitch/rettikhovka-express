@@ -9,7 +9,6 @@
         .slide { display: none; }
         .slide.active { display: block; }
         .fade-out { opacity: 0; transform: scale(0.95); transition: all 0.5s ease-out; }
-        .fade-in { opacity: 1; transform: scale(1); transition: all 0.5s ease-in; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex items-center justify-center p-4 transition-colors duration-500" id="body-bg">
@@ -37,7 +36,7 @@
 
             <div class="slide text-center space-y-4">
                 <h2 class="text-xl font-bold text-gray-800">Как заказывать еду</h2>
-                <p class="text-sm text-gray-500">Нажмите на центральную кнопку, чтобы открыть список магазинов.</p>
+                <p class="text-sm text-gray-500">Нажми на кнопку ниже, чтобы открыть список магазинов в Delivery Go.</p>
                 
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 min-h-[220px] relative flex flex-col justify-center">
                     
@@ -49,7 +48,7 @@
                         <div class="p-2.5 text-gray-400 text-sm opacity-50">🏪 Магазин «Берёзка»</div>
                     </div>
 
-                    <div id="catalog-box" class="hidden border border-green-200 bg-green-50 p-3 rounded-lg text-left flex justify-between items-center animate-fade-in">
+                    <div id="catalog-box" class="hidden border border-green-200 bg-green-50 p-3 rounded-lg text-left flex justify-between items-center">
                         <div class="flex items-center space-x-3">
                             <span id="product-img-slot" class="text-3xl">🍞</span>
                             <div>
@@ -62,12 +61,12 @@
 
                     <div class="absolute top-2 right-2 text-xl opacity-20 transition-all duration-300" id="header-cart-icon">🛒</div>
                 </div>
-                <p id="slide3-tip" class="text-xs text-blue-600 font-medium hidden">Отлично! Хлеб добавлен. Нажмите «Вперёд», чтобы открыть корзину.</p>
+                <p id="slide3-tip" class="text-xs text-blue-600 font-medium hidden">Отлично! Хлеб добавлен. Нажми «Вперёд», чтобы открыть корзину.</p>
             </div>
 
             <div class="slide text-center space-y-4">
                 <h2 class="text-xl font-bold text-gray-800">Корзина и оформление</h2>
-                <p class="text-sm text-gray-500">Управляйте количеством и укажите телефон для оплаты.</p>
+                <p class="text-sm text-gray-500">Управляй количеством товара и укажи телефон для оплаты.</p>
                 
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4 text-left">
                     <div class="flex justify-between items-center border-b pb-3 text-sm">
@@ -161,9 +160,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Инициализация твоей базы Supabase
+        // Конфигурация проекта (как firebaseConfig в Firebase)
         const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
         const SUPABASE_ANON_KEY = "Sb_publishable_ytZSEfwJBwFWwGn1CLB4ww_mDxmVbCW"; 
+        
+        // Создаем рабочее подключение
         const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         const slides = document.querySelectorAll('.slide');
@@ -172,23 +173,22 @@
         const nextBtn = document.getElementById('next-btn');
         let currentSlide = 0;
 
-        // Переменные состояния интерактивной корзины
+        // Внутреннее состояние корзины
         let itemPrice = 45;
         let itemCount = 1;
+        let userPhone = ""; 
 
         function updateSlider() {
             slides.forEach((slide, index) => {
                 slide.classList.toggle('active', index === currentSlide);
             });
 
-            // Обновление точек внизу
             dots.forEach((dot, index) => {
                 dot.className = index === currentSlide 
                     ? "h-2 w-2 rounded-full bg-blue-600 transition-all duration-300" 
                     : "h-2 w-2 rounded-full bg-gray-300 transition-all duration-300";
             });
 
-            // Кнопка Назад на первом слайде
             if (currentSlide === 0) {
                 prevBtn.disabled = true;
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed";
@@ -197,7 +197,7 @@
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer";
             }
 
-            // Безопасное обновление данных из базы Supabase на ходу
+            // Вызываем синхронизацию с базой при смене экрана
             syncSlideWithSupabase(currentSlide);
         }
 
@@ -217,7 +217,7 @@
             }
         });
 
-        // ЛОГИКА СЛАЙДА 3: Заказ еды и выбор магазина
+        // Работа с кнопками Слайда 3 (Магазины)
         document.getElementById('order-food-btn').addEventListener('click', () => {
             document.getElementById('shops-list').classList.toggle('hidden');
         });
@@ -238,7 +238,7 @@
             setTimeout(() => headerCartIcon.classList.remove('scale-125'), 300);
         });
 
-        // ЛОГИКА СЛАЙДА 4: Плюс, Минус и Телефон в Корзине
+        // Управление в Слайде 4 (Корзина и телефон)
         const cartCountEl = document.getElementById('cart-count');
         const cartTotalEl = document.getElementById('cart-total');
         const mockPhone = document.getElementById('mock-phone');
@@ -247,8 +247,6 @@
         function updateCartUI() {
             cartCountEl.innerText = itemCount;
             cartTotalEl.innerText = `${itemCount * itemPrice} ₽`;
-            
-            // Синхронизируем текст внутри поп-апа UnitPay
             document.getElementById('unitpay-item-name').innerText = `Хлеб (${itemCount} шт.)`;
             document.getElementById('unitpay-total').innerText = `${itemCount * itemPrice} ₽`;
         }
@@ -265,9 +263,10 @@
             }
         });
 
-        // Валидация телефона (Кнопка загорается зелёным, если > 10 символов)
+        // Валидация телефона (Зелёный цвет при >= 10 цифр)
         mockPhone.addEventListener('input', () => {
-            if (mockPhone.value.trim().length >= 10) {
+            userPhone = mockPhone.value.trim();
+            if (userPhone.length >= 10) {
                 mockPayBtn.disabled = false;
                 mockPayBtn.className = "w-full bg-green-600 text-white py-2.5 rounded-lg text-sm font-bold shadow hover:bg-green-700 cursor-pointer transition-colors duration-300";
             } else {
@@ -282,7 +281,7 @@
 
         document.getElementById('close-unitpay').addEventListener('click', () => {
             document.getElementById('unitpay-modal').classList.add('hidden');
-            currentSlide++; // Идём на финальный слайд после закрытия оплаты
+            currentSlide++; 
             updateSlider();
         });
 
@@ -292,7 +291,6 @@
             const authCard = document.getElementById('auth-card');
             const bodyBg = document.getElementById('body-bg');
 
-            // Узнаем тему из браузера пользователя
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
             if (isDarkMode) {
@@ -303,7 +301,6 @@
                 bodyBg.className = "bg-orange-50 min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
             }
 
-            // Плавное исчезновение онбординга и появление регистрации
             onboardingCard.classList.add('fade-out');
             
             setTimeout(() => {
@@ -316,7 +313,7 @@
             }, 500);
         }
 
-        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ ПОЧТА + ПАРОЛЬ
+        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ ПОЧТА + ПАРОЛЬ (Зелёная / Красная кнопка)
         const authEmail = document.getElementById('auth-email');
         const authPassword = document.getElementById('auth-password');
         const authSubmitBtn = document.getElementById('auth-submit-btn');
@@ -337,263 +334,25 @@
         authEmail.addEventListener('input', validateAuthForm);
         authPassword.addEventListener('input', validateAuthForm);
 
-        // КНОПКА LOGIN / SIGNUP В SUPABASE
+
+        // ========================================================
+        // 🔥 ИНТЕГРАЦИЯ SUPABASE С КНОПКАМИ И ИНТЕРФЕЙСОМ
+        // ========================================================
+
+        // 1. Создание аккаунта Почта + Пароль в Supabase Auth
         authSubmitBtn.addEventListener('click', async () => {
             if (!supabase) return;
             const email = authEmail.value.trim();
             const password = authPassword.value.trim();
 
             const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) alert("Ошибка: " + error.message);
-            else alert("Успешно! Проверьте вашу почту для подтверждения профиля.");
-        });
-
-        // КНОПКА ЯНДЕКС ID (Авторизация через OAuth)
-        document.getElementById('yandex-auth-btn').addEventListener('click', async () => {
-            if (!supabase) return;
-            await supabase.auth.signInWithOAuth({
-                provider: 'yandex',
-                options: { redirectTo: window.location.origin }
-            });
-        });
-
-        // ЖИВАЯ СИНХРОНИЗАЦИЯ С SUPABASE (Безопасная, код не падает, если таблицы пусты)
-        async function syncSlideWithSupabase(slideIdx) {
-            if (!supabase) return;
-
-            // Слайд 2: Чтение статуса заказа
-            if (slideIdx === 1) {
-                try {
-                    const { data: orders, error } = await supabase
-                        .from('orders') 
-                        .select('status')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-
-                    if (!error && orders && orders.length > 0) {
-                        document.getElementById('status-box').innerText = `Статус заказа: ${orders[0].status}`;
-                    }
-                } catch (e) { console.log("Таблица заказов ожидает создания..."); }
-            }
-
-            // Слайд 3: Чтение ценника и картинки товара из бэка
-            if (slideIdx === 2) {
-                try {
-                    const { data: products, error } = await supabase
-                        .from('products') 
-                        .select('title, image_url, price')
-                        .eq('title', 'Хлеб')
-                        .single();
-
-                    if (!error && products) {
-                        itemPrice = products.price;
-                        document.getElementById('product-title-slot').innerText = products.title;
-                        document.getElementById('product-price-slot').innerText = `${products.price} ₽`;
-                        if (products.image_url) {
-                            document.getElementById('product-img-slot').innerHTML = `<img src="${products.image_url}" class="w-8 h-8 object-cover rounded-lg" />`;
-                        }
-                        updateCartUI();
-                    }
-                } catch (e) { console.log("Таблица продуктов ожидает создания..."); }
-            }
-        }
-
-        // Запуск первого слайда
-        updateSlider();
-    <    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Тот самый API-ключ и URL для связи с базой (как config в Firebase)
-        const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
-        const SUPABASE_ANON_KEY = "Sb_publishable_ytZSEfwJBwFWwGn1CLB4ww_mDxmVbCW"; 
-        
-        // Инициализируем клиент базы данных (как firebase.initializeApp)
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-        const slides = document.querySelectorAll('.slide');
-        const dots = document.querySelectorAll('#dots span');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        let currentSlide = 0;
-
-        let itemPrice = 45;
-        let itemCount = 1;
-        let userPhone = ""; // Переменная для хранения телефона
-
-        function updateSlider() {
-            slides.forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide);
-            });
-
-            dots.forEach((dot, index) => {
-                dot.className = index === currentSlide 
-                    ? "h-2 w-2 rounded-full bg-blue-600 transition-all duration-300" 
-                    : "h-2 w-2 rounded-full bg-gray-300 transition-all duration-300";
-            });
-
-            if (currentSlide === 0) {
-                prevBtn.disabled = true;
-                prevBtn.className = "px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed";
-            } else {
-                prevBtn.disabled = false;
-                prevBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer";
-            }
-
-            // Запускаем синхронизацию со слайдами
-            syncSlideWithSupabase(currentSlide);
-        }
-
-        nextBtn.addEventListener('click', () => {
-            if (currentSlide < slides.length - 1) {
-                currentSlide++;
-                updateSlider();
-            } else {
-                switchToAuthCard(); 
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlider();
-            }
-        });
-
-        // Интерактив Слайда 3 (Выбор магазина)
-        document.getElementById('order-food-btn').addEventListener('click', () => {
-            document.getElementById('shops-list').classList.toggle('hidden');
-        });
-
-        document.getElementById('shop-dezhurny').addEventListener('click', () => {
-            document.getElementById('shops-list').classList.add('hidden');
-            document.getElementById('catalog-box').classList.remove('hidden');
-        });
-
-        const addToCartMock = document.getElementById('add-to-cart-mock');
-        const headerCartIcon = document.getElementById('header-cart-icon');
-        addToCartMock.addEventListener('click', () => {
-            headerCartIcon.classList.remove('opacity-20');
-            headerCartIcon.classList.add('opacity-100', 'text-green-600', 'scale-125');
-            addToCartMock.innerText = "✓ В корзине";
-            addToCartMock.disabled = true;
-            document.getElementById('slide3-tip').classList.remove('hidden');
-            setTimeout(() => headerCartIcon.classList.remove('scale-125'), 300);
-        });
-
-        // Интерактив Слайда 4 (Корзина)
-        const cartCountEl = document.getElementById('cart-count');
-        const cartTotalEl = document.getElementById('cart-total');
-        const mockPhone = document.getElementById('mock-phone');
-        const mockPayBtn = document.getElementById('mock-pay-btn');
-
-        function updateCartUI() {
-            cartCountEl.innerText = itemCount;
-            cartTotalEl.innerText = `${itemCount * itemPrice} ₽`;
-            document.getElementById('unitpay-item-name').innerText = `Хлеб (${itemCount} шт.)`;
-            document.getElementById('unitpay-total').innerText = `${itemCount * itemPrice} ₽`;
-        }
-
-        document.getElementById('cart-plus').addEventListener('click', () => {
-            itemCount++;
-            updateCartUI();
-        });
-
-        document.getElementById('cart-minus').addEventListener('click', () => {
-            if (itemCount > 1) {
-                itemCount--;
-                updateCartUI();
-            }
-        });
-
-        // Валидация телефона
-        mockPhone.addEventListener('input', () => {
-            userPhone = mockPhone.value.trim();
-            if (userPhone.length >= 10) {
-                mockPayBtn.disabled = false;
-                mockPayBtn.className = "w-full bg-green-600 text-white py-2.5 rounded-lg text-sm font-bold shadow hover:bg-green-700 cursor-pointer transition-colors duration-300";
-            } else {
-                mockPayBtn.disabled = true;
-                mockPayBtn.className = "w-full bg-red-600 text-white py-2.5 rounded-lg text-sm font-bold shadow opacity-60 cursor-not-allowed transition-colors duration-300";
-            }
-        });
-
-        // Нажатие на Оплату -> Открытие UnitPay
-        mockPayBtn.addEventListener('click', () => {
-            document.getElementById('unitpay-modal').classList.remove('hidden');
-        });
-
-        // Закрытие UnitPay
-        document.getElementById('close-unitpay').addEventListener('click', () => {
-            document.getElementById('unitpay-modal').classList.add('hidden');
-            currentSlide++; 
-            updateSlider();
-        });
-
-        // ПЕРЕХОД К АВТОРИЗАЦИИ
-        function switchToAuthCard() {
-            const onboardingCard = document.getElementById('onboarding-card');
-            const authCard = document.getElementById('auth-card');
-            const bodyBg = document.getElementById('body-bg');
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
-            if (isDarkMode) {
-                authCard.classList.add('bg-slate-900'); 
-                bodyBg.className = "bg-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
-            } else {
-                authCard.classList.add('bg-orange-600'); 
-                bodyBg.className = "bg-orange-50 min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
-            }
-
-            onboardingCard.classList.add('fade-out');
-            setTimeout(() => {
-                onboardingCard.classList.add('hidden');
-                authCard.classList.remove('hidden');
-                setTimeout(() => {
-                    authCard.classList.remove('opacity-0', 'translate-y-4');
-                    authCard.classList.add('opacity-100', 'translate-y-0');
-                }, 50);
-            }, 500);
-        }
-
-        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ (Почта + Пароль)
-        const authEmail = document.getElementById('auth-email');
-        const authPassword = document.getElementById('auth-password');
-        const authSubmitBtn = document.getElementById('auth-submit-btn');
-
-        function validateAuthForm() {
-            if (authEmail.value.includes('@') && authPassword.value.trim().length >= 6) {
-                authSubmitBtn.disabled = false;
-                authSubmitBtn.className = "w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors duration-300 hover:bg-green-700 cursor-pointer";
-            } else {
-                authSubmitBtn.disabled = true;
-                authSubmitBtn.className = "w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors duration-300 cursor-not-allowed";
-            }
-        }
-        authEmail.addEventListener('input', validateAuthForm);
-        authPassword.addEventListener('input', validateAuthForm);
-
-
-        // ========================================================
-        // 🔥 РАБОТА С СИСТЕМОЙ SUPABASE (ВМЕСТО СТАРЫХ КНОПОК FIREBASE)
-        // ========================================================
-
-        // 1. Обычная регистрация Почта + Пароль через Supabase Auth
-        authSubmitBtn.addEventListener('click', async () => {
-            if (!supabase) return;
-            const email = authEmail.value.trim();
-            const password = authPassword.value.trim();
-
-            // Создаем пользователя в Supabase
-            const { data, error } = await supabase.auth.signUp({ 
-                email: email, 
-                password: password 
-            });
-
             if (error) {
                 alert("Ошибка регистрации: " + error.message);
             } else {
-                alert("Успешно! Пользователь создан в Supabase. Если указывали телефон, мы свяжем его с профилем.");
+                alert("Успешно зарегистрировано! Письмо подтверждения отправлено.");
                 
-                // Если телефон был введен в корзине, сразу записываем его в профиль базы данных
+                // Связываем номер телефона с созданным профилем в БД
                 if (userPhone && data.user) {
                     await supabase.from('profiles').insert([
                         { id: data.user.id, phone: userPhone, email: email }
@@ -602,26 +361,20 @@
             }
         });
 
-        // 2. Вход/Регистрация через Яндекс ID (OAuth-провайдер в Supabase)
+        // 2. Вход/Регистрация через Яндекс ID (OAuth метод Supabase)
         document.getElementById('yandex-auth-btn').addEventListener('click', async () => {
             if (!supabase) return;
-            
-            // Запускаем встроенный в API Supabase метод авторизации через Яндекс
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            await supabase.auth.signInWithOAuth({
                 provider: 'yandex',
-                options: { 
-                    redirectTo: window.location.origin // Возвращает пользователя обратно на твой Vercel
-                }
+                options: { redirectTo: window.location.origin }
             });
-
-            if (error) console.error("Ошибка входа через Яндекс:", error.message);
         });
 
-        // 3. Синхронизация данных с таблицами Supabase
+        // 3. Безопасная синхронизация: Запросы в базу через твой анон-ключ
         async function syncSlideWithSupabase(slideIdx) {
             if (!supabase) return;
 
-            // На слайде статусов тянем данные из таблицы orders
+            // На экране 2 тянем последний активный статус заказа
             if (slideIdx === 1) {
                 try {
                     const { data: orders, error } = await supabase
@@ -636,7 +389,7 @@
                 } catch (e) { console.log("Проверка таблицы orders..."); }
             }
 
-            // На слайде магазинов подгружаем цену хлеба из таблицы products
+            // На экране 3 подгружаем свежий ценник хлеба из бэка
             if (slideIdx === 2) {
                 try {
                     const { data: products, error } = await supabase
@@ -658,8 +411,8 @@
             }
         }
 
+        // Запуск слайдера
         updateSlider();
     </script>
-
 </body>
 </html>
