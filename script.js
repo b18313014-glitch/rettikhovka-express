@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
@@ -73,6 +73,35 @@ function checkInputs() {
 emailInput.addEventListener('input', checkInputs);
 passwordInput.addEventListener('input', checkInputs);
 
+// Логика работы кнопки Вход/Регистрация по почте
+btnSubmitAuth.addEventListener('click', () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if (!email || !password) return;
+
+  // Сначала пробуем войти в существующий аккаунт
+  signInWithEmailAndPassword(auth, email, password)
+    .catch((error) => {
+      // Если пользователя нет, автоматически регистрируем нового
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        return createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            
+            // Сами записываем пользователя в Google Firebase Database
+            return set(ref(database, `users/${user.uid}`), {
+              email: user.email,
+              role: "client",
+              registeredVia: "email"
+            });
+          });
+      } else {
+        alert("Ошибка: " + error.message);
+      }
+    });
+});
+
 btnYandexAuth.addEventListener('click', () => {
   window.location.href = `https://oauth.yandex.ru/authorize?response_type=code&client_id=cd5ca70954e845b9b126e314460fdc9c`;
 });
@@ -86,7 +115,7 @@ onAuthStateChanged(auth, (user) => {
     onValue(userOrdersRef, (snapshot) => {
       const activeOrders = snapshot.val();
       if (!activeOrders) {
-        statusBar.innerHTML = `<span>Сейчас у вас нет активных заказов</span>`;
+        statusBar.innerHTML = `<span>Сейчас у вас нет active заказов</span>`;
       } else {
         statusBar.innerHTML = '';
         for (let orderId in activeOrders) {
@@ -118,12 +147,13 @@ if (yandexCode) {
     }
   })
   .catch(err => {
-    console.error('Ошибка авторизации:', err);
-    onboardingContainer.style.display = 'block';
+    console.error('Ошибка авторизации Яндекса:', err);
+    // Если бэкенд Яндекса ещё не настроен, оставляем форму открытой для обычной регистрации
+    onboardingContainer.style.display = 'none';
+    registerModal.classList.remove('modal-hidden');
   });
 }
 
-// Слушатель для вывода магазинов вместе с их фотками из Firebase
 const shopsRef = ref(database, 'shops');
 onValue(shopsRef, (snapshot) => {
   const shopsData = snapshot.val();
@@ -132,11 +162,9 @@ onValue(shopsRef, (snapshot) => {
   if (shopsData) {
     for (let shopId in shopsData) {
       const shop = shopsData[shopId];
-      
       const shopElement = document.createElement('div');
       shopElement.classList.add('shop-item');
       
-      // Создаем тег картинки. Берем поле image из Firebase, либо ставим красивый дефолтный супермаркет
       const shopImg = document.createElement('img');
       shopImg.classList.add('shop-logo');
       shopImg.src = shop.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150&q=80';
