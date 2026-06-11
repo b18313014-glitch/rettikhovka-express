@@ -1,236 +1,92 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX-EXPRESS | FULL SYSTEM</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
-
-    <style>
-        :root { --blue: #005bff; --bg: #0f0f12; --card: #1c1c21; --text: #ffffff; --accent: #ffcc00; }
-        body { background: var(--bg); font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text); overflow-x: hidden; }
-
-        /* Внутренние уведомления */
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px); background: #25252b; border: 2px solid var(--blue); padding: 15px 25px; border-radius: 20px; z-index: 20000; transition: 0.5s; font-weight: 700; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        #toast.active { transform: translateX(-50%) translateY(0); }
-
-        /* Экраны */
-        .screen { display: none; min-height: 100vh; padding: 20px; box-sizing: border-box; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Элементы управления */
-        .btn { width: 100%; padding: 20px; border-radius: 24px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 15px; }
-        .btn-blue { background: var(--blue); color: white; }
-        .btn-white { background: white; color: black; }
-        input, select { width: 100%; padding: 20px; border-radius: 20px; border: 1px solid #333; background: #1c1c21; color: white; margin: 10px 0; box-sizing: border-box; font-family: inherit; outline: none; }
-
-        /* Онбординг */
-        #onboarding { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .step { display: none; }
-        .step.active { display: block; }
-        .nav-dots { display: flex; gap: 8px; margin: 30px 0; }
-        .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; transition: 0.3s; }
-        .dot.active { background: var(--blue); width: 22px; border-radius: 10px; }
-
-        /* Интерфейс */
-        .header { display: flex; justify-content: space-between; padding: 10px 0; align-items: center; }
-        .icon-btn { background: #1c1c21; width: 54px; height: 54px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid #333; }
-        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .shop-card { background: var(--card); padding: 20px; border-radius: 32px; height: 160px; cursor: pointer; border: 1px solid #25252b; }
-        .ozon-card { background: var(--blue); border: none; grid-column: span 2; height: 100px; display: flex; align-items: center; justify-content: space-between; }
-
-        /* Модалка телефона */
-        #modal-phone { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 15000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RX-Express</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="toast">Уведомление</div>
-
-<div id="onboarding">
-    <div class="step active" id="st1"><h1>RX EXPRESS</h1><p>Доставка в Реттиховке</p></div>
-    <div class="step" id="st2"><h1 style="color:var(--blue)">OZON</h1><p>Загрузи QR и мы заберем заказ</p></div>
-    <div class="step" id="st3"><h1 style="color:var(--accent)">УРОВНИ</h1><p>Качай рейтинг до 26 уровня!</p></div>
-    <div class="nav-dots">
-        <div class="dot active" id="dot1"></div>
-        <div class="dot" id="dot2"></div>
-        <div class="dot" id="dot3"></div>
+  <div id="onboarding-container" class="onboarding-wrapper">
+    
+    <div class="slide active" id="slide-1">
+      <h2>Привет! 👋</h2>
+      <p>Мы рады приветствовать тебя в нашей доставке! Мы очень хотим иметь с тобой дело и привозить тебе всё самое свежее из магазинов Реттиховки.</p>
     </div>
-    <div style="display:flex; gap:10px; width:100%; max-width:320px;">
-        <button class="btn btn-white" id="bBack" style="display:none;" onclick="move(1, -1)">Назад</button>
-        <button class="btn btn-blue" id="bNext" onclick="move(1, 1)">Вперёд</button>
-    </div>
-</div>
 
-<div id="scr-auth" class="screen" style="display: flex; align-items: center; justify-content: center;">
-    <div style="width: 100%; max-width: 350px; text-align: center;">
-        <h1 style="font-size: 35px;">ВХОД</h1>
-        <input type="email" id="email" placeholder="Почта">
-        <input type="password" id="pass" placeholder="Пароль">
-        <button class="btn btn-blue" onclick="emailLogin()">ВОЙТИ</button>
-        <p style="opacity:0.3; margin:15px;">ИЛИ</p>
-        <button class="btn btn-white" onclick="googleLogin()">GOOGLE</button>
+    <div class="slide" id="slide-2">
+      <h3>Активные заказы 📦</h3>
+      <div id="user-status-bar" class="status-bar-demo"></div>
+      <p>Здесь, в самом верху экрана, ты всегда сможешь видеть, где находится твоя еда прямо сейчас.</p>
     </div>
-</div>
 
-<div id="scr-home" class="screen">
-    <div class="header">
-        <div style="font-weight:900; font-size:22px;">📍 РЕТТИХОВКА</div>
-        <div style="display:flex; gap:12px;">
-            <div class="icon-btn" onclick="showScreen('cart')">🛒</div>
-            <div class="icon-btn" onclick="showScreen('profile')">👤</div>
+    <div class="slide" id="slide-3">
+      <h3>Как заказывать еду? 🛒</h3>
+      <button class="demo-btn-order">Заказать еду</button>
+      <div class="shop-list-demo"></div>
+      <p>Нажимай на кнопку, выбирай любимый магазин поселка и собирай корзину.</p>
+    </div>
+
+    <div class="slide" id="slide-4">
+      <h3>Управление корзиной 🥖</h3>
+      <div class="cart-demo-box">
+        <span class="close-x">❌</span>
+        <div class="cart-item">
+          <img src="https://via.placeholder.com/50" alt="Товар" class="dummy-img">
+          <span>Товар</span>
+          <div class="counter">
+            <button>-</button>
+            <span>1</span>
+            <button>+</button>
+          </div>
         </div>
+      </div>
+      <p>Кликни на крестик, чтобы закрыть ассортимент, и переходи в корзину. Тут можно добавлять или убавлять количество товара.</p>
     </div>
-    <div class="main-grid" id="shops-container">
-        </div>
-    <div class="shop-card ozon-card" style="margin-top:15px;" onclick="ozonUpload()">
-        <h3 style="margin:0;">📦 OZON</h3>
-        <p style="margin:0; opacity:0.8; font-size:12px;">ОТПРАВИТЬ QR</p>
+
+    <div class="slide" id="slide-5">
+      <h3>Оформление заказа 💳</h3>
+      <p>Когда ты дойдешь до кнопки <strong>«Оплатить»</strong>, нам понадобится твой номер телефона для связи.</p>
+      <div class="unitpay-badge">Интеграция с UnitPay</div>
     </div>
-</div>
 
-<div id="scr-cart" class="screen">
-    <div class="header"><div class="icon-btn" onclick="showScreen('home')">←</div><div style="font-weight:900;">КОРЗИНА</div><div style="width:54px;"></div></div>
-    <div style="background:var(--card); padding:25px; border-radius:30px; margin-top:20px;">
-        <h3 id="sel-shop">Магазин не выбран</h3>
-        <p>Товары: <span id="c-total">150</span> ₽ (Минимум 200₽)</p>
-        <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-        <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="door" onchange="checkDoor()"> Оставить у двери</label>
-        <select id="pay" style="margin-top:15px;">
-            <option value="online">UnitPay / СБП</option>
-            <option value="cash" id="cash-o">Наличные</option>
-        </select>
-        <input type="text" id="promo" placeholder="Промокод">
-        <button class="btn btn-blue" onclick="processPay()">ОПЛАТИТЬ</button>
+    <div class="slide" id="slide-6">
+      <h3>Почти готово! 🚀</h3>
+      <p>Остался последний шаг — пройти быструю регистрацию, чтобы мы сохранили твой профиль.</p>
     </div>
-</div>
 
-<div id="scr-profile" class="screen">
-    <div class="header"><div class="icon-btn" onclick="showScreen('home')">←</div><div style="font-weight:900;">ПРОФИЛЬ</div><div style="width:54px;"></div></div>
-    <div style="background:var(--card); padding:25px; border-radius:30px; margin-top:20px;">
-        <p id="u-mail" style="opacity:0.6;">Email: ...</p>
-        <h2 id="u-rate">Рейтинг: 0</h2>
+    <div class="onboarding-navigation">
+      <button id="btn-back" class="nav-btn">Назад</button>
+      <button id="btn-next" class="nav-btn">Вперёд</button>
     </div>
-    <button class="btn btn-blue" onclick="window.location.href='tel:+79140000000'">СВЯЗАТЬСЯ С ПОДДЕРЖКОЙ</button>
-    <button class="btn btn-white" style="background:#ff4757; color:#fff;" onclick="auth.signOut()">ВЫЙТИ</button>
-</div>
+  </div>
 
-<div id="modal-phone">
-    <div style="background:var(--card); padding:30px; border-radius:30px; width:100%; max-width:350px; text-align:center;">
-        <h3>Введите номер телефона</h3>
-        <input type="tel" id="u-phone" placeholder="+7 (___) ___-__-__">
-        <button class="btn btn-blue" onclick="savePhone()">ПОДТВЕРДИТЬ</button>
+  <div id="register-modal" class="modal-hidden">
+    <div class="modal-content">
+      <h2>Вход / Регистрация</h2>
+      
+      <div class="input-group">
+        <label>Электронная почта</label>
+        <input type="email" id="reg-email" placeholder="example@mail.com">
+      </div>
+      
+      <div class="input-group">
+        <label>Пароль</label>
+        <input type="password" id="reg-password" placeholder="Введите пароль">
+      </div>
+
+      <button id="btn-submit-auth" class="auth-btn-submit btn-default">Вход/Регистрация</button>
+      
+      <div class="divider">или</div>
+
+      <button id="btn-yandex-auth" class="yandex-btn">
+        <img src="https://yastatic.net/s3/home/yandex-id/v2/yandex_id_favicon.png" alt="Yandex">
+        Продолжить с Яндексом
+      </button>
     </div>
-</div>
+  </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBD8BzKaEBxcD-e24ypRh1qZ-iCvZZY6nQ",
-        authDomain: "deliverygov11.firebaseapp.com",
-        projectId: "deliverygov11",
-        storageBucket: "deliverygov11.firebasestorage.app",
-        messagingSenderId: "562994407235",
-        appId: "1:562994407235:web:27765b2d4916e82ec871f6"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    const DBX_TOKEN = "sl.u.AGdcbHvrpxpjxCndaUZYDVX-WF-GLXYDT5c7gTXb6vBkm6lHnU8n6V5l8sOiINQXI";
-
-    function showMsg(text) {
-        const t = document.getElementById('toast');
-        t.innerText = text; t.classList.add('active');
-        setTimeout(() => t.classList.remove('active'), 3000);
-    }
-
-    function showScreen(id) {
-        document.getElementById('onboarding').style.display = 'none';
-        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        const target = document.getElementById('scr-' + id);
-        if(id === 'auth') target.style.display = 'flex'; else target.style.display = 'block';
-    }
-
-    // --- ОНБОРДИНГ ---
-    let curStep = 1;
-    function move(v, d) {
-        document.getElementById('st'+curStep).classList.remove('active');
-        document.getElementById('dot'+curStep).classList.remove('active');
-        curStep += d;
-        if(curStep > 3) { sessionStorage.setItem('rx_intro', '1'); showScreen('auth'); }
-        else {
-            document.getElementById('st'+curStep).classList.add('active');
-            document.getElementById('dot'+curStep).classList.add('active');
-            document.getElementById('bBack').style.display = curStep === 1 ? 'none' : 'block';
-        }
-    }
-
-    // --- ЛОГИКА FIREBASE ---
-    auth.onAuthStateChanged(async user => {
-        if (user) {
-            const doc = await db.collection('users').doc(user.uid).get();
-            if (doc.exists && doc.data().phone) {
-                document.getElementById('u-mail').innerText = "Email: " + user.email;
-                document.getElementById('u-rate').innerText = "Рейтинг: " + (doc.data().rating || 0);
-                showScreen('home'); loadShops();
-            } else {
-                document.getElementById('modal-phone').style.display = 'flex';
-                showScreen('auth'); document.getElementById('scr-auth').style.display = 'none';
-            }
-        } else {
-            if(!sessionStorage.getItem('rx_intro')) document.getElementById('onboarding').style.display = 'flex';
-            else showScreen('auth');
-        }
-    });
-
-    async function googleLogin() { await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); }
-
-    async function loadShops() {
-        const container = document.getElementById('shops-container');
-        container.innerHTML = "";
-        const snap = await db.collection('shops').get();
-        snap.forEach(doc => {
-            const data = doc.data();
-            const div = document.createElement('div');
-            div.className = 'shop-card';
-            div.onclick = () => { document.getElementById('sel-shop').innerText = data.name; showScreen('cart'); };
-            div.innerHTML = `<h3 style="margin:0;">${data.name}</h3><p style="opacity:0.5; font-size:12px;">Магазин Реттиховки</p>`;
-            container.appendChild(div);
-        });
-    }
-
-    // --- КОРЗИНА И ПЛАТЕЖ ---
-    function checkDoor() {
-        if(document.getElementById('door').checked) {
-            document.getElementById('pay').value = 'online';
-            document.getElementById('cash-o').disabled = true;
-            showMsg("Только оплата онлайн!");
-        } else { document.getElementById('cash-o').disabled = false; }
-    }
-
-    function processPay() {
-        const total = parseInt(document.getElementById('c-total').innerText);
-        if(total < 200) return showMsg("Минимальная сумма — 200₽!");
-        showMsg("Переход к UnitPay...");
-    }
-
-    async function ozonUpload() {
-        const input = document.createElement('input'); input.type = 'file';
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${DBX_TOKEN}`, 'Content-Type': 'application/octet-stream', 'Dropbox-API-Arg': JSON.stringify({ path: `/orders/${Date.now()}_${file.name}`, mode: 'add' }) },
-                body: file
-            });
-            if(res.ok) showMsg("QR отправлен!");
-        };
-        input.click();
-    }
-</script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
