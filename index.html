@@ -1,92 +1,154 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RX-Express</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX-Express — Доставка</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .slide { display: none; }
+        .slide.active { display: block; flex-direction: column; }
+        .fade-out { opacity: 0; transition: opacity 0.5s ease-out; }
+        .fade-in { opacity: 1; transition: opacity 0.5s ease-in; }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans min-h-screen flex items-center justify-center p-4">
 
-  <div id="onboarding-container" class="onboarding-wrapper">
-    
-    <div class="slide active" id="slide-1">
-      <h2>Привет! 👋</h2>
-      <p>Мы рады приветствовать тебя в нашей доставке! Мы очень хотим иметь с тобой дело и привозить тебе всё самое свежее из магазинов Реттиховки.</p>
-    </div>
+    <div id="onboarding-card" class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-between min-h-[500px] transition-all duration-500">
+        
+        <div id="slides-container" class="flex-grow flex flex-col justify-center">
+            
+            <div class="slide active text-center space-y-4">
+                <h2 class="text-2xl font-bold text-gray-800">Добро пожаловать в RX-Express!</h2>
+                <p class="text-gray-600 text-lg">Мы рады, что вы с нами, и хотим делать общее дело. Давайте мы покажем, как тут всё устроено!</p>
+                <div class="text-6xl pt-4">👋🏼</div>
+            </div>
 
-    <div class="slide" id="slide-2">
-      <h3>Активные заказы 📦</h3>
-      <div id="user-status-bar" class="status-bar-demo"></div>
-      <p>Здесь, в самом верху экрана, ты всегда сможешь видеть, где находится твоя еда прямо сейчас.</p>
-    </div>
+            <div class="slide text-center space-y-4">
+                <h2 class="text-xl font-bold text-gray-800">Статусы активных заказов</h2>
+                <p class="text-sm text-gray-500">Вся важная информация всегда находится в самом верху экрана.</p>
+                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 text-left space-y-2 shadow-inner">
+                    <div class="h-6 w-24 bg-gray-300 rounded animate-pulse"></div>
+                    <div id="status-box" class="bg-orange-500 text-white p-3 rounded-lg text-center font-medium text-sm transition-all duration-500">
+                        Сейчас активных заказов нет
+                    </div>
+                    <div class="h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">Карта приложения</div>
+                </div>
+            </div>
 
-    <div class="slide" id="slide-3">
-      <h3>Как заказывать еду? 🛒</h3>
-      <button class="demo-btn-order">Заказать еду</button>
-      <div class="shop-list-demo"></div>
-      <p>Нажимай на кнопку, выбирай любимый магазин поселка и собирай корзину.</p>
-    </div>
+            <div class="slide text-center space-y-4">
+                <h2 class="text-xl font-bold text-gray-800">Как заказывать еду</h2>
+                <p class="text-sm text-gray-500">Нажимайте центральную кнопку и выбирайте любимый магазин.</p>
+                
+                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 min-h-[220px] relative">
+                    <button id="order-food-btn" class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium shadow">Заказать еду</button>
+                    
+                    <div id="shops-list" class="hidden space-y-1 text-left absolute left-4 right-4 bg-white border rounded-lg shadow-lg p-2 z-10">
+                        <button id="shop-dezhurny" class="w-full text-left p-2 hover:bg-gray-100 rounded text-sm font-medium">🏪 Магазин «Дежурный»</button>
+                        <div class="p-2 text-gray-400 text-sm">🏪 Магазин «Алина»</div>
+                        <div class="p-2 text-gray-400 text-sm">🏪 Магазин «Берёзка»</div>
+                    </div>
 
-    <div class="slide" id="slide-4">
-      <h3>Управление корзиной 🥖</h3>
-      <div class="cart-demo-box">
-        <span class="close-x">❌</span>
-        <div class="cart-item">
-          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&q=80" alt="Товар" class="product-img">
-          <span class="product-name">Хлеб Реттиховский</span>
-          <div class="counter">
-            <button>-</button>
-            <span>1</span>
-            <button>+</button>
-          </div>
+                    <div id="catalog-box" class="hidden border border-green-200 bg-green-50 p-2 rounded-lg text-left flex justify-between items-center animate-fade-in">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">🍞</span>
+                            <div>
+                                <p class="text-sm font-bold">Свежий Хлеб</p>
+                                <p class="text-xs text-gray-500">Из базы данных</p>
+                            </div>
+                        </div>
+                        <button id="add-to-cart-mock" class="bg-green-600 text-white text-xs px-3 py-1 rounded-full">+ Добавить</button>
+                    </div>
+
+                    <div class="absolute top-2 right-2 text-xl opacity-30 transition-all duration-300" id="header-cart-icon">🛒</div>
+                </div>
+            </div>
+
+            <div class="slide text-center space-y-4">
+                <h2 class="text-xl font-bold text-gray-800">Оформление и оплата</h2>
+                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 text-left">
+                    <div class="flex justify-between border-b pb-2 text-sm">
+                        <span>🍞 Хлеб (1 шт.)</span>
+                        <div class="flex items-center space-x-2">
+                            <button class="bg-gray-300 px-1 rounded text-xs font-bold">-</button>
+                            <span class="font-bold">1</span>
+                            <button class="bg-gray-300 px-1 rounded text-xs font-bold">+</button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-600 font-medium">Мы продолжим оформление заказа, если вы укажете ваш номер телефона:</p>
+                    <input type="tel" id="mock-phone" placeholder="+7 (999) 999-99-99" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <button id="mock-pay-btn" class="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-bold opacity-50 cursor-not-allowed" disabled>Оплатить заказ</button>
+                </div>
+
+                <div id="unitpay-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div class="bg-white rounded-xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl transform scale-95 transition-all">
+                        <div class="text-red-500 font-extrabold text-xl tracking-wider">UnitPay</div>
+                        <p class="text-xs text-gray-600">Тестовый режим оплаты заказа в RX-Express</p>
+                        <div class="border rounded p-2 text-left bg-gray-50 text-xs space-y-1">
+                            <div>Сумма: <span class="font-bold">45 ₽</span></div>
+                            <div>Получатель: <span class="font-bold">Физлицо (Без ИП)</span></div>
+                        </div>
+                        <button id="close-unitpay" class="w-full bg-gray-800 text-white py-1.5 rounded text-sm">Демонстрация успешна ➡️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide text-center space-y-4">
+                <h2 class="text-2xl font-bold text-gray-800">Вы великолепны! 🎉</h2>
+                <p class="text-gray-600">Вы полностью научились пользоваться приложением RX-Express. Теперь остался самый последний шаг.</p>
+                <div class="text-6xl pt-2">🚀</div>
+            </div>
+
         </div>
-      </div>
-      <p>Кликни на крестик, чтобы закрыть ассортимент, и переходи в корзину. Тут можно добавлять или убавлять количество товара.</p>
+
+        <div id="navigation-controls" class="flex justify-between items-center pt-6 border-t border-gray-100 mt-4">
+            <button id="prev-btn" class="px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed" disabled>Назад</button>
+            <div id="dots" class="flex space-x-2">
+                <span class="h-2 w-2 rounded-full bg-blue-600 transition-all duration-300"></span>
+                <span class="h-2 w-2 rounded-full bg-gray-300 transition-all duration-300"></span>
+                <span class="h-2 w-2 rounded-full bg-gray-300 transition-all duration-300"></span>
+                <span class="h-2 w-2 rounded-full bg-gray-300 transition-all duration-300"></span>
+                <span class="h-2 w-2 rounded-full bg-gray-300 transition-all duration-300"></span>
+            </div>
+            <button id="next-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow hover:bg-blue-700">Вперёд</button>
+        </div>
     </div>
 
-    <div class="slide" id="slide-5">
-      <h3>Оформление заказа 💳</h3>
-      <p>Когда ты дойдешь до кнопки <strong>«Оплатить»</strong>, нам понадобится твой номер телефона для связи.</p>
-      <div class="unitpay-badge">Интеграция с UnitPay</div>
+    <div id="auth-card" class="hidden w-full max-w-md rounded-2xl shadow-2xl p-8 flex flex-col space-y-6 text-white transition-all duration-500 transform translate-y-4 opacity-0">
+        <div class="text-center">
+            <h2 class="text-2xl font-extrabold tracking-tight">Создать профиль</h2>
+            <p class="text-xs opacity-70 mt-1">Добро пожаловать в систему доставки RX-Express</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs font-bold uppercase tracking-wider opacity-80">Электронная почта</label>
+                <input type="email" id="auth-email" placeholder="name@example.com" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40">
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold uppercase tracking-wider opacity-80">Пароль</label>
+                <input type="password" id="auth-password" placeholder="Минимум 6 символов" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40">
+            </div>
+
+            <button id="auth-submit-btn" class="w-full bg-red-600 text-white py-3 rounded-lg font-bold text-sm shadow-md transition-colors duration-300 cursor-not-allowed" disabled>
+                Вход / Регистрация
+            </button>
+        </div>
+
+        <div class="relative flex items-center justify-center my-2">
+            <div class="border-t border-white/20 w-full"></div>
+            <span class="absolute bg-inherit px-3 text-xs opacity-50 uppercase tracking-widest">или</span>
+        </div>
+
+        <button id="yandex-auth-btn" class="w-full bg-white text-black hover:bg-gray-100 py-3 rounded-lg font-bold text-sm shadow-md flex items-center justify-center space-x-2 transition-transform active:scale-95">
+            <span class="text-red-600 font-black text-base border border-red-600/20 px-1.5 py-0 rounded bg-red-50">Я</span>
+            <span>Продолжить с Яндексом</span>
+        </button>
     </div>
 
-    <div class="slide" id="slide-6">
-      <h3>Почти готово! 🚀</h3>
-      <p>Остался последний шаг — пройти быструю регистрацию, чтобы мы сохранили твой профиль.</p>
-    </div>
-
-    <div class="onboarding-navigation">
-      <button id="btn-back" class="nav-btn">Назад</button>
-      <button id="btn-next" class="nav-btn">Вперёд</button>
-    </div>
-  </div>
-
-  <div id="register-modal" class="modal-hidden">
-    <div class="modal-content">
-      <h2>Вход / Регистрация</h2>
-      
-      <div class="input-group">
-        <label>Электронная почта</label>
-        <input type="email" id="reg-email" placeholder="example@mail.com">
-      </div>
-      
-      <div class="input-group">
-        <label>Пароль</label>
-        <input type="password" id="reg-password" placeholder="Введите пароль">
-      </div>
-
-      <button id="btn-submit-auth" class="auth-btn-submit btn-default">Вход/Регистрация</button>
-      
-      <div class="divider">или</div>
-
-      <button id="btn-yandex-auth" class="yandex-btn">
-        <img src="https://yastatic.net/s3/home/yandex-id/v2/yandex_id_favicon.png" alt="Yandex">
-        Продолжить с Яндексом
-      </button>
-    </div>
-  </div>
-
-  <script type="module" src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
 </body>
 </html>
