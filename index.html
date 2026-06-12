@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery Go — Интерактивный Онбординг</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .slide { display: none; }
         .slide.active { display: block; }
@@ -25,15 +25,15 @@
             </div>
 
             <div class="slide text-center space-y-4">
-                <h2 class="text-xl font-bold text-gray-800">Статусы активных заказов</h2>
+                <h2 class="text-xl font-bold text-gray-800">Статусы active заказов</h2>
                 <p class="text-sm text-gray-500">Вся важная информация всегда находится в самом верху экрана приложения.</p>
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 text-left space-y-3 shadow-inner">
-                    <div id="status-box" class="bg-blue-600 text-white p-3 rounded-lg text-center font-medium text-sm transition-all duration-500">
-                        Сейчас активных заказов нет
+                    <div id="status-box" class="bg-orange-500 text-white p-3 rounded-lg text-center font-medium text-sm animate-pulse">
+                        Сейчас active заказов нет
                     </div>
                     <div class="h-28 bg-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400 text-xs space-y-2">
                         <span class="text-xl">📍</span>
-                        <span>Интерактивная карта доставки (Анимация движения)</span>
+                        <span>Интерактивная карта доставки</span>
                     </div>
                 </div>
             </div>
@@ -54,10 +54,10 @@
                     <div id="catalog-box" class="hidden border border-gray-200 bg-white p-4 rounded-xl text-left relative shadow-sm">
                         <button id="close-catalog-btn" class="absolute top-1 right-2 text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer">×</button>
                         <div class="flex items-center space-x-3 mt-1">
-                            <div id="product-img-slot" class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-2xl">🍞</div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-2xl">🍞</div>
                             <div>
-                                <p id="product-title-slot" class="text-sm font-black text-gray-800">Хлеб</p>
-                                <p id="product-price-slot" class="text-xs text-green-600 font-bold">45 ₽</p>
+                                <p class="text-sm font-black text-gray-800">Свежий Хлеб</p>
+                                <p class="text-xs text-green-600 font-bold">45 ₽</p>
                             </div>
                         </div>
                         <button id="add-to-cart-mock" class="w-full mt-3 bg-green-600 text-white text-xs py-2 rounded-lg font-bold hover:bg-green-700 cursor-pointer transition-colors">+ Добавить в корзину</button>
@@ -162,13 +162,7 @@
         </button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduemp4amd3YXdnZm9lbXVucGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjIxMzAsImV4cCI6MjA5NjczODEzMH0.ytLvcHpbRYpBs9JpmII6z19o3ciFNj9ZksVXvJ2WYf0"; 
-        
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('#dots span');
         const prevBtn = document.getElementById('prev-btn');
@@ -179,7 +173,6 @@
         let itemCount = 1;
         let userPhone = ""; 
 
-        // ЭТА ФУНКЦИЯ ТЕПЕРЬ СВОБОДНА ОТ БЛОКИРОВОК И РАБОТАЕТ МОМЕНТАЛЬНО!
         function updateSlider() {
             slides.forEach((slide, index) => {
                 slide.classList.toggle('active', index === currentSlide);
@@ -198,11 +191,6 @@
                 prevBtn.disabled = false;
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer";
             }
-
-            // Запускаем сетевой обмен изолированно. Даже если сеть упадет, слайдер не узнает об этом
-            setTimeout(() => {
-                syncSlideWithSupabase(currentSlide);
-            }, 10);
         }
 
         nextBtn.addEventListener('click', () => {
@@ -338,75 +326,13 @@
         authEmail.addEventListener('input', validateAuthForm);
         authPassword.addEventListener('input', validateAuthForm);
 
-        authSubmitBtn.addEventListener('click', async () => {
-            if (!supabase) return;
-            const email = authEmail.value.trim();
-            const password = authPassword.value.trim();
-
-            try {
-                const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) {
-                    alert("Ошибка: " + error.message);
-                } else {
-                    alert("Успешно зарегистрировано! Проверьте почту.");
-                    if (userPhone && data.user) {
-                        await supabase.from('profiles').insert([
-                            { id: data.user.id, phone: userPhone, email: email }
-                        ]);
-                    }
-                }
-            } catch (e) { console.log(e); }
+        authSubmitBtn.addEventListener('click', () => {
+            alert("Имитация успешной регистрации!");
         });
 
-        document.getElementById('yandex-auth-btn').addEventListener('click', async () => {
-            if (!supabase) return;
-            try {
-                await supabase.auth.signInWithOAuth({
-                    provider: 'yandex',
-                    options: { redirectTo: window.location.origin }
-                });
-            } catch (e) { console.log("Редирект на Яндекс..."); }
+        document.getElementById('yandex-auth-btn').addEventListener('click', () => {
+            alert("Перенаправление на Яндекс ID...");
         });
-
-        // Абсолютно безопасный фоновый метод обмена данными
-        async function syncSlideWithSupabase(slideIdx) {
-            if (!supabase) return;
-
-            if (slideIdx === 1) {
-                try {
-                    const { data: orders, error } = await supabase
-                        .from('orders') 
-                        .select('status')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-
-                    if (!error && orders && orders.length > 0) {
-                        document.getElementById('status-box').innerText = `Статус заказа: ${orders[0].status}`;
-                        document.getElementById('status-box').className = "bg-orange-500 text-white p-3 rounded-lg text-center font-bold text-sm animate-pulse";
-                    }
-                } catch (e) { console.log("Используем дефолтный статус"); }
-            }
-
-            if (slideIdx === 2) {
-                try {
-                    const { data: products, error } = await supabase
-                        .from('products') 
-                        .select('title, image_url, price')
-                        .eq('title', 'Хлеб')
-                        .single();
-
-                    if (!error && products) {
-                        itemPrice = products.price;
-                        document.getElementById('product-title-slot').innerText = products.title;
-                        document.getElementById('product-price-slot').innerText = `${products.price} ₽`;
-                        if (products.image_url) {
-                            document.getElementById('product-img-slot').innerHTML = `<img src="${products.image_url}" class="w-full h-full object-cover rounded-lg" />`;
-                        }
-                        updateCartUI();
-                    }
-                } catch (e) { console.log("Используем дефолтные товары"); }
-            }
-        }
 
         updateSlider();
     </script>
