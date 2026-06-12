@@ -8,9 +8,7 @@
     <style>
         .slide { display: none; }
         .slide.active { display: block; }
-        /* Плавное исчезновение карточки онбординга */
         .fade-out { opacity: 0; transform: scale(0.95); transition: all 0.6s ease-out; }
-        /* Медленное и плавное появление окна регистрации */
         .fade-in-slow { opacity: 1 !important; transform: translateY(0) !important; transition: all 1.2s ease-in-out; }
     </style>
 </head>
@@ -45,7 +43,6 @@
                 <p class="text-sm text-gray-500">Нажмите на кнопку по центру, чтобы выбрать магазин.</p>
                 
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 min-h-[240px] relative flex flex-col justify-center">
-                    
                     <button id="order-food-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow active:bg-blue-800 cursor-pointer transition-all">Заказать еду</button>
                     
                     <div id="shops-list" class="hidden space-y-1 text-left absolute inset-x-4 bg-white border rounded-lg shadow-xl p-2 z-10">
@@ -56,7 +53,6 @@
 
                     <div id="catalog-box" class="hidden border border-gray-200 bg-white p-4 rounded-xl text-left relative shadow-sm">
                         <button id="close-catalog-btn" class="absolute top-1 right-2 text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer">×</button>
-                        
                         <div class="flex items-center space-x-3 mt-1">
                             <div id="product-img-slot" class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-2xl">🍞</div>
                             <div>
@@ -74,7 +70,7 @@
 
             <div class="slide text-center space-y-4">
                 <h2 class="text-xl font-bold text-gray-800">Корзина и оформление</h2>
-                <p class="text-sm text-gray-500">Управляйте количеством товара и укажите телефон.</p>
+                <p class="text-sm text-gray-500">Управляете количеством товара и укажите телефон.</p>
                 
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4 text-left shadow-inner">
                     <div class="flex justify-between items-center border-b pb-3 text-sm">
@@ -99,7 +95,7 @@
                     <button id="mock-pay-btn" class="w-full bg-red-600 text-white py-3 rounded-xl text-sm font-black shadow transition-all duration-300 cursor-not-allowed" disabled>Оплатить заказ</button>
                 </div>
 
-                <div id="unitpay-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fade-in">
+                <div id="unitpay-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
                     <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl border border-gray-100">
                         <div class="text-red-600 font-black text-3xl tracking-wider">UnitPay</div>
                         <p class="text-[11px] text-gray-400 font-bold">Тестовое демо оплаты заказа в Delivery Go</p>
@@ -134,7 +130,6 @@
         </div>
     </div>
 
-
     <div id="auth-card" class="hidden opacity-0 translate-y-8 w-full max-w-md rounded-2xl shadow-2xl p-8 flex flex-col space-y-6 text-white">
         <div class="text-center">
             <h2 class="text-2xl font-black tracking-tight">Создать профиль</h2>
@@ -167,10 +162,8 @@
         </button>
     </div>
 
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Твой оригинальный рабочий анон-ключ из панели управления
         const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduemp4amd3YXdnZm9lbXVucGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjIxMzAsImV4cCI6MjA5NjczODEzMH0.ytLvcHpbRYpBs9JpmII6z19o3ciFNj9ZksVXvJ2WYf0"; 
         
@@ -182,12 +175,11 @@
         const nextBtn = document.getElementById('next-btn');
         let currentSlide = 0;
 
-        // Внутренние переменные корзины
         let itemPrice = 45;
         let itemCount = 1;
         let userPhone = ""; 
 
-        // Основная функция слайдера
+        // ЭТА ФУНКЦИЯ ТЕПЕРЬ СВОБОДНА ОТ БЛОКИРОВОК И РАБОТАЕТ МОМЕНТАЛЬНО!
         function updateSlider() {
             slides.forEach((slide, index) => {
                 slide.classList.toggle('active', index === currentSlide);
@@ -199,7 +191,6 @@
                     : "h-2 w-2 rounded-full bg-gray-300 transition-all duration-300";
             });
 
-            // Правило 1: Если на первом слайде нажимаем назад — ничего не делаем (кнопка отключена)
             if (currentSlide === 0) {
                 prevBtn.disabled = true;
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed";
@@ -208,8 +199,10 @@
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer";
             }
 
-            // Фоновая синхронизация с Supabase (кнопки «Вперёд»/«Назад» не залипнут никогда!)
-            syncSlideWithSupabase(currentSlide).catch(err => console.log("Фоновый обмен данными:", err));
+            // Запускаем сетевой обмен изолированно. Даже если сеть упадет, слайдер не узнает об этом
+            setTimeout(() => {
+                syncSlideWithSupabase(currentSlide);
+            }, 10);
         }
 
         nextBtn.addEventListener('click', () => {
@@ -217,7 +210,7 @@
                 currentSlide++;
                 updateSlider();
             } else {
-                switchToAuthCard(); // Переход к окну регистрации
+                switchToAuthCard(); 
             }
         });
 
@@ -228,7 +221,6 @@
             }
         });
 
-        // ЛОГИКА СЛАЙДА 3 (МАГАЗИНЫ И АССОРТИМЕНТ)
         document.getElementById('order-food-btn').addEventListener('click', () => {
             document.getElementById('shops-list').classList.toggle('hidden');
         });
@@ -242,7 +234,6 @@
         document.getElementById('close-catalog-btn').addEventListener('click', () => {
             document.getElementById('catalog-box').classList.add('hidden');
             document.getElementById('order-food-btn').classList.remove('hidden');
-            // Подсказка мигает, напоминая открыть корзину дальше
             document.getElementById('slide3-tip').classList.remove('hidden');
         });
 
@@ -257,7 +248,6 @@
             setTimeout(() => headerCartIcon.classList.remove('scale-125'), 300);
         });
 
-        // ЛОГИКА СЛАЙДА 4 (КОРЗИНА И ВАЛИДАЦИЯ ТЕЛЕФОНА)
         const cartCountEl = document.getElementById('cart-count');
         const cartTotalEl = document.getElementById('cart-total');
         const mockPhone = document.getElementById('mock-phone');
@@ -282,7 +272,6 @@
             }
         });
 
-        // Валидация телефона (Красная / Зелёная кнопка оплаты)
         mockPhone.addEventListener('input', () => {
             userPhone = mockPhone.value.trim();
             if (userPhone.length >= 10) {
@@ -304,38 +293,31 @@
             updateSlider();
         });
 
-        // ПЛАВНЫЙ И МЕДЛЕННЫЙ ПЕРЕХОД К АВТОРИЗАЦИИ С ОПРЕДЕЛЕНИЕМ ТЕМЫ БРАУЗЕРА
         function switchToAuthCard() {
             const onboardingCard = document.getElementById('onboarding-card');
             const authCard = document.getElementById('auth-card');
             const bodyBg = document.getElementById('body-bg');
-
-            // Узнаем тему из браузера пользователя
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
             if (isDarkMode) {
-                authCard.classList.add('bg-slate-900', 'border', 'border-slate-800'); // Тёмно-синий/грифельный
+                authCard.classList.add('bg-slate-900', 'border', 'border-slate-800'); 
                 bodyBg.className = "bg-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-1000";
             } else {
-                authCard.classList.add('bg-orange-600'); // Тёмно-оранжевый
+                authCard.classList.add('bg-orange-600'); 
                 bodyBg.className = "bg-orange-50 min-h-screen flex items-center justify-center p-4 transition-colors duration-1000";
             }
 
-            // Исчезновение онбординга
             onboardingCard.classList.add('fade-out');
             
             setTimeout(() => {
                 onboardingCard.classList.add('hidden');
                 authCard.classList.remove('hidden');
-                
-                // Медленное, красивое проявление окна регистрации
                 setTimeout(() => {
                     authCard.classList.add('fade-in-slow');
                 }, 100);
             }, 600);
         }
 
-        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ ПОЧТА + ПАРОЛЬ (Зелёная / Красная кнопка)
         const authEmail = document.getElementById('auth-email');
         const authPassword = document.getElementById('auth-password');
         const authSubmitBtn = document.getElementById('auth-submit-btn');
@@ -356,12 +338,6 @@
         authEmail.addEventListener('input', validateAuthForm);
         authPassword.addEventListener('input', validateAuthForm);
 
-
-        // ========================================================
-        // ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ SUPABASE В ФОНЕ
-        // ========================================================
-
-        // Обычная регистрация
         authSubmitBtn.addEventListener('click', async () => {
             if (!supabase) return;
             const email = authEmail.value.trim();
@@ -382,7 +358,6 @@
             } catch (e) { console.log(e); }
         });
 
-        // Продолжить с Яндексом (сразу перекидывает)
         document.getElementById('yandex-auth-btn').addEventListener('click', async () => {
             if (!supabase) return;
             try {
@@ -393,11 +368,10 @@
             } catch (e) { console.log("Редирект на Яндекс..."); }
         });
 
-        // Функция синхронизации данных со слайдами
+        // Абсолютно безопасный фоновый метод обмена данными
         async function syncSlideWithSupabase(slideIdx) {
             if (!supabase) return;
 
-            // На Слайде 2 берем актуальный статус заказа из таблицы orders
             if (slideIdx === 1) {
                 try {
                     const { data: orders, error } = await supabase
@@ -413,7 +387,6 @@
                 } catch (e) { console.log("Используем дефолтный статус"); }
             }
 
-            // На Слайде 3 берем цену и картинку товара из таблицы products
             if (slideIdx === 2) {
                 try {
                     const { data: products, error } = await supabase
@@ -435,7 +408,6 @@
             }
         }
 
-        // Стартовая инициализация слайдера
         updateSlider();
     </script>
 </body>
