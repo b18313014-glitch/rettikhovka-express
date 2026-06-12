@@ -1,170 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Go — Интерактивное обучение</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        .slide { display: none; }
-        .slide.active { display: block; }
-        .fade-out { opacity: 0; transform: scale(0.95); transition: all 0.5s ease-out; }
-    </style>
-</head>
-<body class="bg-gray-100 font-sans min-h-screen flex items-center justify-center p-4 transition-colors duration-500" id="body-bg">
-
-    <div id="onboarding-card" class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-between min-h-[540px] transition-all duration-500">
-        
-        <div id="slides-container" class="flex-grow flex flex-col justify-center">
-            
-            <div class="slide active text-center space-y-4">
-                <h2 class="text-2xl font-bold text-gray-800">Добро пожаловать в Delivery Go!</h2>
-                <p class="text-gray-600 text-base">Мы рады, что вы с нами, и хотим делать общее дело. Давайте мы покажем, как тут всё у нас устроено!</p>
-                <div class="text-6xl pt-4">👋🏼</div>
-            </div>
-
-            <div class="slide text-center space-y-4">
-                <h2 class="text-xl font-bold text-gray-800">Статусы активных заказов</h2>
-                <p class="text-sm text-gray-500">Вся важная информация всегда находится в самом верху экрана приложения.</p>
-                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 text-left space-y-2 shadow-inner">
-                    <div id="status-box" class="bg-orange-500 text-white p-3 rounded-lg text-center font-medium text-sm transition-all duration-500 animate-pulse">
-                        Сейчас активных заказов нет
-                    </div>
-                    <div class="h-24 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">Интерактивная карта доставки</div>
-                </div>
-            </div>
-
-            <div class="slide text-center space-y-4">
-                <h2 class="text-xl font-bold text-gray-800">Как заказывать еду</h2>
-                <p class="text-sm text-gray-500">Нажми на кнопку ниже, чтобы открыть список магазинов в Delivery Go.</p>
-                
-                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 min-h-[220px] relative flex flex-col justify-center">
-                    
-                    <button id="order-food-btn" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium shadow active:bg-blue-800 cursor-pointer">Заказать еду</button>
-                    
-                    <div id="shops-list" class="hidden space-y-1 text-left absolute inset-x-4 bg-white border rounded-lg shadow-lg p-2 z-10">
-                        <button id="shop-dezhurny" class="w-full text-left p-2.5 hover:bg-gray-100 rounded text-sm font-medium cursor-pointer">🏪 Магазин «Дежурный»</button>
-                        <div class="p-2.5 text-gray-400 text-sm opacity-50">🏪 Магазин «Алина»</div>
-                        <div class="p-2.5 text-gray-400 text-sm opacity-50">🏪 Магазин «Берёзка»</div>
-                    </div>
-
-                    <div id="catalog-box" class="hidden border border-green-200 bg-green-50 p-3 rounded-lg text-left flex justify-between items-center">
-                        <div class="flex items-center space-x-3">
-                            <span id="product-img-slot" class="text-3xl">🍞</span>
-                            <div>
-                                <p id="product-title-slot" class="text-sm font-bold text-gray-800">Свежий Хлеб</p>
-                                <p id="product-price-slot" class="text-xs text-gray-500 font-bold">45 ₽</p>
-                            </div>
-                        </div>
-                        <button id="add-to-cart-mock" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-bold hover:bg-green-700 cursor-pointer">+ Добавить</button>
-                    </div>
-
-                    <div class="absolute top-2 right-2 text-xl opacity-20 transition-all duration-300" id="header-cart-icon">🛒</div>
-                </div>
-                <p id="slide3-tip" class="text-xs text-blue-600 font-medium hidden">Отлично! Хлеб добавлен. Нажми «Вперёд», чтобы открыть корзину.</p>
-            </div>
-
-            <div class="slide text-center space-y-4">
-                <h2 class="text-xl font-bold text-gray-800">Корзина и оформление</h2>
-                <p class="text-sm text-gray-500">Управляй количеством товара и укажи телефон для оплаты.</p>
-                
-                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4 text-left">
-                    <div class="flex justify-between items-center border-b pb-3 text-sm">
-                        <span class="font-medium text-gray-700">🍞 Свежий Хлеб</span>
-                        <div class="flex items-center space-x-2">
-                            <button id="cart-minus" class="w-6 h-6 bg-gray-200 text-gray-800 font-bold rounded flex items-center justify-center hover:bg-gray-300 cursor-pointer">-</button>
-                            <span id="cart-count" class="font-bold text-gray-800">1</span>
-                            <button id="cart-plus" class="w-6 h-6 bg-gray-200 text-gray-800 font-bold rounded flex items-center justify-center hover:bg-gray-300 cursor-pointer">+</button>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between text-sm font-bold text-gray-800">
-                        <span>Итого к оплате:</span>
-                        <span id="cart-total">45 ₽</span>
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <p class="text-xs text-gray-600 font-medium">Мы продолжим оформление заказа, если вы укажете ваш номер телефона:</p>
-                        <input type="tel" id="mock-phone" placeholder="+7 (999) 999-99-99" class="w-full border rounded-lg p-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black font-medium">
-                    </div>
-                    
-                    <button id="mock-pay-btn" class="w-full bg-red-600 text-white py-2.5 rounded-lg text-sm font-bold shadow transition-colors duration-300 cursor-not-allowed opacity-60" disabled>Оплатить заказ</button>
-                </div>
-
-                <div id="unitpay-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-                    <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl border border-gray-100">
-                        <div class="text-red-500 font-black text-2xl tracking-wider">UnitPay</div>
-                        <p class="text-xs text-gray-500 font-medium">Тестовый режим оплаты заказа в Delivery Go</p>
-                        <div class="border border-gray-100 rounded-xl p-3 text-left bg-gray-50 text-xs space-y-1.5 text-gray-700 font-medium">
-                            <div>Товар: <span id="unitpay-item-name" class="font-bold text-gray-900">Хлеб (1 шт.)</span></div>
-                            <div>Сумма: <span id="unitpay-total" class="font-bold text-gray-900">45 ₽</span></div>
-                            <div>Получатель: <span class="font-bold text-gray-900">Delivery Go (Самозанятый)</span></div>
-                        </div>
-                        <button id="close-unitpay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-bold shadow-md cursor-pointer transition-colors">Демонстрация успешна ➡️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide text-center space-y-4">
-                <h2 class="text-2xl font-bold text-gray-800">Вы великолепны! 🎉</h2>
-                <p class="text-gray-600 text-base">Вы полностью научились пользоваться базовыми функциями заказа в Delivery Go. Теперь остался самый последний шаг!</p>
-                <div class="text-6xl pt-2">🚀</div>
-            </div>
-
-        </div>
-
-        <div id="navigation-controls" class="flex justify-between items-center pt-4 border-t border-gray-100 mt-4">
-            <button id="prev-btn" class="px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed" disabled>Назад</button>
-            <div id="dots" class="flex space-x-2">
-                <span class="h-2 w-2 rounded-full bg-blue-600"></span>
-                <span class="h-2 w-2 rounded-full bg-gray-300"></span>
-                <span class="h-2 w-2 rounded-full bg-gray-300"></span>
-                <span class="h-2 w-2 rounded-full bg-gray-300"></span>
-                <span class="h-2 w-2 rounded-full bg-gray-300"></span>
-            </div>
-            <button id="next-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow hover:bg-blue-700 active:bg-blue-800 cursor-pointer">Вперёд</button>
-        </div>
-    </div>
-
-    <div id="auth-card" class="hidden opacity-0 translate-y-4 w-full max-w-md rounded-2xl shadow-2xl p-8 flex flex-col space-y-6 text-white transition-all duration-700">
-        <div class="text-center">
-            <h2 class="text-2xl font-black tracking-tight">Создать профиль</h2>
-            <p class="text-xs opacity-70 mt-1">Добро пожаловать в систему доставки Delivery Go</p>
-        </div>
-
-        <div class="space-y-4">
-            <div class="space-y-1">
-                <label class="text-xs font-bold uppercase tracking-wider opacity-80">Электронная почта</label>
-                <input type="email" id="auth-email" placeholder="yourmail@example.com" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
-            </div>
-            <div class="space-y-1">
-                <label class="text-xs font-bold uppercase tracking-wider opacity-80">Пароль</label>
-                <input type="password" id="auth-password" placeholder="Минимум 6 символов" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
-            </div>
-
-            <button id="auth-submit-btn" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all duration-300 cursor-not-allowed" disabled>
-                Вход / Регистрация
-            </button>
-        </div>
-
-        <div class="relative flex items-center justify-center my-2">
-            <div class="border-t border-white/20 w-full"></div>
-            <span class="absolute bg-inherit px-3 text-xs opacity-50 uppercase tracking-widest">или</span>
-        </div>
-
-        <button id="yandex-auth-btn" class="w-full bg-white text-black hover:bg-gray-50 py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center space-x-2 transition-transform active:scale-98 cursor-pointer">
-            <span class="text-red-600 font-black text-base border border-red-600/20 px-1.5 py-0.2 rounded bg-red-50">Я</span>
-            <span>Продолжить с Яндексом</span>
-        </button>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Конфигурация проекта (как firebaseConfig в Firebase)
+        // Твои правильные ключи от Supabase
         const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
         const SUPABASE_ANON_KEY = "Sb_publishable_ytZSEfwJBwFWwGn1CLB4ww_mDxmVbCW"; 
         
-        // Создаем рабочее подключение
+        // Создаем подключение
         const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         const slides = document.querySelectorAll('.slide');
@@ -197,8 +37,9 @@
                 prevBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer";
             }
 
-            // Вызываем синхронизацию с базой при смене экрана
-            syncSlideWithSupabase(currentSlide);
+            // ВАЖНО: Мы просто запускаем проверку базы данных в фоновом режиме, 
+            // она больше НЕ блокирует переключение слайдов, даже если упадет с ошибкой!
+            syncSlideWithSupabase(currentSlide).catch(err => console.log("Фоновая ошибка базы данных убрана:", err));
         }
 
         nextBtn.addEventListener('click', () => {
@@ -206,7 +47,7 @@
                 currentSlide++;
                 updateSlider();
             } else {
-                switchToAuthCard(); // С последнего слайда плавно уходим в регистрацию
+                switchToAuthCard(); 
             }
         });
 
@@ -294,10 +135,10 @@
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
             if (isDarkMode) {
-                authCard.classList.add('bg-slate-900'); // Тёмно-синий для тёмной темы
+                authCard.classList.add('bg-slate-900'); 
                 bodyBg.className = "bg-slate-950 min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
             } else {
-                authCard.classList.add('bg-orange-600'); // Тёмно-оранжевый для светлой темы
+                authCard.classList.add('bg-orange-600'); 
                 bodyBg.className = "bg-orange-50 min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
             }
 
@@ -313,7 +154,7 @@
             }, 500);
         }
 
-        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ ПОЧТА + ПАРОЛЬ (Зелёная / Красная кнопка)
+        // ВАЛИДАЦИЯ ФОРМЫ РЕГИСТРАЦИИ ПОЧТА + ПАРОЛЬ
         const authEmail = document.getElementById('auth-email');
         const authPassword = document.getElementById('auth-password');
         const authSubmitBtn = document.getElementById('auth-submit-btn');
@@ -336,45 +177,46 @@
 
 
         // ========================================================
-        // 🔥 ИНТЕГРАЦИЯ SUPABASE С КНОПКАМИ И ИНТЕРФЕЙСОМ
+        // 🔥 БЕЗОПАСНАЯ ИНТЕГРАЦИЯ С API SUPABASE
         // ========================================================
 
-        // 1. Создание аккаунта Почта + Пароль в Supabase Auth
+        // Создание аккаунта Почта + Пароль
         authSubmitBtn.addEventListener('click', async () => {
             if (!supabase) return;
             const email = authEmail.value.trim();
             const password = authPassword.value.trim();
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            
-            if (error) {
-                alert("Ошибка регистрации: " + error.message);
-            } else {
-                alert("Успешно зарегистрировано! Письмо подтверждения отправлено.");
-                
-                // Связываем номер телефона с созданным профилем в БД
-                if (userPhone && data.user) {
-                    await supabase.from('profiles').insert([
-                        { id: data.user.id, phone: userPhone, email: email }
-                    ]);
+            try {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    alert("Ошибка регистрации: " + error.message);
+                } else {
+                    alert("Успешно зарегистрировано! Письмо подтверждения отправлено.");
+                    if (userPhone && data.user) {
+                        await supabase.from('profiles').insert([
+                            { id: data.user.id, phone: userPhone, email: email }
+                        ]);
+                    }
                 }
-            }
+            } catch (e) { alert("Ошибка соединения с Supabase"); }
         });
 
-        // 2. Вход/Регистрация через Яндекс ID (OAuth метод Supabase)
+        // Авторизация через Яндекс ID
         document.getElementById('yandex-auth-btn').addEventListener('click', async () => {
             if (!supabase) return;
-            await supabase.auth.signInWithOAuth({
-                provider: 'yandex',
-                options: { redirectTo: window.location.origin }
-            });
+            try {
+                await supabase.auth.signInWithOAuth({
+                    provider: 'yandex',
+                    options: { redirectTo: window.location.origin }
+                });
+            } catch (e) { console.log(e); }
         });
 
-        // 3. Безопасная синхронизация: Запросы в базу через твой анон-ключ
+        // Функция синхронизации данных (Ошибки внутри неё больше не вешают сайт!)
         async function syncSlideWithSupabase(slideIdx) {
             if (!supabase) return;
 
-            // На экране 2 тянем последний активный статус заказа
+            // На экране 2 тянем статус заказа
             if (slideIdx === 1) {
                 try {
                     const { data: orders, error } = await supabase
@@ -386,10 +228,10 @@
                     if (!error && orders && orders.length > 0) {
                         document.getElementById('status-box').innerText = `Статус заказа: ${orders[0].status}`;
                     }
-                } catch (e) { console.log("Проверка таблицы orders..."); }
+                } catch (e) { console.log("Таблицы orders пока нет, используем дефолт."); }
             }
 
-            // На экране 3 подгружаем свежий ценник хлеба из бэка
+            // На экране 3 подгружаем свежий ценник хлеба
             if (slideIdx === 2) {
                 try {
                     const { data: products, error } = await supabase
@@ -407,12 +249,10 @@
                         }
                         updateCartUI();
                     }
-                } catch (e) { console.log("Проверка таблицы products..."); }
+                } catch (e) { console.log("Таблицы products пока нет, используем дефолт."); }
             }
         }
 
-        // Запуск слайдера
+        // Запуск стартового слайда
         updateSlider();
     </script>
-</body>
-</html>
