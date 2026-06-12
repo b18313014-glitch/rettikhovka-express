@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery Go — Интерактивный Онбординг</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .slide { display: none; }
         .slide.active { display: block; }
@@ -131,38 +131,69 @@
     </div>
 
     <div id="auth-card" class="hidden opacity-0 translate-y-8 w-full max-w-md rounded-2xl shadow-2xl p-8 flex flex-col space-y-6 text-white">
-        <div class="text-center">
-            <h2 class="text-2xl font-black tracking-tight">Создать профиль</h2>
-            <p class="text-xs opacity-80 mt-1">Добро пожаловать в систему доставки Delivery Go</p>
-        </div>
-
-        <div class="space-y-4">
-            <div class="space-y-1">
-                <label class="text-xs font-bold uppercase tracking-wider opacity-90">Электронная почта</label>
-                <input type="email" id="auth-email" placeholder="yourmail@example.com" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
-            </div>
-            <div class="space-y-1">
-                <label class="text-xs font-bold uppercase tracking-wider opacity-90">Пароль</label>
-                <input type="password" id="auth-password" placeholder="Минимум 6 символов" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
+        
+        <div id="login-form-box" class="space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-black tracking-tight">Создать профиль</h2>
+                <p class="text-xs opacity-80 mt-1">Добро пожаловать в систему доставки Delivery Go</p>
             </div>
 
-            <button id="auth-submit-btn" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all duration-300 cursor-not-allowed" disabled>
-                Вход / Регистрация
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-wider opacity-90">Электронная почта</label>
+                    <input type="email" id="auth-email" placeholder="yourmail@example.com" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-wider opacity-90">Пароль</label>
+                    <input type="password" id="auth-password" placeholder="Минимум 6 символов" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40 font-medium">
+                </div>
+
+                <button id="auth-submit-btn" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all duration-300 cursor-not-allowed" disabled>
+                    Вход / Регистрация
+                </button>
+            </div>
+
+            <div class="relative flex items-center justify-center my-2">
+                <div class="border-t border-white/20 w-full"></div>
+                <span class="absolute bg-inherit px-3 text-xs opacity-60 uppercase tracking-widest">или</span>
+            </div>
+
+            <button id="yandex-auth-btn" class="w-full bg-white text-black hover:bg-gray-50 py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center space-x-2 transition-transform active:scale-98 cursor-pointer">
+                <span class="text-red-600 font-black text-base border border-red-600/20 px-1.5 py-0.2 rounded bg-red-50">Я</span>
+                <span>Продолжить с Яндексом</span>
             </button>
         </div>
 
-        <div class="relative flex items-center justify-center my-2">
-            <div class="border-t border-white/20 w-full"></div>
-            <span class="absolute bg-inherit px-3 text-xs opacity-60 uppercase tracking-widest">или</span>
+        <div id="user-profile-box" class="hidden space-y-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl mx-auto mb-2" id="user-avatar">👤</div>
+                <h3 class="text-xl font-black" id="user-display-name">Загрузка...</h3>
+                <p class="text-xs opacity-60" id="user-display-uid">UID: ...</p>
+            </div>
+
+            <div class="bg-white/10 rounded-xl p-4 border border-white/10 space-y-3">
+                <h4 class="text-sm font-bold uppercase tracking-wider text-orange-300 flex items-center justify-between">
+                    <span>📋 История ваших заказов</span>
+                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded text-white" id="orders-count-badge">0</span>
+                </h4>
+                
+                <div id="orders-history-list" class="space-y-2 max-h-[180px] overflow-y-auto pr-1 text-xs text-gray-200">
+                    <p class="text-center opacity-50 py-4">История ваших заказов пуста</p>
+                </div>
+            </div>
+
+            <button id="logout-btn" class="w-full bg-white/10 border border-white/20 text-white py-2 rounded-xl text-xs font-bold hover:bg-white/20 transition-colors">Выйти из аккаунта</button>
         </div>
 
-        <button id="yandex-auth-btn" class="w-full bg-white text-black hover:bg-gray-50 py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center space-x-2 transition-transform active:scale-98 cursor-pointer">
-            <span class="text-red-600 font-black text-base border border-red-600/20 px-1.5 py-0.2 rounded bg-red-50">Я</span>
-            <span>Продолжить с Яндексом</span>
-        </button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const SUPABASE_URL = "https://gnzjxjgwawgfoemunpjt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduemp4amd3YXdnZm9lbXVucGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjIxMzAsImV4cCI6MjA5NjczODEzMH0.ytLvcHpbRYpBs9JpmII6z19o3ciFNj9ZksVXvJ2WYf0"; 
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('#dots span');
         const prevBtn = document.getElementById('prev-btn');
@@ -302,19 +333,87 @@
                 authCard.classList.remove('hidden');
                 setTimeout(() => {
                     authCard.classList.add('fade-in-slow');
+                    checkUserSession(); // Проверяем сессию при открытии карточки профиля
                 }, 100);
             }, 600);
         }
 
+        // КНОПКА ЯНДЕКСА С МАЛЕНЬКИМИ БУКВАМИ (ПРЯМАЯ ССЫЛКА НА ШЛЮЗ АВТОРИЗАЦИИ)
+        document.getElementById('yandex-auth-btn').addEventListener('click', () => {
+            const redirectTo = window.location.origin;
+            window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=yandex&redirect_to=${encodeURIComponent(redirectTo)}`;
+        });
+
+        // ПРОВЕРКА ВОШЁЛ ЛИ ПОЛЬЗОВАТЕЛЬ, ПОЛУЧЕНИЕ UID И ИСТОРИИ ЗАКАЗОВ
+        async function checkUserSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session && session.user) {
+                // Если юзер внутри, скрываем форму логина и показываем профиль
+                document.getElementById('login-form-box').classList.add('hidden');
+                document.getElementById('user-profile-box').classList.remove('hidden');
+                
+                const user = session.user;
+                // Заполняем данные пользователя (из Яндекса или почты)
+                document.getElementById('user-display-name').innerText = user.user_metadata.full_name || user.email;
+                document.getElementById('user-display-uid').innerText = `UID: ${user.id.substring(0, 15)}...`;
+                
+                if (user.user_metadata.avatar_url) {
+                    document.getElementById('user-avatar').innerHTML = `<img src="${user.user_metadata.avatar_url}" class="w-full h-full object-cover rounded-full" />`;
+                }
+
+                // Загружаем его вечную историю заказов из Supabase
+                loadOrdersHistory(user.id);
+            } else {
+                document.getElementById('login-form-box').classList.remove('hidden');
+                document.getElementById('user-profile-box').classList.add('hidden');
+            }
+        }
+
+        // ЗАГРУЗКА ИСТОРИИ ЗАКАЗОВ ИЗ ТАБЛИЦЫ С УЧЕТОМ UID ЮЗЕРА
+        async function loadOrdersHistory(userId) {
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('user_id', userId) // Выбираем только те, что принадлежат этому человеку
+                    .order('created_at', { ascending: false });
+
+                const listEl = document.getElementById('orders-history-list');
+                
+                if (!error && orders && orders.length > 0) {
+                    document.getElementById('orders-count-badge').innerText = orders.length;
+                    listEl.innerHTML = ''; // Стираем заглушку "пусто"
+
+                    orders.forEach(order => {
+                        const date = new Date(order.created_at).toLocaleDateString('ru-RU');
+                        listEl.innerHTML += `
+                            <div class="bg-white/5 border border-white/10 rounded-lg p-2.5 flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold text-white">${order.items_summary || 'Заказ еды'}</p>
+                                    <p class="text-[10px] opacity-50">${date}</p>
+                                </div>
+                                <span class="bg-green-600/30 text-green-300 font-bold px-2 py-0.5 rounded text-[10px]">${order.price || '45'} ₽</span>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.log("Ошибка загрузки истории:", e); }
+        }
+
+        // КНОПКА ВЫХОДА
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            checkUserSession();
+        });
+
+        // Классическая почтовая валидация формы
         const authEmail = document.getElementById('auth-email');
         const authPassword = document.getElementById('auth-password');
         const authSubmitBtn = document.getElementById('auth-submit-btn');
 
         function validateAuthForm() {
-            const emailVal = authEmail.value.trim();
-            const passVal = authPassword.value.trim();
-
-            if (emailVal.includes('@') && passVal.length >= 6) {
+            if (authEmail.value.includes('@') && authPassword.value.trim().length >= 6) {
                 authSubmitBtn.disabled = false;
                 authSubmitBtn.className = "w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors duration-300 hover:bg-green-700 cursor-pointer";
             } else {
@@ -322,16 +421,15 @@
                 authSubmitBtn.className = "w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors duration-300 cursor-not-allowed";
             }
         }
-
         authEmail.addEventListener('input', validateAuthForm);
         authPassword.addEventListener('input', validateAuthForm);
 
-        authSubmitBtn.addEventListener('click', () => {
-            alert("Имитация успешной регистрации!");
-        });
-
-        document.getElementById('yandex-auth-btn').addEventListener('click', () => {
-            alert("Перенаправление на Яндекс ID...");
+        authSubmitBtn.addEventListener('click', async () => {
+            try {
+                const { data, error } = await supabase.auth.signUp({ email: authEmail.value.trim(), password: authPassword.value.trim() });
+                if (error) alert("Ошибка: " + error.message);
+                else { alert("Успешно зарегистрировано!"); checkUserSession(); }
+            } catch (e) { console.log(e); }
         });
 
         updateSlider();
